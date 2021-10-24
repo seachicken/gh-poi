@@ -8,24 +8,20 @@ assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+<!-- edit: --> A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+<!-- edit: --> Steps to reproduce the behavior:
+1. Type this '...'
+2. View the output '....'
+3. See error
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+<!-- edit: --> A clear and concise description of what you expected to happen.
 
 **Your Environment**
  - OS: 
- - Version: 
+ - gh --version: 
 
 **Additional context**
-<!-- edit: --> Add any other context about the problem here.
+<!-- edit: --> Add any other context or screenshots about the problem here.

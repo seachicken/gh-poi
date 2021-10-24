@@ -1,0 +1,17 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+archives:
+  - name_template: "{{ .Os }}-{{ .Arch }}"
+    format: binary
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  skip: true

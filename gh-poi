@@ -1,0 +1,11 @@
+#!/bin/bash -e
+
+rootPath="$(dirname "$0")"
+
+if ! type -p go >/dev/null; then
+  echo "Go not found on the system" >&2
+  exit 1
+fi
+
+(cd $rootPath && go build -o gh-poi.out)
+exec "$rootPath/gh-poi.out" "$@"

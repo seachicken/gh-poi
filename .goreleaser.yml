@@ -15,3 +15,5 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
   skip: true
+release:
+  draft: true

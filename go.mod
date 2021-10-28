@@ -3,6 +3,7 @@ module github.com/seachicken/gh-poi
 go 1.17
 
 require (
+	github.com/briandowns/spinner v1.13.0
 	github.com/cli/safeexec v1.0.0
 	github.com/fatih/color v1.13.0
 	github.com/golang/mock v1.6.0

@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 )
 
@@ -16,19 +18,26 @@ func main() {
 	whiteBold := color.New(color.FgWhite, color.Bold).SprintFunc()
 
 	if check {
-		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN ==\n"))
+		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
+
+	sp := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+	sp.Start()
 
 	conn := &ConnectionImpl{}
 
+	sp.Suffix = " Fetching pull requests..."
 	branches, err := GetBranches(conn)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
 
 	if !check {
+		sp.Suffix = " Deleting branches..."
 		branches = DeleteBranches(branches, conn)
 	}
+
+	sp.Stop()
 
 	var deletedStates []BranchState
 	var notDeletedStates []BranchState

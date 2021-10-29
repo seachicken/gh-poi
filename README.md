@@ -16,3 +16,8 @@ gh extension install seachicken/gh-poi
 
 - `gh poi` Delete the merged local branches
 - `gh poi --check` You can check the branch to be deleted without actually deleting it
+
+## Local branch to be deleted
+
+- 🗑 Branches merged in the origin repository
+- 🗑 Branches merged in the upstream repository

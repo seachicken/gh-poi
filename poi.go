@@ -42,6 +42,7 @@ type (
 		State  PullRequestState
 		Number int
 		Url    string
+		Author string
 	}
 )
 
@@ -172,6 +173,9 @@ func fromJson(jsonResp string) ([]PullRequest, error) {
 						HeadRefName string
 						Url         string
 						State       string
+						Author      struct {
+							Login string
+						}
 					}
 				}
 			}
@@ -193,8 +197,8 @@ func fromJson(jsonResp string) ([]PullRequest, error) {
 
 		results = append(results, PullRequest{
 			edge.Node.HeadRefName,
-			state,
-			edge.Node.Number, edge.Node.Url,
+			state, edge.Node.Number,
+			edge.Node.Url, edge.Node.Author.Login,
 		})
 	}
 
@@ -307,22 +311,21 @@ func (conn *ConnectionImpl) FetchPrStates(
 		"api", "graphql",
 		"--hostname", hostname,
 		"-f", fmt.Sprintf(`query=query {
-        search(type: ISSUE, query: "is:pr %s %s", last: 100) {
-          issueCount
-          edges {
-            node {
-              ... on PullRequest {
-                number
-                title
-                url
-                state
-                headRefName
-                author { login avatarUrl }
-              }
-            }
-          }
+  search(type: ISSUE, query: "is:pr %s %s", last: 100) {
+    issueCount
+    edges {
+      node {
+        ... on PullRequest {
+          number
+          url
+          state
+          headRefName
+          author { login }
         }
-      }`,
+      }
+    }
+  }
+}`,
 			getQueryRepos(repoNames),
 			queryHashes,
 		),

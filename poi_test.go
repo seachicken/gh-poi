@@ -43,9 +43,12 @@ origin  git@github.com:owner/name.git (push)
         {
           "node": {
             "number": 1,
-            "headRefName": "issue1",
             "url": "https://github.com/owner/name/pull/1",
-            "state": "MERGED"
+            "state": "MERGED",
+            "headRefName": "issue1",
+            "author": {
+              "login": "owner"
+            }
           }
         }
       ]
@@ -59,7 +62,7 @@ origin  git@github.com:owner/name.git (push)
 	assert.Equal(t, []Branch{
 		{false, "issue1", "356a192b7913b04c54574d18c28d46e6395428ab",
 			[]PullRequest{
-				PullRequest{"issue1", Merged, 1, "https://github.com/owner/name/pull/1"},
+				PullRequest{"issue1", Merged, 1, "https://github.com/owner/name/pull/1", "owner"},
 			},
 			Deletable,
 		},
@@ -105,17 +108,23 @@ origin  git@github.com:owner/name.git (push)
         {
           "node": {
             "number": 1,
-            "headRefName": "issue1",
             "url": "https://github.com/owner/name/pull/1",
-            "state": "CLOSED"
+            "state": "CLOSED",
+            "headRefName": "issue1",
+            "author": {
+              "login": "owner"
+            }
           }
         },
         {
           "node": {
             "number": 2,
-            "headRefName": "issue1",
             "url": "https://github.com/owner/name/pull/2",
-            "state": "CLOSED"
+            "state": "CLOSED",
+            "headRefName": "issue1",
+            "author": {
+              "login": "owner"
+            }
           }
         }
       ]
@@ -129,8 +138,8 @@ origin  git@github.com:owner/name.git (push)
 	assert.Equal(t, []Branch{
 		{false, "issue1", "356a192b7913b04c54574d18c28d46e6395428ab",
 			[]PullRequest{
-				PullRequest{"issue1", Closed, 1, "https://github.com/owner/name/pull/1"},
-				PullRequest{"issue1", Closed, 2, "https://github.com/owner/name/pull/2"},
+				PullRequest{"issue1", Closed, 1, "https://github.com/owner/name/pull/1", "owner"},
+				PullRequest{"issue1", Closed, 2, "https://github.com/owner/name/pull/2", "owner"},
 			},
 			NotDeletable,
 		},

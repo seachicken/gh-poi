@@ -86,7 +86,7 @@ func printBranches(branches []Branch) {
 				line = "├─"
 			}
 
-			fmt.Fprintf(color.Output, "    %s %s  %s  %s\n",
+			fmt.Fprintf(color.Output, "    %s %s  %s %s\n",
 				line,
 				color.New(issueNoColor).SprintFunc()(number),
 				white(pr.Url),

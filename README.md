@@ -4,7 +4,7 @@ A [gh](https://github.com/cli/cli) extension for deleting merged local branches.
 
 This extension checks the state of remote pull requests, so it works even when you "Squash and merge" pull requests.
 
-![screenshot](https://user-images.githubusercontent.com/5178598/139068170-6b8bbb72-613c-4d5a-bef8-9ec8fc46ab07.png)
+![screenshot](https://user-images.githubusercontent.com/5178598/139530526-6d3999f7-097a-49f0-86be-7b79ad29a24d.png)
 
 ## Installation
 

@@ -34,11 +34,12 @@ func (m *MockConnection) EXPECT() *MockConnectionMockRecorder {
 }
 
 // DeleteBranches mocks base method.
-func (m *MockConnection) DeleteBranches(branchNames []string) string {
+func (m *MockConnection) DeleteBranches(branchNames []string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBranches", branchNames)
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteBranches indicates an expected call of DeleteBranches.
@@ -48,11 +49,12 @@ func (mr *MockConnectionMockRecorder) DeleteBranches(branchNames interface{}) *g
 }
 
 // FetchPrStates mocks base method.
-func (m *MockConnection) FetchPrStates(hostname string, repoNames []string, queryHashes string) string {
+func (m *MockConnection) FetchPrStates(hostname string, repoNames []string, queryHashes string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchPrStates", hostname, repoNames, queryHashes)
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FetchPrStates indicates an expected call of FetchPrStates.
@@ -62,11 +64,12 @@ func (mr *MockConnectionMockRecorder) FetchPrStates(hostname, repoNames, queryHa
 }
 
 // FetchRepoNames mocks base method.
-func (m *MockConnection) FetchRepoNames() string {
+func (m *MockConnection) FetchRepoNames() (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchRepoNames")
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FetchRepoNames indicates an expected call of FetchRepoNames.
@@ -76,11 +79,12 @@ func (mr *MockConnectionMockRecorder) FetchRepoNames() *gomock.Call {
 }
 
 // GetBrancheNames mocks base method.
-func (m *MockConnection) GetBrancheNames() string {
+func (m *MockConnection) GetBrancheNames() (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBrancheNames")
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetBrancheNames indicates an expected call of GetBrancheNames.
@@ -90,11 +94,12 @@ func (mr *MockConnectionMockRecorder) GetBrancheNames() *gomock.Call {
 }
 
 // GetRemoteName mocks base method.
-func (m *MockConnection) GetRemoteName() string {
+func (m *MockConnection) GetRemoteName() (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRemoteName")
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetRemoteName indicates an expected call of GetRemoteName.

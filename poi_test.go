@@ -18,19 +18,19 @@ func TestGetBranches(t *testing.T) {
 		GetRemoteName().
 		Return(`origin  git@github.com:owner/name.git (fetch)
 origin  git@github.com:owner/name.git (push)
-`).
+`, nil).
 		AnyTimes()
 	conn.
 		EXPECT().
 		GetBrancheNames().
 		Return(` ,issue1,356a192b7913b04c54574d18c28d46e6395428ab
 *,main,b6589fc6ab0dc82cf12099d1c2d40ab994e8410c
-`).
+`, nil).
 		AnyTimes()
 	conn.
 		EXPECT().
 		FetchRepoNames().
-		Return("owner/name").
+		Return("owner/name", nil).
 		AnyTimes()
 	conn.
 		EXPECT().
@@ -54,7 +54,7 @@ origin  git@github.com:owner/name.git (push)
       ]
     }
   }
-}`).
+}`, nil).
 		AnyTimes()
 
 	actual, _ := GetBranches(conn)
@@ -83,19 +83,19 @@ func TestGetBranches_pullRequestsAreNotMerged(t *testing.T) {
 		GetRemoteName().
 		Return(`origin  git@github.com:owner/name.git (fetch)
 origin  git@github.com:owner/name.git (push)
-`).
+`, nil).
 		AnyTimes()
 	conn.
 		EXPECT().
 		GetBrancheNames().
 		Return(` ,issue1,356a192b7913b04c54574d18c28d46e6395428ab
 *,main,b6589fc6ab0dc82cf12099d1c2d40ab994e8410c
-`).
+`, nil).
 		AnyTimes()
 	conn.
 		EXPECT().
 		FetchRepoNames().
-		Return("owner/name").
+		Return("owner/name", nil).
 		AnyTimes()
 	conn.
 		EXPECT().
@@ -130,7 +130,7 @@ origin  git@github.com:owner/name.git (push)
       ]
     }
   }
-}`).
+}`, nil).
 		AnyTimes()
 
 	actual, _ := GetBranches(conn)
@@ -160,12 +160,12 @@ func TestDeleteBranches(t *testing.T) {
 		GetBrancheNames().
 		Return(`*,issue1,356a192b7913b04c54574d18c28d46e6395428ab
  ,main,b6589fc6ab0dc82cf12099d1c2d40ab994e8410c
-`).
+`, nil).
 		AnyTimes()
 	conn.
 		EXPECT().
 		DeleteBranches(gomock.Any()).
-		Return("").
+		Return("", nil).
 		Times(1)
 
 	branches := []Branch{
@@ -174,12 +174,14 @@ func TestDeleteBranches(t *testing.T) {
 		{true, "main", "", []PullRequest{}, NotDeletable},
 	}
 
+	actual, _ := DeleteBranches(branches, conn)
+
 	expected := []Branch{
 		{false, "issue1", "", []PullRequest{}, Deletable},
 		{false, "issue2", "", []PullRequest{}, Deleted},
 		{true, "main", "", []PullRequest{}, NotDeletable},
 	}
-	assert.Equal(t, expected, DeleteBranches(branches, conn))
+	assert.Equal(t, expected, actual)
 }
 
 func TestDeleteBranches_doesNotExistsDeletableBranches(t *testing.T) {
@@ -192,12 +194,12 @@ func TestDeleteBranches_doesNotExistsDeletableBranches(t *testing.T) {
 		GetBrancheNames().
 		Return(` ,issue1,356a192b7913b04c54574d18c28d46e6395428ab
 *,main,b6589fc6ab0dc82cf12099d1c2d40ab994e8410c
-`).
+`, nil).
 		AnyTimes()
 	conn.
 		EXPECT().
 		DeleteBranches(gomock.Any()).
-		Return("").
+		Return("", nil).
 		Times(0)
 
 	branches := []Branch{

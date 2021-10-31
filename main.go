@@ -10,12 +10,18 @@ import (
 	"github.com/fatih/color"
 )
 
+var (
+	white     = color.New(color.FgWhite).SprintFunc()
+	whiteBold = color.New(color.FgWhite, color.Bold).SprintFunc()
+	hiBlack   = color.New(color.FgHiBlack).SprintFunc()
+	green     = color.New(color.FgGreen).SprintFunc()
+	red       = color.New(color.FgRed).SprintFunc()
+)
+
 func main() {
 	var check bool
 	flag.BoolVar(&check, "check", false, "Show branches to delete")
 	flag.Parse()
-
-	whiteBold := color.New(color.FgWhite, color.Bold).SprintFunc()
 
 	if check {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
@@ -26,18 +32,41 @@ func main() {
 
 	conn := &ConnectionImpl{}
 
-	sp.Suffix = " Fetching pull requests..."
-	branches, err := GetBranches(conn)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	fetchingMsg := " Fetching pull requests..."
+	var fetchingErr error
+	sp.Suffix = fetchingMsg
+	branches, fetchingErr := GetBranches(conn)
 
-	if !check {
-		sp.Suffix = " Deleting branches..."
-		branches = DeleteBranches(branches, conn)
+	deletingMsg := " Deleting branches..."
+	var deletingErr error
+	if !check && fetchingErr == nil {
+		sp.Suffix = deletingMsg
+		branches, deletingErr = DeleteBranches(branches, conn)
 	}
 
 	sp.Stop()
+
+	if fetchingErr == nil {
+		fmt.Fprintf(color.Output, "%s%s\n", green("✔"), fetchingMsg)
+	} else {
+		fmt.Fprintf(color.Output, "%s%s\n", red("✕"), fetchingMsg)
+		fmt.Fprintln(os.Stderr, fetchingErr)
+		return
+	}
+
+	if check {
+		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
+	} else {
+		if deletingErr == nil {
+			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
+		} else {
+			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
+			fmt.Fprintln(os.Stderr, deletingErr)
+			return
+		}
+	}
+
+	fmt.Println()
 
 	var deletedStates []BranchState
 	var notDeletedStates []BranchState
@@ -59,14 +88,10 @@ func main() {
 }
 
 func printBranches(branches []Branch) {
-	hiBlack := color.New(color.FgHiBlack).SprintFunc()
-
 	if len(branches) == 0 {
-		fmt.Fprintf(color.Output, "%s\n", hiBlack("  There are no branches in the current directory"))
+		fmt.Fprintf(color.Output, "%s\n",
+			hiBlack("  There are no branches in the current directory"))
 	}
-
-	white := color.New(color.FgWhite).SprintFunc()
-	green := color.New(color.FgGreen).SprintFunc()
 
 	for _, branch := range branches {
 		branchName := fmt.Sprintf("%s", branch.Name)

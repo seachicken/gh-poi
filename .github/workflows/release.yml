@@ -18,4 +18,4 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: cli/gh-extension-precompile@latest
+    - uses: cli/gh-extension-precompile@v1.0.3

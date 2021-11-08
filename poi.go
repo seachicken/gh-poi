@@ -101,7 +101,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 }
 
 func getHostname(remoteName string) string {
-	r := regexp.MustCompile("(?:@|//)(.+):")
+	r := regexp.MustCompile("(?:@|//)(.+?)(?::|/)")
 	found := r.FindSubmatch([]byte(remoteName))
 	return string(found[1])
 }

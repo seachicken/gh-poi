@@ -1,5 +1,7 @@
 # gh poi
 
+[![CI](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml/badge.svg)](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml)
+
 A [gh](https://github.com/cli/cli) extension for deleting merged local branches.
 
 This extension checks the state of remote pull requests, so it works even when you "Squash and merge" pull requests.

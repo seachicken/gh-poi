@@ -1,0 +1,31 @@
+{
+    "data": {
+      "search": {
+        "issueCount": 2,
+        "edges": [
+          {
+            "node": {
+              "number": 1,
+              "url": "https://github.com/owner/repo/pull/1",
+              "state": "CLOSED",
+              "headRefName": "issue1",
+              "author": {
+                "login": "owner"
+              }
+            }
+          },
+          {
+            "node": {
+              "number": 2,
+              "url": "https://github.com/owner/repo/pull/2",
+              "state": "MERGED",
+              "headRefName": "issue1",
+              "author": {
+                "login": "owner"
+              }
+            }
+          }
+        ]
+      }
+    }
+}

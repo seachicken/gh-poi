@@ -23,6 +23,10 @@ func main() {
 	flag.BoolVar(&check, "check", false, "Show branches to delete")
 	flag.Parse()
 
+	runMain(check)
+}
+
+func runMain(check bool) {
 	if check {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}

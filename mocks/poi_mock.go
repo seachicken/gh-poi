@@ -48,36 +48,6 @@ func (mr *MockConnectionMockRecorder) DeleteBranches(branchNames interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), branchNames)
 }
 
-// FetchPrStates mocks base method.
-func (m *MockConnection) FetchPrStates(hostname string, repoNames []string, queryHashes string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FetchPrStates", hostname, repoNames, queryHashes)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FetchPrStates indicates an expected call of FetchPrStates.
-func (mr *MockConnectionMockRecorder) FetchPrStates(hostname, repoNames, queryHashes interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchPrStates", reflect.TypeOf((*MockConnection)(nil).FetchPrStates), hostname, repoNames, queryHashes)
-}
-
-// FetchRepoNames mocks base method.
-func (m *MockConnection) FetchRepoNames() (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FetchRepoNames")
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FetchRepoNames indicates an expected call of FetchRepoNames.
-func (mr *MockConnectionMockRecorder) FetchRepoNames() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchRepoNames", reflect.TypeOf((*MockConnection)(nil).FetchRepoNames))
-}
-
 // GetBrancheNames mocks base method.
 func (m *MockConnection) GetBrancheNames() (string, error) {
 	m.ctrl.T.Helper()
@@ -93,17 +63,32 @@ func (mr *MockConnectionMockRecorder) GetBrancheNames() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBrancheNames", reflect.TypeOf((*MockConnection)(nil).GetBrancheNames))
 }
 
-// GetRemoteName mocks base method.
-func (m *MockConnection) GetRemoteName() (string, error) {
+// GetPullRequests mocks base method.
+func (m *MockConnection) GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRemoteName")
+	ret := m.ctrl.Call(m, "GetPullRequests", hostname, repoNames, queryHashes)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetRemoteName indicates an expected call of GetRemoteName.
-func (mr *MockConnectionMockRecorder) GetRemoteName() *gomock.Call {
+// GetPullRequests indicates an expected call of GetPullRequests.
+func (mr *MockConnectionMockRecorder) GetPullRequests(hostname, repoNames, queryHashes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteName", reflect.TypeOf((*MockConnection)(nil).GetRemoteName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequests", reflect.TypeOf((*MockConnection)(nil).GetPullRequests), hostname, repoNames, queryHashes)
+}
+
+// GetRepoNames mocks base method.
+func (m *MockConnection) GetRepoNames() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepoNames")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRepoNames indicates an expected call of GetRepoNames.
+func (mr *MockConnectionMockRecorder) GetRepoNames() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoNames", reflect.TypeOf((*MockConnection)(nil).GetRepoNames))
 }

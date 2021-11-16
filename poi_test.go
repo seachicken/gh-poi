@@ -15,7 +15,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 
 	s := connmock.Setup(ctrl).
 		GetRepoNames("origin", nil, nil).
-		GetBrancheNames("*main_issue1", nil, nil).
+		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Merged", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
@@ -40,7 +40,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 
 	s := connmock.Setup(ctrl).
 		GetRepoNames("origin_upstream", nil, nil).
-		GetBrancheNames("*main_issue1", nil, nil).
+		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1UpMerged", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
@@ -65,7 +65,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 
 	s := connmock.Setup(ctrl).
 		GetRepoNames("origin", nil, nil).
-		GetBrancheNames("*main_issue1", nil, nil).
+		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Closed", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
@@ -90,7 +90,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testi
 
 	s := connmock.Setup(ctrl).
 		GetRepoNames("origin", nil, nil).
-		GetBrancheNames("*main_issue1", nil, nil).
+		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
@@ -128,7 +128,7 @@ func Test_ReturnsAnErrorWhenGetBrancheNamesFails(t *testing.T) {
 
 	s := connmock.Setup(ctrl).
 		GetRepoNames("origin", nil, nil).
-		GetBrancheNames("*main_issue1", errors.New("failed to run external command: gh"), nil)
+		GetBrancheNames("@main_issue1", errors.New("failed to run external command: gh"), nil)
 
 	_, err := GetBranches(s.Conn)
 
@@ -141,7 +141,7 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 
 	s := connmock.Setup(ctrl).
 		GetRepoNames("origin", nil, nil).
-		GetBrancheNames("*main_issue1", nil, nil).
+		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Merged", errors.New("failed to run external command: gh"), nil)
 
 	_, err := GetBranches(s.Conn)
@@ -154,7 +154,7 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
-		GetBrancheNames("*main", nil, nil).
+		GetBrancheNames("@main", nil, nil).
 		DeleteBranches(nil, connmock.NewConf(&connmock.Times{N: 1}))
 
 	branches := []Branch{

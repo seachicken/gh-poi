@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	//"time"
+	"time"
 
-	//"github.com/Yash-Handa/spinner"
+	"github.com/Yash-Handa/spinner"
 	"github.com/fatih/color"
 )
 
@@ -31,24 +31,28 @@ func runMain(check bool) {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
-	//sp, _ := spinner.New(1020, 30*time.Millisecond, "", "")
-	//sp.Start()
+	sp, _ := spinner.New(1020, 30*time.Millisecond, "", "")
 
 	conn := &ConnectionImpl{}
 
 	fetchingMsg := " Fetching pull requests..."
 	var fetchingErr error
-	//sp.SetPostText(fetchingMsg)
+	sp.SetPostText(fetchingMsg)
+	sp.Start()
+
 	branches, fetchingErr := GetBranches(conn)
+
+	sp.Stop()
 
 	deletingMsg := " Deleting branches..."
 	var deletingErr error
 	if !check && fetchingErr == nil {
-		//sp.SetPostText(deletingMsg)
+		sp.SetPostText(deletingMsg)
+	  sp.Restart()
 		branches, deletingErr = DeleteBranches(branches, conn)
 	}
 
-	//sp.Stop()
+	sp.Stop()
 
 	if fetchingErr == nil {
 		fmt.Fprintf(color.Output, "%s%s\n", green("✔"), fetchingMsg)

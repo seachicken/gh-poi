@@ -5,12 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"regexp"
 	"strings"
 
-	"github.com/cli/safeexec"
 	"github.com/pkg/errors"
+	exec "golang.org/x/sys/execabs"
 )
 
 type (
@@ -372,21 +371,17 @@ func getQueryRepos(repoNames []string) string {
 	return repos.String()
 }
 
-func run(file string, args []string) (string, error) {
-	bin, err := safeexec.LookPath(file)
-	if err != nil {
-		return "", fmt.Errorf("failed to run external command: %s", file)
-	}
-
+func run(name string, args []string) (string, error) {
 	var stdout, stderr bytes.Buffer
-	cmd := exec.Command(bin, args...)
+	cmd := exec.Command(name, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	err = cmd.Run()
+	err := cmd.Start()
 	if err != nil {
-		return "", fmt.Errorf("failed to run external command: %s", file)
+		return "", fmt.Errorf("failed to run external command: %s", name)
 	}
+	cmd.Wait()
 
 	return stdout.String(), nil
 }

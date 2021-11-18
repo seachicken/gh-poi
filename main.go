@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Yash-Handa/spinner"
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 )
 
@@ -31,26 +31,15 @@ func runMain(check bool) {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
-	sp, _ := spinner.New(1020, 30*time.Millisecond, "", "")
-
 	conn := &ConnectionImpl{}
+	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 
 	fetchingMsg := " Fetching pull requests..."
-	var fetchingErr error
-	sp.SetPostText(fetchingMsg)
+	sp.Suffix = fetchingMsg
 	sp.Start()
+	var fetchingErr error
 
 	branches, fetchingErr := GetBranches(conn)
-
-	sp.Stop()
-
-	deletingMsg := " Deleting branches..."
-	var deletingErr error
-	if !check && fetchingErr == nil {
-		sp.SetPostText(deletingMsg)
-	  sp.Restart()
-		branches, deletingErr = DeleteBranches(branches, conn)
-	}
 
 	sp.Stop()
 
@@ -62,9 +51,19 @@ func runMain(check bool) {
 		return
 	}
 
+	deletingMsg := " Deleting branches..."
+	var deletingErr error
+
 	if check {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
 	} else {
+		sp.Suffix = deletingMsg
+		sp.Restart()
+
+		branches, deletingErr = DeleteBranches(branches, conn)
+
+		sp.Stop()
+
 		if deletingErr == nil {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {

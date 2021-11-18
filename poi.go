@@ -75,8 +75,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 
 	var branches []Branch
 	if names, err := conn.GetBrancheNames(); err == nil {
-		branches = toBranch(strings.Split(
-			strings.ReplaceAll(names, "\r\n", "\n"), "\n"))
+		branches = toBranch(strings.Split(names, "\n"))
 	} else {
 		return nil, err
 	}
@@ -273,8 +272,7 @@ func DeleteBranches(branches []Branch, conn Connection) ([]Branch, error) {
 	if err != nil {
 		return nil, err
 	}
-	branchesAfter := toBranch(strings.Split(
-		strings.ReplaceAll(branchNamesAfter, "\r\n", "\n"), "\n"))
+	branchesAfter := toBranch(strings.Split(branchNamesAfter, "\n"))
 
 	return checkDeleted(branches, branchesAfter), nil
 }

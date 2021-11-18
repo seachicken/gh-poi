@@ -18,9 +18,7 @@ jobs:
     - name: Prepare git
       run: git config --global core.autocrlf false
 
-    - uses: actions/checkout@v2
-      with:
-        persist-credentials: false
+    - uses: actions/checkout@v1
 
     - name: Set up Go
       uses: actions/setup-go@v2

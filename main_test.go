@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/stretchr/testify/assert"
@@ -17,8 +16,6 @@ func Test_DeletingBranchesWhenTheCheckOptionIsFalse(t *testing.T) {
 
 	actual := captureOutput(func() { runMain(false) })
 
-	time.Sleep(5 * time.Second)
-
 	expected := fmt.Sprintf("%s %s", green("✔"), "Deleting branches...")
 	assert.Contains(t, actual, expected)
 }
@@ -27,8 +24,6 @@ func Test_DoNotDeleteBranchesWhenTheCheckOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
 	actual := captureOutput(func() { runMain(true) })
-
-	time.Sleep(5 * time.Second)
 
 	expected := fmt.Sprintf("%s %s", hiBlack("-"), "Deleting branches...")
 	assert.Contains(t, actual, expected)

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "search": {
+      "issueCount": 1,
+      "edges": [
+        {
+          "node": {
+            "number": 1,
+            "url": "https://github.com/owner/repo/pull/1",
+            "state": "CLOSED",
+            "headRefName": "issue1",
+            "author": {
+              "login": "owner"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

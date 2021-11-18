@@ -23,26 +23,23 @@ func main() {
 	flag.BoolVar(&check, "check", false, "Show branches to delete")
 	flag.Parse()
 
+	runMain(check)
+}
+
+func runMain(check bool) {
 	if check {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
-	sp := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-	sp.Start()
-
 	conn := &ConnectionImpl{}
+	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 
 	fetchingMsg := " Fetching pull requests..."
-	var fetchingErr error
 	sp.Suffix = fetchingMsg
-	branches, fetchingErr := GetBranches(conn)
+	sp.Start()
+	var fetchingErr error
 
-	deletingMsg := " Deleting branches..."
-	var deletingErr error
-	if !check && fetchingErr == nil {
-		sp.Suffix = deletingMsg
-		branches, deletingErr = DeleteBranches(branches, conn)
-	}
+	branches, fetchingErr := GetBranches(conn)
 
 	sp.Stop()
 
@@ -54,9 +51,19 @@ func main() {
 		return
 	}
 
+	deletingMsg := " Deleting branches..."
+	var deletingErr error
+
 	if check {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
 	} else {
+		sp.Suffix = deletingMsg
+		sp.Restart()
+
+		branches, deletingErr = DeleteBranches(branches, conn)
+
+		sp.Stop()
+
 		if deletingErr == nil {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {

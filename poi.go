@@ -5,24 +5,28 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"regexp"
 	"strings"
 
-	"github.com/cli/safeexec"
 	"github.com/pkg/errors"
+	exec "golang.org/x/sys/execabs"
 )
 
 type (
 	Connection interface {
-		GetRemoteName() (string, error)
+		GetRepoNames() (string, error)
 		GetBrancheNames() (string, error)
+		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
 		DeleteBranches(branchNames []string) (string, error)
-		FetchRepoNames() (string, error)
-		FetchPrStates(hostname string, repoNames []string, queryHashes string) (string, error)
 	}
 
 	ConnectionImpl struct {
+	}
+
+	Repo struct {
+		Hostname string
+		Origin   string
+		Upstream string
 	}
 
 	BranchState int
@@ -62,16 +66,9 @@ const (
 var ErrNotFound = errors.New("not found")
 
 func GetBranches(conn Connection) ([]Branch, error) {
-	var hostname string
-	if name, err := conn.GetRemoteName(); err == nil {
-		hostname = getHostname(name)
-	} else {
-		return nil, err
-	}
-
-	var repoNames []string
-	if names, err := conn.FetchRepoNames(); err == nil {
-		repoNames = strings.Split(names, ",")
+	var hostname, origin, upstream string
+	if json, err := conn.GetRepoNames(); err == nil {
+		hostname, origin, upstream, err = getRepo(json)
 	} else {
 		return nil, err
 	}
@@ -85,12 +82,12 @@ func GetBranches(conn Connection) ([]Branch, error) {
 
 	prs := []PullRequest{}
 	for _, queryHashes := range GetQueryHashes(branches) {
-		states, err := conn.FetchPrStates(hostname, repoNames, queryHashes)
+		json, err := conn.GetPullRequests(hostname, []string{origin, upstream}, queryHashes)
 		if err != nil {
 			return nil, err
 		}
 
-		if pr, err := fromJson(states); err == nil {
+		if pr, err := toPullRequests(json); err == nil {
 			prs = append(prs, pr...)
 		}
 	}
@@ -98,12 +95,6 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	branches = applyPullRequest(branches, prs)
 	branches = checkDeletion(branches)
 	return branches, nil
-}
-
-func getHostname(remoteName string) string {
-	r := regexp.MustCompile("(?:@|//)(.+?)(?::|/)")
-	found := r.FindSubmatch([]byte(remoteName))
-	return string(found[1])
 }
 
 func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
@@ -182,7 +173,39 @@ func toBranch(branchNames []string) []Branch {
 	return results
 }
 
-func fromJson(jsonResp string) ([]PullRequest, error) {
+func getRepo(jsonResp string) (string, string, string, error) {
+	type response struct {
+		Name  string
+		Owner struct {
+			Login string
+		}
+		Parent struct {
+			Name  string
+			Owner struct {
+				Login string
+			}
+		}
+		Url string
+	}
+
+	var resp response
+	if err := json.Unmarshal([]byte(jsonResp), &resp); err != nil {
+		return "", "", "", fmt.Errorf("error unmarshaling response: %w", err)
+	}
+
+	return getHostname(resp.Url),
+		resp.Owner.Login + "/" + resp.Name,
+		resp.Parent.Owner.Login + "/" + resp.Parent.Name,
+		nil
+}
+
+func getHostname(url string) string {
+	r := regexp.MustCompile("//(.+?)/")
+	found := r.FindSubmatch([]byte(url))
+	return string(found[1])
+}
+
+func toPullRequests(jsonResp string) ([]PullRequest, error) {
 	type response struct {
 		Data struct {
 			Search struct {
@@ -286,11 +309,15 @@ func branchNameExists(branchName string, branches []Branch) bool {
 	return false
 }
 
-func (conn *ConnectionImpl) GetRemoteName() (string, error) {
+func (conn *ConnectionImpl) GetRepoNames() (string, error) {
 	args := []string{
-		"remote", "-v",
+		"repo", "view",
+		"--json", "url",
+		"--json", "owner",
+		"--json", "name",
+		"--json", "parent",
 	}
-	return run("git", args)
+	return run("gh", args)
 }
 
 func (conn *ConnectionImpl) GetBrancheNames() (string, error) {
@@ -301,25 +328,7 @@ func (conn *ConnectionImpl) GetBrancheNames() (string, error) {
 	return run("git", args)
 }
 
-func (conn *ConnectionImpl) DeleteBranches(branchNames []string) (string, error) {
-	args := append([]string{
-		"branch", "-D"},
-		branchNames...)
-	return run("git", args)
-}
-
-func (conn *ConnectionImpl) FetchRepoNames() (string, error) {
-	args := []string{
-		"repo", "view",
-		"--json", "owner",
-		"--json", "name",
-		"--json", "parent",
-		"--template", "{{ .owner.login }}/{{ .name }}{{ if.parent }},{{ .parent.owner.login }}/{{ .parent.name }}{{ end }}",
-	}
-	return run("gh", args)
-}
-
-func (conn *ConnectionImpl) FetchPrStates(
+func (conn *ConnectionImpl) GetPullRequests(
 	hostname string, repoNames []string, queryHashes string) (string, error) {
 	args := []string{
 		"api", "graphql",
@@ -347,6 +356,13 @@ func (conn *ConnectionImpl) FetchPrStates(
 	return run("gh", args)
 }
 
+func (conn *ConnectionImpl) DeleteBranches(branchNames []string) (string, error) {
+	args := append([]string{
+		"branch", "-D"},
+		branchNames...)
+	return run("git", args)
+}
+
 func getQueryRepos(repoNames []string) string {
 	var repos strings.Builder
 	for _, name := range repoNames {
@@ -355,21 +371,17 @@ func getQueryRepos(repoNames []string) string {
 	return repos.String()
 }
 
-func run(file string, args []string) (string, error) {
-	bin, err := safeexec.LookPath(file)
-	if err != nil {
-		return "", fmt.Errorf("failed to run external command: %s", file)
-	}
-
+func run(name string, args []string) (string, error) {
 	var stdout, stderr bytes.Buffer
-	cmd := exec.Command(bin, args...)
+	cmd := exec.Command(name, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	err = cmd.Run()
+	err := cmd.Start()
 	if err != nil {
-		return "", fmt.Errorf("failed to run external command: %s", file)
+		return "", fmt.Errorf("failed to run external command: %s", name)
 	}
+	cmd.Wait()
 
 	return stdout.String(), nil
 }

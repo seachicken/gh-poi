@@ -1,0 +1,9 @@
+{
+  "name": "repo",
+  "owner": {
+    "id": "1",
+    "login": "owner"
+  },
+  "parent": null,
+  "url": "https://github.com/owner/repo"
+}

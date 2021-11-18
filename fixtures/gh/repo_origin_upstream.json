@@ -1,0 +1,16 @@
+{
+  "name": "repo",
+  "owner": {
+    "id": "1",
+    "login": "owner"
+  },
+  "parent": {
+    "id": "2",
+    "name": "repo",
+    "owner": {
+      "id": "3",
+      "login": "parent-owner"
+    }
+  },
+  "url": "https://github.com/owner/repo"
+}

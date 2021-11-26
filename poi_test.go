@@ -14,6 +14,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Merged", nil, nil)
@@ -39,6 +40,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1UpMerged", nil, nil)
@@ -64,6 +66,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Closed", nil, nil)
@@ -89,6 +92,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testi
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil)
@@ -122,11 +126,25 @@ func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func Test_ReturnsAnErrorWhenCheckReposFails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := connmock.Setup(ctrl).
+		CheckRepos(errors.New("failed to run external command: gh"), nil).
+		GetRepoNames("origin", nil, nil)
+
+	_, err := GetBranches(s.Conn)
+
+	assert.NotNil(t, err)
+}
+
 func Test_ReturnsAnErrorWhenGetBrancheNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBrancheNames("@main_issue1", errors.New("failed to run external command: gh"), nil)
 
@@ -140,6 +158,7 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 	defer ctrl.Finish()
 
 	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBrancheNames("@main_issue1", nil, nil).
 		GetPullRequests("issue1Merged", errors.New("failed to run external command: gh"), nil)

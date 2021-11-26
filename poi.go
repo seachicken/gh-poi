@@ -14,6 +14,7 @@ import (
 
 type (
 	Connection interface {
+		CheckRepos(repoNames []string) error
 		GetRepoNames() (string, error)
 		GetBrancheNames() (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
@@ -66,10 +67,16 @@ const (
 var ErrNotFound = errors.New("not found")
 
 func GetBranches(conn Connection) ([]Branch, error) {
-	var hostname, origin, upstream string
+	var hostname string
+	var repoNames []string
 	if json, err := conn.GetRepoNames(); err == nil {
-		hostname, origin, upstream, err = getRepo(json)
+		hostname, repoNames, _ = getRepo(json)
 	} else {
+		return nil, err
+	}
+
+	err := conn.CheckRepos(repoNames)
+	if err != nil {
 		return nil, err
 	}
 
@@ -82,7 +89,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 
 	prs := []PullRequest{}
 	for _, queryHashes := range GetQueryHashes(branches) {
-		json, err := conn.GetPullRequests(hostname, []string{origin, upstream}, queryHashes)
+		json, err := conn.GetPullRequests(hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
 		}
@@ -173,7 +180,7 @@ func toBranch(branchNames []string) []Branch {
 	return results
 }
 
-func getRepo(jsonResp string) (string, string, string, error) {
+func getRepo(jsonResp string) (string, []string, error) {
 	type response struct {
 		Name  string
 		Owner struct {
@@ -190,13 +197,17 @@ func getRepo(jsonResp string) (string, string, string, error) {
 
 	var resp response
 	if err := json.Unmarshal([]byte(jsonResp), &resp); err != nil {
-		return "", "", "", fmt.Errorf("error unmarshaling response: %w", err)
+		return "", nil, fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
-	return getHostname(resp.Url),
+	repoNames := []string{
 		resp.Owner.Login + "/" + resp.Name,
-		resp.Parent.Owner.Login + "/" + resp.Parent.Name,
-		nil
+	}
+	if len(resp.Parent.Name) > 0 {
+		repoNames = append(repoNames, resp.Parent.Owner.Login+"/"+resp.Parent.Name)
+	}
+
+	return getHostname(resp.Url), repoNames, nil
 }
 
 func getHostname(url string) string {
@@ -309,6 +320,18 @@ func branchNameExists(branchName string, branches []Branch) bool {
 	return false
 }
 
+func (conn *ConnectionImpl) CheckRepos(repoNames []string) error {
+	for _, name := range repoNames {
+		args := []string{
+			"api", "repos/" + name, "--silent",
+		}
+		if _, err := run("gh", args); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (conn *ConnectionImpl) GetRepoNames() (string, error) {
 	args := []string{
 		"repo", "view",
@@ -382,6 +405,10 @@ func run(name string, args []string) (string, error) {
 		return "", fmt.Errorf("failed to run external command: %s", name)
 	}
 	cmd.Wait()
+
+	if stderr.Len() > 0 {
+		return "", fmt.Errorf("failed to run external command: %s\n%s", name, stderr.String())
+	}
 
 	return stdout.String(), nil
 }

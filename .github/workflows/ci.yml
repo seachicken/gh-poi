@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  repository-projects: read
+
 jobs:
 
   build:
@@ -27,7 +30,7 @@ jobs:
 
     - name: Test
       run: |
-        gh auth login --with-token ${{secrets.GITHUB_TOKEN}}
+        gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
         go test ./... -v -race -coverprofile=coverage.out -covermode=atomic
 
     - name: Upload coverage to Codecov

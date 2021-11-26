@@ -38,6 +38,18 @@ func NewConf(times *Times) *Conf {
 	}
 }
 
+func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			CheckRepos(gomock.Any()).
+			Return(err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) GetRepoNames(path string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(

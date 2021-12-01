@@ -34,17 +34,17 @@ func (m *MockConnection) EXPECT() *MockConnectionMockRecorder {
 }
 
 // CheckRepos mocks base method.
-func (m *MockConnection) CheckRepos(repoNames []string) error {
+func (m *MockConnection) CheckRepos(hostname string, repoNames []string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckRepos", repoNames)
+	ret := m.ctrl.Call(m, "CheckRepos", hostname, repoNames)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CheckRepos indicates an expected call of CheckRepos.
-func (mr *MockConnectionMockRecorder) CheckRepos(repoNames interface{}) *gomock.Call {
+func (mr *MockConnectionMockRecorder) CheckRepos(hostname, repoNames interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRepos", reflect.TypeOf((*MockConnection)(nil).CheckRepos), repoNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRepos", reflect.TypeOf((*MockConnection)(nil).CheckRepos), hostname, repoNames)
 }
 
 // DeleteBranches mocks base method.

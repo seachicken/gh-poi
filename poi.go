@@ -14,7 +14,7 @@ import (
 
 type (
 	Connection interface {
-		CheckRepos(repoNames []string) error
+		CheckRepos(hostname string, repoNames []string) error
 		GetRepoNames() (string, error)
 		GetBrancheNames() (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
@@ -75,7 +75,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 		return nil, err
 	}
 
-	err := conn.CheckRepos(repoNames)
+	err := conn.CheckRepos(hostname, repoNames)
 	if err != nil {
 		return nil, err
 	}
@@ -320,10 +320,13 @@ func branchNameExists(branchName string, branches []Branch) bool {
 	return false
 }
 
-func (conn *ConnectionImpl) CheckRepos(repoNames []string) error {
+func (conn *ConnectionImpl) CheckRepos(hostname string, repoNames []string) error {
 	for _, name := range repoNames {
 		args := []string{
-			"api", "repos/" + name, "--silent",
+			"api",
+			"--hostname", hostname,
+			"repos/" + name,
+			"--silent",
 		}
 		if _, err := run("gh", args); err != nil {
 			return err

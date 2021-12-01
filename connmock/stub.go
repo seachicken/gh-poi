@@ -43,7 +43,7 @@ func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			CheckRepos(gomock.Any()).
+			CheckRepos(gomock.Any(), gomock.Any()).
 			Return(err),
 		conf,
 	)

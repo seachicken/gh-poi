@@ -5,11 +5,15 @@ import (
 	"strings"
 )
 
-func GetQueryHashes(branches []Branch) []string {
+func GetQueryHashes(branches []Branch, defaultBranchName string) []string {
 	results := []string{}
 
 	var hashes strings.Builder
 	for i, branch := range branches {
+		if branch.Name == defaultBranchName {
+			continue
+		}
+
 		separator := " "
 		if i == len(branches)-1 {
 			separator = ""

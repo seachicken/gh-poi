@@ -69,8 +69,9 @@ var ErrNotFound = errors.New("not found")
 func GetBranches(conn Connection) ([]Branch, error) {
 	var hostname string
 	var repoNames []string
+	var defaultBranchName string
 	if json, err := conn.GetRepoNames(); err == nil {
-		hostname, repoNames, _ = getRepo(json)
+		hostname, repoNames, defaultBranchName, _ = getRepo(json)
 	} else {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	}
 
 	prs := []PullRequest{}
-	for _, queryHashes := range GetQueryHashes(branches) {
+	for _, queryHashes := range GetQueryHashes(branches, defaultBranchName) {
 		json, err := conn.GetPullRequests(hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
@@ -180,8 +181,11 @@ func toBranch(branchNames []string) []Branch {
 	return results
 }
 
-func getRepo(jsonResp string) (string, []string, error) {
+func getRepo(jsonResp string) (string, []string, string, error) {
 	type response struct {
+		DefaultBranchRef struct {
+			Name string
+		}
 		Name  string
 		Owner struct {
 			Login string
@@ -191,13 +195,14 @@ func getRepo(jsonResp string) (string, []string, error) {
 			Owner struct {
 				Login string
 			}
+			DefaultBranchName string
 		}
 		Url string
 	}
 
 	var resp response
 	if err := json.Unmarshal([]byte(jsonResp), &resp); err != nil {
-		return "", nil, fmt.Errorf("error unmarshaling response: %w", err)
+		return "", nil, "", fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
 	repoNames := []string{
@@ -207,7 +212,7 @@ func getRepo(jsonResp string) (string, []string, error) {
 		repoNames = append(repoNames, resp.Parent.Owner.Login+"/"+resp.Parent.Name)
 	}
 
-	return getHostname(resp.Url), repoNames, nil
+	return getHostname(resp.Url), repoNames, resp.DefaultBranchRef.Name, nil
 }
 
 func getHostname(url string) string {
@@ -342,6 +347,7 @@ func (conn *ConnectionImpl) GetRepoNames() (string, error) {
 		"--json", "owner",
 		"--json", "name",
 		"--json", "parent",
+		"--json", "defaultBranchRef",
 	}
 	return run("gh", args)
 }

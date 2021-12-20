@@ -1,4 +1,7 @@
 {
+  "defaultBranchRef": {
+    "name": "main"
+  },
   "name": "repo",
   "owner": {
     "id": "1",

@@ -1,0 +1,11 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: What's New
+      labels:
+        - enhancement
+    - title: What's Changed
+      labels:
+        - "*"

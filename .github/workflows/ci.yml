@@ -30,6 +30,7 @@ jobs:
 
     - name: Test
       run: |
+        git checkout -b topic
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test ./... -v -race -coverprofile=coverage.out -covermode=atomic
 

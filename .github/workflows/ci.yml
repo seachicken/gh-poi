@@ -34,6 +34,9 @@ jobs:
         repository: seachicken/can
         path: can
         fetch-depth: 0
+      run: |
+        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|main)$'); \
+        do git branch --track "${branch##*/}" "$branch"; done
 
     - name: Test
       working-directory: ./can

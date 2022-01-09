@@ -87,7 +87,6 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	} else {
 		return nil, err
 	}
-	fmt.Println(branches)
 
 	prs := []PullRequest{}
 	for _, queryHashes := range GetQueryHashes(branches, defaultBranchName) {

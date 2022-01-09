@@ -33,6 +33,7 @@ jobs:
       with:
         repository: seachicken/can
         path: fixtures
+        fetch-depth: 0
 
     - name: Test
       working-directory: ./fixtures

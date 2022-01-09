@@ -34,13 +34,11 @@ jobs:
         repository: seachicken/can
         path: can
         fetch-depth: 0
-      run: |
-        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|main)$'); \
-        do git branch --track "${branch##*/}" "$branch"; done
 
     - name: Test
       working-directory: ./can
       run: |
+        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|main)$'); do git branch --track "${branch##*/}" "$branch"; done
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test ../... -v -race -coverprofile=coverage.out -covermode=atomic
 

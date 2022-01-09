@@ -32,11 +32,11 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: seachicken/can
-        path: fixtures
+        path: can
         fetch-depth: 0
 
     - name: Test
-      working-directory: ./fixtures
+      working-directory: ./can
       run: |
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test ../... -v -race -coverprofile=coverage.out -covermode=atomic

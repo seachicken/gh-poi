@@ -28,10 +28,15 @@ jobs:
     - name: Build
       run: go build -v ./...
 
+    - name: Checkout dummy repo
+      uses: actions/checkout@v2
+      with:
+        repository: seachicken/can
+        path: fixtures
+
     - name: Test
       working-directory: ./fixtures
       run: |
-        git clone git@github.com:seachicken/can.git
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test ../... -v -race -coverprofile=coverage.out -covermode=atomic
 

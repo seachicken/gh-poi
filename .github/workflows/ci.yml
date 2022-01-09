@@ -29,8 +29,9 @@ jobs:
       run: go build -v ./...
 
     - name: Test
+      working-directory: ./ci-test
       run: |
-        git checkout -b topic
+        git clone git@github.com:seachicken/can.git
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test ./... -v -race -coverprofile=coverage.out -covermode=atomic
 

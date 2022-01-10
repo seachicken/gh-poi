@@ -3,6 +3,7 @@ package connmock
 import (
 	"io/ioutil"
 	"path"
+	"runtime"
 
 	"github.com/golang/mock/gomock"
 	"github.com/seachicken/gh-poi/mocks"
@@ -110,11 +111,13 @@ func configure(call *gomock.Call, conf *Conf) {
 }
 
 func (s *Stub) readFile(command string, category string, name string) string {
+	_, filename, _, _ := runtime.Caller(0)
+
 	ext := ".txt"
 	if command == "gh" {
 		ext = ".json"
 	}
-	b, err := ioutil.ReadFile(path.Join(fixturePath, command, category+"_"+name+ext))
+	b, err := ioutil.ReadFile(path.Join(filename, "../..", fixturePath, command, category+"_"+name+ext))
 	if err != nil {
 		s.t.Fatalf("%v", err)
 	}

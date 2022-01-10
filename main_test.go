@@ -33,6 +33,8 @@ func onlyCI(t *testing.T) {
 	if os.Getenv("CI") == "" {
 		t.Skip("skipping test in local")
 	}
+
+	os.Chdir("ci-test")
 }
 
 func captureOutput(f func()) string {

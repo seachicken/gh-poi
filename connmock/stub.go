@@ -63,11 +63,11 @@ func (s *Stub) GetRepoNames(path string, err error, conf *Conf) *Stub {
 	return s
 }
 
-func (s *Stub) GetBrancheNames(name string, err error, conf *Conf) *Stub {
+func (s *Stub) GetBranchNames(name string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(
 		s.Conn.EXPECT().
-			GetBrancheNames().
+			GetBranchNames().
 			Return(s.readFile("git", "branch", name), err),
 		conf,
 	)

@@ -16,7 +16,7 @@ type (
 	Connection interface {
 		CheckRepos(hostname string, repoNames []string) error
 		GetRepoNames() (string, error)
-		GetBrancheNames() (string, error)
+		GetBranchNames() (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
 		DeleteBranches(branchNames []string) (string, error)
 	}
@@ -82,7 +82,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	}
 
 	var branches []Branch
-	if names, err := conn.GetBrancheNames(); err == nil {
+	if names, err := conn.GetBranchNames(); err == nil {
 		branches = toBranch(strings.Split(names, "\n"))
 	} else {
 		return nil, err
@@ -284,7 +284,7 @@ func DeleteBranches(branches []Branch, conn Connection) ([]Branch, error) {
 
 	conn.DeleteBranches(branchNames)
 
-	branchNamesAfter, err := conn.GetBrancheNames()
+	branchNamesAfter, err := conn.GetBranchNames()
 	if err != nil {
 		return nil, err
 	}
@@ -352,7 +352,7 @@ func (conn *ConnectionImpl) GetRepoNames() (string, error) {
 	return run("gh", args)
 }
 
-func (conn *ConnectionImpl) GetBrancheNames() (string, error) {
+func (conn *ConnectionImpl) GetBranchNames() (string, error) {
 	args := []string{
 		"branch", "-v", "--no-abbrev",
 		"--format=%(HEAD),%(refname:lstrip=2),%(objectname)",

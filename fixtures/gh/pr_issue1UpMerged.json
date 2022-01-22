@@ -9,6 +9,15 @@
             "url": "https://github.com/parent-owner/repo/pull/1",
             "state": "MERGED",
             "headRefName": "issue1",
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "oid": "356a192b7913b04c54574d18c28d46e6395428ab"
+                  }
+                }
+              ]
+            },
             "author": {
               "login": "owner"
             }

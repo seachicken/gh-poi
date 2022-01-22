@@ -17,18 +17,30 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{{"main", "main"}, {"issue1", "issue1"}}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
 
 	assert.Equal(t, []Branch{
-		{false, "issue1", "356a192b7913b04c54574d18c28d46e6395428ab",
+		{
+			false, "issue1", []string{
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+			},
 			[]PullRequest{
-				{"issue1", Merged, 1, "https://github.com/owner/repo/pull/1", "owner"},
+				{
+					"issue1", Merged, 1, []string{
+						"356a192b7913b04c54574d18c28d46e6395428ab",
+					},
+					"https://github.com/owner/repo/pull/1", "owner",
+				},
 			},
 			Deletable,
 		},
-		{true, "main", "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+		{
+			true, "main", []string{
+				"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+			},
 			[]PullRequest{},
 			NotDeletable,
 		},
@@ -43,18 +55,30 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 		CheckRepos(nil, nil).
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{{"main", "main"}, {"issue1", "issue1"}}, nil, nil).
 		GetPullRequests("issue1UpMerged", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
 
 	assert.Equal(t, []Branch{
-		{false, "issue1", "356a192b7913b04c54574d18c28d46e6395428ab",
+		{
+			false, "issue1", []string{
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+			},
 			[]PullRequest{
-				{"issue1", Merged, 1, "https://github.com/parent-owner/repo/pull/1", "owner"},
+				{
+					"issue1", Merged, 1, []string{
+						"356a192b7913b04c54574d18c28d46e6395428ab",
+					},
+					"https://github.com/parent-owner/repo/pull/1", "owner",
+				},
 			},
 			Deletable,
 		},
-		{true, "main", "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+		{
+			true, "main", []string{
+				"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+			},
 			[]PullRequest{},
 			NotDeletable,
 		},
@@ -69,18 +93,30 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{{"main", "main"}, {"issue1", "issue1"}}, nil, nil).
 		GetPullRequests("issue1Closed", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
 
 	assert.Equal(t, []Branch{
-		{false, "issue1", "356a192b7913b04c54574d18c28d46e6395428ab",
+		{
+			false, "issue1", []string{
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+			},
 			[]PullRequest{
-				{"issue1", Closed, 1, "https://github.com/owner/repo/pull/1", "owner"},
+				{
+					"issue1", Closed, 1, []string{
+						"356a192b7913b04c54574d18c28d46e6395428ab",
+					},
+					"https://github.com/owner/repo/pull/1", "owner",
+				},
 			},
 			NotDeletable,
 		},
-		{true, "main", "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+		{
+			true, "main", []string{
+				"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+			},
 			[]PullRequest{},
 			NotDeletable,
 		},
@@ -95,19 +131,77 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testi
 		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{{"main", "main"}, {"issue1", "issue1"}}, nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil)
 
 	actual, _ := GetBranches(s.Conn)
 
 	assert.Equal(t, []Branch{
-		{false, "issue1", "356a192b7913b04c54574d18c28d46e6395428ab",
+		{
+			false, "issue1", []string{
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+			},
 			[]PullRequest{
-				{"issue1", Closed, 1, "https://github.com/owner/repo/pull/1", "owner"},
-				{"issue1", Merged, 2, "https://github.com/owner/repo/pull/2", "owner"},
+				{
+					"issue1", Closed, 1, []string{
+						"356a192b7913b04c54574d18c28d46e6395428ab",
+					},
+					"https://github.com/owner/repo/pull/1", "owner",
+				},
+				{
+					"issue1", Merged, 2, []string{
+						"356a192b7913b04c54574d18c28d46e6395428ab",
+					},
+					"https://github.com/owner/repo/pull/2", "owner",
+				},
 			},
 			Deletable,
 		},
-		{true, "main", "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+		{
+			true, "main", []string{
+				"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+			},
+			[]PullRequest{},
+			NotDeletable,
+		},
+	}, actual)
+}
+
+func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{{"main", "main_merge_issue1"}, {"issue1", "issue1_commit_localy"}}, nil, nil).
+		GetPullRequests("issue1Merged", nil, nil)
+
+	actual, _ := GetBranches(s.Conn)
+
+	assert.Equal(t, []Branch{
+		{
+			false, "issue1", []string{
+				"b8a2645298053fb62ea03e27feea6c483d3fd27e",
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+				"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+			},
+			[]PullRequest{
+				{
+					"issue1", Merged, 1, []string{
+						"356a192b7913b04c54574d18c28d46e6395428ab",
+					},
+					"https://github.com/owner/repo/pull/1", "owner",
+				},
+			},
+			NotDeletable,
+		},
+		{
+			true, "main", []string{
+				"cb197ba87e4ad323b1008c611212deb7da2a4a49",
+				"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+			},
 			[]PullRequest{},
 			NotDeletable,
 		},
@@ -161,6 +255,7 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 		CheckRepos(nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{{"main", "main"}, {"issue1", "issue1"}}, nil, nil).
 		GetPullRequests("issue1Merged", errors.New("failed to run external command: gh"), nil)
 
 	_, err := GetBranches(s.Conn)
@@ -177,15 +272,15 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 		DeleteBranches(nil, connmock.NewConf(&connmock.Times{N: 1}))
 
 	branches := []Branch{
-		{false, "issue1", "", []PullRequest{}, Deletable},
-		{true, "main", "", []PullRequest{}, NotDeletable},
+		{false, "issue1", []string{}, []PullRequest{}, Deletable},
+		{true, "main", []string{}, []PullRequest{}, NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(branches, s.Conn)
 
 	expected := []Branch{
-		{false, "issue1", "", []PullRequest{}, Deleted},
-		{true, "main", "", []PullRequest{}, NotDeletable},
+		{false, "issue1", []string{}, []PullRequest{}, Deleted},
+		{true, "main", []string{}, []PullRequest{}, NotDeletable},
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -198,15 +293,15 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 		DeleteBranches(nil, connmock.NewConf(&connmock.Times{N: 0}))
 
 	branches := []Branch{
-		{false, "issue1", "", []PullRequest{}, NotDeletable},
-		{true, "main", "", []PullRequest{}, NotDeletable},
+		{false, "issue1", []string{}, []PullRequest{}, NotDeletable},
+		{true, "main", []string{}, []PullRequest{}, NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(branches, s.Conn)
 
 	expected := []Branch{
-		{false, "issue1", "", []PullRequest{}, NotDeletable},
-		{true, "main", "", []PullRequest{}, NotDeletable},
+		{false, "issue1", []string{}, []PullRequest{}, NotDeletable},
+		{true, "main", []string{}, []PullRequest{}, NotDeletable},
 	}
 	assert.Equal(t, expected, actual)
 }

@@ -22,6 +22,11 @@ type (
 	Conf struct {
 		Times *Times
 	}
+
+	LogStub struct {
+		BranchName string
+		Result     string
+	}
 )
 
 var (
@@ -71,6 +76,19 @@ func (s *Stub) GetBranchNames(name string, err error, conf *Conf) *Stub {
 			Return(s.readFile("git", "branch", name), err),
 		conf,
 	)
+	return s
+}
+
+func (s *Stub) GetLog(stubs []LogStub, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	for _, stub := range stubs {
+		configure(
+			s.Conn.EXPECT().
+				GetLog(stub.BranchName).
+				Return(s.readFile("git", "log", stub.Result), err),
+			conf,
+		)
+	}
 	return s
 }
 

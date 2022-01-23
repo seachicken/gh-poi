@@ -62,6 +62,21 @@ func (mr *MockConnectionMockRecorder) DeleteBranches(branchNames interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), branchNames)
 }
 
+// GetAssociatedBranchNames mocks base method.
+func (m *MockConnection) GetAssociatedBranchNames(arg0 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAssociatedBranchNames", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAssociatedBranchNames indicates an expected call of GetAssociatedBranchNames.
+func (mr *MockConnectionMockRecorder) GetAssociatedBranchNames(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssociatedBranchNames", reflect.TypeOf((*MockConnection)(nil).GetAssociatedBranchNames), arg0)
+}
+
 // GetBranchNames mocks base method.
 func (m *MockConnection) GetBranchNames() (string, error) {
 	m.ctrl.T.Helper()

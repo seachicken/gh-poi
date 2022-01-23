@@ -23,9 +23,14 @@ type (
 		Times *Times
 	}
 
+	AssociatedBranchNamesStub struct {
+		Oid      string
+		Filename string
+	}
+
 	LogStub struct {
 		BranchName string
-		Result     string
+		Filename   string
 	}
 )
 
@@ -79,13 +84,26 @@ func (s *Stub) GetBranchNames(name string, err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) GetAssociatedBranchNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	for _, stub := range stubs {
+		configure(
+			s.Conn.EXPECT().
+				GetAssociatedBranchNames(stub.Oid).
+				Return(s.readFile("git", "abranch", stub.Filename), err),
+			conf,
+		)
+	}
+	return s
+}
+
 func (s *Stub) GetLog(stubs []LogStub, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
 				GetLog(stub.BranchName).
-				Return(s.readFile("git", "log", stub.Result), err),
+				Return(s.readFile("git", "log", stub.Filename), err),
 			conf,
 		)
 	}
@@ -117,11 +135,7 @@ func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
 }
 
 func configure(call *gomock.Call, conf *Conf) {
-	if conf == nil {
-		return
-	}
-
-	if conf.Times == nil {
+	if conf == nil || conf.Times == nil {
 		call.AnyTimes()
 	} else {
 		call.Times(conf.Times.N)

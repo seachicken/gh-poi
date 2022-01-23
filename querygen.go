@@ -5,12 +5,12 @@ import (
 	"strings"
 )
 
-func GetQueryHashes(branches []Branch, defaultBranchName string) []string {
+func GetQueryHashes(branches []Branch) []string {
 	results := []string{}
 
 	var hashes strings.Builder
 	for i, branch := range branches {
-		if branch.Name == defaultBranchName || len(branch.Commits) == 0 {
+		if len(branch.Commits) == 0 {
 			continue
 		}
 

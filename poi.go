@@ -88,17 +88,16 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	var branches []Branch
 	if names, err := conn.GetBranchNames(); err == nil {
 		branches = toBranch(strings.Split(names, "\n"))
-		branches, err = applyCommits(branches, conn)
+		branches, err = applyCommits(branches, defaultBranchName, conn)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		return nil, err
 	}
-	//fmt.Printf("bs: %v\n", branches)
 
 	prs := []PullRequest{}
-	for _, queryHashes := range GetQueryHashes(branches, defaultBranchName) {
+	for _, queryHashes := range GetQueryHashes(branches) {
 		json, err := conn.GetPullRequests(hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
@@ -114,55 +113,53 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	return branches, nil
 }
 
-func applyCommits(branches []Branch, conn Connection) ([]Branch, error) {
+func applyCommits(branches []Branch, defaultBranchName string, conn Connection) ([]Branch, error) {
 	results := []Branch{}
+
 	for _, branch := range branches {
-		if log, err := conn.GetLog(branch.Name); err == nil {
-			branch.Commits = trimBranch(strings.Split(log, "\n"), branch.Name, conn)
+		if branch.Name == defaultBranchName {
 			results = append(results, branch)
-		} else {
+			continue
+		}
+
+		oids, err := conn.GetLog(branch.Name)
+		if err != nil {
 			return nil, err
 		}
+
+		trimmedOids, err := trimBranch(strings.Split(oids, "\n"), branch.Name, conn)
+		if err != nil {
+			return nil, err
+		}
+
+		branch.Commits = trimmedOids
+		results = append(results, branch)
 	}
+
 	return results, nil
 }
 
-func trimBranch(logs []string, branchName string, conn Connection) []string {
+func trimBranch(oids []string, branchName string, conn Connection) ([]string, error) {
 	results := []string{}
-	r := regexp.MustCompile(`([0-9a-f]+) (\(.+?\)|).*`)
-	//refRegex := regexp.MustCompile(`[ ,\(\)]`)
+	childNames := []string{}
 
-	//fmt.Printf("!!!bn: %s, len: %d\n", branchName, len(logs))
-	childRefNames := []string{}
-	for i, log := range logs {
-		//fmt.Printf("log: %s\n", log)
-		found := r.FindStringSubmatch(log)
-		if len(found) == 0 {
-			continue
-		}
-
-		names, err := conn.GetAssociatedBranchNames(found[1])
-		//fmt.Printf("i: %v, ns: %+v\n", i, names)
+	for i, oid := range oids {
+		namesResult, err := conn.GetAssociatedBranchNames(oid)
 		if err != nil {
-			continue
+			return nil, err
 		}
-
-		f := func(c rune) bool {
-			return c == '\n'
-		}
-		refNames := strings.FieldsFunc(names, f)
+		names := strings.FieldsFunc(namesResult, func(c rune) bool { return c == '\n' })
 
 		if i == 0 {
-			for _, name := range refNames {
+			for _, name := range names {
 				if name != branchName {
-					childRefNames = append(childRefNames, name)
+					childNames = append(childNames, name)
 				}
 			}
 		}
-		//fmt.Printf("rns: %v, crns: %v\n", refNames, childRefNames)
 
 		isChild := func(name string) bool {
-			for _, childName := range childRefNames {
+			for _, childName := range childNames {
 				if name == childName {
 					return true
 				}
@@ -170,18 +167,16 @@ func trimBranch(logs []string, branchName string, conn Connection) []string {
 			return false
 		}
 
-		for _, name := range refNames {
+		for _, name := range names {
 			if name != branchName && !isChild(name) {
-				return results
+				return results, nil
 			}
 		}
 
-		//fmt.Printf("near %s\n", found[1])
-		results = append(results, found[1])
+		results = append(results, oid)
 	}
 
-	//fmt.Println("!!?!?!?!?!?!??!!?!!")
-	return results
+	return results, nil
 }
 
 func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
@@ -238,7 +233,6 @@ func getDeleteStatus(branch Branch) BranchState {
 		if pr.State == Open {
 			return NotDeletable
 		}
-		//fmt.Printf("r: %+v, l: %+v\n", pr.HeadOid, branch.Commits[len(branch.Commits)-1])
 		if isFullyMerged(branch, pr) {
 			fullyMergedCnt++
 		}
@@ -256,7 +250,6 @@ func isFullyMerged(branch Branch, pr PullRequest) bool {
 	}
 
 	localHeadOid := branch.Commits[0]
-	//fmt.Printf("b: %v, loid: %s\n", branch.Name, localHeadOid)
 	for _, oid := range pr.Commits {
 		if oid == localHeadOid {
 			return true
@@ -485,8 +478,7 @@ func (conn *ConnectionImpl) GetBranchNames() (string, error) {
 
 func (conn *ConnectionImpl) GetLog(branchName string) (string, error) {
 	args := []string{
-		"log", "--first-parent", "--pretty=oneline", "--decorate=full",
-		branchName,
+		"log", "--first-parent", "--format=%H", branchName,
 	}
 	return run("git", args)
 }

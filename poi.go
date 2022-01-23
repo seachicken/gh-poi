@@ -260,9 +260,8 @@ func isFullyMerged(branch Branch, pr PullRequest) bool {
 }
 
 func toBranch(branchNames []string) []Branch {
-	branchNames = branchNames[:len(branchNames)-1]
-
 	results := []Branch{}
+
 	for _, branchName := range branchNames {
 		splitedNames := strings.Split(branchName, ",")
 		head := false

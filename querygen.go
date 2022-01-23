@@ -18,6 +18,7 @@ func GetQueryHashes(branches []Branch, defaultBranchName string) []string {
 		if i == len(branches)-1 {
 			separator = ""
 		}
+		//fmt.Printf("b: %v, sha: %v\n", branch.Name, branch.Commits[len(branch.Commits)-1])
 		hash := fmt.Sprintf("hash:%s%s", branch.Commits[len(branch.Commits)-1], separator)
 
 		// https://docs.github.com/en/rest/reference/search#limitations-on-query-length

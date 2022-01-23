@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -18,6 +19,7 @@ type (
 		GetRepoNames() (string, error)
 		GetBranchNames() (string, error)
 		GetLog(string) (string, error)
+		GetAssociatedBranchNames(string) (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
 		DeleteBranches(branchNames []string) (string, error)
 	}
@@ -116,7 +118,7 @@ func applyCommits(branches []Branch, conn Connection) ([]Branch, error) {
 	results := []Branch{}
 	for _, branch := range branches {
 		if log, err := conn.GetLog(branch.Name); err == nil {
-			branch.Commits = trimBranch(strings.Split(log, "\n"), branch.Name)
+			branch.Commits = trimBranch(strings.Split(log, "\n"), branch.Name, conn)
 			results = append(results, branch)
 		} else {
 			return nil, err
@@ -125,29 +127,52 @@ func applyCommits(branches []Branch, conn Connection) ([]Branch, error) {
 	return results, nil
 }
 
-func trimBranch(logs []string, branchName string) []string {
+func trimBranch(logs []string, branchName string, conn Connection) []string {
 	results := []string{}
 	r := regexp.MustCompile(`([0-9a-f]+) (\(.+?\)|).*`)
-	refRegex := regexp.MustCompile(`[ ,\(\)]`)
+	//refRegex := regexp.MustCompile(`[ ,\(\)]`)
 
-	//fmt.Printf("!!!%s, %d\n", branchName, len(logs))
-	for _, log := range logs {
+	//fmt.Printf("!!!bn: %s, len: %d\n", branchName, len(logs))
+	childRefNames := []string{}
+	for i, log := range logs {
 		//fmt.Printf("log: %s\n", log)
 		found := r.FindStringSubmatch(log)
 		if len(found) == 0 {
 			continue
 		}
 
-		//fmt.Printf("refname: %s\n", found[2])
-		if len(found[2]) > 0 {
-			refNames := refRegex.Split(found[2], -1)
+		names, err := conn.GetAssociatedBranchNames(found[1])
+		//fmt.Printf("i: %v, ns: %+v\n", i, names)
+		if err != nil {
+			continue
+		}
 
-			for _, refName := range refNames {
-				if strings.HasPrefix(refName, "refs/remotes/") &&
-					!strings.HasSuffix(refName, "HEAD") &&
-					!strings.HasSuffix(refName, branchName) {
-					return results
+		f := func(c rune) bool {
+			return c == '\n'
+		}
+		refNames := strings.FieldsFunc(names, f)
+
+		if i == 0 {
+			for _, name := range refNames {
+				if name != branchName {
+					childRefNames = append(childRefNames, name)
 				}
+			}
+		}
+		//fmt.Printf("rns: %v, crns: %v\n", refNames, childRefNames)
+
+		isChild := func(name string) bool {
+			for _, childName := range childRefNames {
+				if name == childName {
+					return true
+				}
+			}
+			return false
+		}
+
+		for _, name := range refNames {
+			if name != branchName && !isChild(name) {
+				return results
 			}
 		}
 
@@ -155,6 +180,7 @@ func trimBranch(logs []string, branchName string) []string {
 		results = append(results, found[1])
 	}
 
+	//fmt.Println("!!?!?!?!?!?!??!!?!!")
 	return results
 }
 
@@ -162,6 +188,7 @@ func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
 	results := []Branch{}
 	for _, branch := range branches {
 		prs := findMatchedPullRequest(branch.Name, prs)
+		sort.Slice(prs, func(i, j int) bool { return prs[i].Number < prs[j].Number })
 		branch.PullRequests = prs
 		results = append(results, branch)
 	}
@@ -170,8 +197,18 @@ func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
 
 func findMatchedPullRequest(branchName string, prs []PullRequest) []PullRequest {
 	results := []PullRequest{}
+
+	exists := func(pr PullRequest) bool {
+		for _, result := range results {
+			if pr.Number == result.Number {
+				return true
+			}
+		}
+		return false
+	}
+
 	for _, pr := range prs {
-		if pr.Name == branchName {
+		if pr.Name == branchName && !exists(pr) {
 			results = append(results, pr)
 		}
 	}
@@ -450,6 +487,14 @@ func (conn *ConnectionImpl) GetLog(branchName string) (string, error) {
 	args := []string{
 		"log", "--first-parent", "--pretty=oneline", "--decorate=full",
 		branchName,
+	}
+	return run("git", args)
+}
+
+func (conn *ConnectionImpl) GetAssociatedBranchNames(oid string) (string, error) {
+	args := []string{
+		"branch", "--format=%(refname:lstrip=2)",
+		"--contains", oid,
 	}
 	return run("git", args)
 }

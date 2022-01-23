@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -17,6 +18,8 @@ type (
 		CheckRepos(hostname string, repoNames []string) error
 		GetRepoNames() (string, error)
 		GetBranchNames() (string, error)
+		GetLog(string) (string, error)
+		GetAssociatedBranchNames(string) (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
 		DeleteBranches(branchNames []string) (string, error)
 	}
@@ -35,7 +38,7 @@ type (
 	Branch struct {
 		Head         bool
 		Name         string
-		LastObjectId string
+		Commits      []string
 		PullRequests []PullRequest
 		State        BranchState
 	}
@@ -43,11 +46,12 @@ type (
 	PullRequestState int
 
 	PullRequest struct {
-		Name   string
-		State  PullRequestState
-		Number int
-		Url    string
-		Author string
+		Name    string
+		State   PullRequestState
+		Number  int
+		Commits []string
+		Url     string
+		Author  string
 	}
 )
 
@@ -83,13 +87,17 @@ func GetBranches(conn Connection) ([]Branch, error) {
 
 	var branches []Branch
 	if names, err := conn.GetBranchNames(); err == nil {
-		branches = toBranch(strings.Split(names, "\n"))
+		branches = toBranch(splitLines(names))
+		branches, err = applyCommits(branches, defaultBranchName, conn)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		return nil, err
 	}
 
 	prs := []PullRequest{}
-	for _, queryHashes := range GetQueryHashes(branches, defaultBranchName) {
+	for _, queryHashes := range GetQueryHashes(branches) {
 		json, err := conn.GetPullRequests(hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
@@ -105,10 +113,77 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	return branches, nil
 }
 
+func applyCommits(branches []Branch, defaultBranchName string, conn Connection) ([]Branch, error) {
+	results := []Branch{}
+
+	for _, branch := range branches {
+		if branch.Name == defaultBranchName {
+			results = append(results, branch)
+			continue
+		}
+
+		oids, err := conn.GetLog(branch.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		trimmedOids, err := trimBranch(splitLines(oids), branch.Name, conn)
+		if err != nil {
+			return nil, err
+		}
+
+		branch.Commits = trimmedOids
+		results = append(results, branch)
+	}
+
+	return results, nil
+}
+
+func trimBranch(oids []string, branchName string, conn Connection) ([]string, error) {
+	results := []string{}
+	childNames := []string{}
+
+	for i, oid := range oids {
+		namesResult, err := conn.GetAssociatedBranchNames(oid)
+		if err != nil {
+			return nil, err
+		}
+		names := splitLines(namesResult)
+
+		if i == 0 {
+			for _, name := range names {
+				if name != branchName {
+					childNames = append(childNames, name)
+				}
+			}
+		}
+
+		isChild := func(name string) bool {
+			for _, childName := range childNames {
+				if name == childName {
+					return true
+				}
+			}
+			return false
+		}
+
+		for _, name := range names {
+			if name != branchName && !isChild(name) {
+				return results, nil
+			}
+		}
+
+		results = append(results, oid)
+	}
+
+	return results, nil
+}
+
 func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
 	results := []Branch{}
 	for _, branch := range branches {
 		prs := findMatchedPullRequest(branch.Name, prs)
+		sort.Slice(prs, func(i, j int) bool { return prs[i].Number < prs[j].Number })
 		branch.PullRequests = prs
 		results = append(results, branch)
 	}
@@ -117,8 +192,18 @@ func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
 
 func findMatchedPullRequest(branchName string, prs []PullRequest) []PullRequest {
 	results := []PullRequest{}
+
+	exists := func(pr PullRequest) bool {
+		for _, result := range results {
+			if pr.Number == result.Number {
+				return true
+			}
+		}
+		return false
+	}
+
 	for _, pr := range prs {
-		if pr.Name == branchName {
+		if pr.Name == branchName && !exists(pr) {
 			results = append(results, pr)
 		}
 	}
@@ -143,26 +228,40 @@ func getDeleteStatus(branch Branch) BranchState {
 		return NotDeletable
 	}
 
-	mergedCnt := 0
+	fullyMergedCnt := 0
 	for _, pr := range branch.PullRequests {
 		if pr.State == Open {
 			return NotDeletable
 		}
-		if pr.State == Merged {
-			mergedCnt++
+		if isFullyMerged(branch, pr) {
+			fullyMergedCnt++
 		}
 	}
-	if mergedCnt == 0 {
+	if fullyMergedCnt == 0 {
 		return NotDeletable
 	}
 
 	return Deletable
 }
 
-func toBranch(branchNames []string) []Branch {
-	branchNames = branchNames[:len(branchNames)-1]
+func isFullyMerged(branch Branch, pr PullRequest) bool {
+	if pr.State != Merged {
+		return false
+	}
 
+	localHeadOid := branch.Commits[0]
+	for _, oid := range pr.Commits {
+		if oid == localHeadOid {
+			return true
+		}
+	}
+
+	return false
+}
+
+func toBranch(branchNames []string) []Branch {
 	results := []Branch{}
+
 	for _, branchName := range branchNames {
 		splitedNames := strings.Split(branchName, ",")
 		head := false
@@ -172,7 +271,7 @@ func toBranch(branchNames []string) []Branch {
 		results = append(results, Branch{
 			head,
 			splitedNames[1],
-			splitedNames[2],
+			[]string{},
 			[]PullRequest{},
 			Unknown,
 		})
@@ -216,7 +315,7 @@ func getRepo(jsonResp string) (string, []string, string, error) {
 }
 
 func getHostname(url string) string {
-	r := regexp.MustCompile("//(.+?)/")
+	r := regexp.MustCompile(`//(.+?)/`)
 	found := r.FindSubmatch([]byte(url))
 	return string(found[1])
 }
@@ -230,9 +329,17 @@ func toPullRequests(jsonResp string) ([]PullRequest, error) {
 					Node struct {
 						Number      int
 						HeadRefName string
+						HeadRefOid  string
 						Url         string
 						State       string
-						Author      struct {
+						Commits     struct {
+							Nodes []struct {
+								Commit struct {
+									Oid string
+								}
+							}
+						}
+						Author struct {
 							Login string
 						}
 					}
@@ -253,10 +360,18 @@ func toPullRequests(jsonResp string) ([]PullRequest, error) {
 			return nil, fmt.Errorf("unexpected pull request state: %s", edge.Node.State)
 		}
 
+		commits := []string{}
+		for _, node := range edge.Node.Commits.Nodes {
+			commits = append(commits, node.Commit.Oid)
+		}
+
 		results = append(results, PullRequest{
 			edge.Node.HeadRefName,
 			state,
-			edge.Node.Number, edge.Node.Url, edge.Node.Author.Login,
+			edge.Node.Number,
+			commits,
+			edge.Node.Url,
+			edge.Node.Author.Login,
 		})
 	}
 
@@ -288,7 +403,7 @@ func DeleteBranches(branches []Branch, conn Connection) ([]Branch, error) {
 	if err != nil {
 		return nil, err
 	}
-	branchesAfter := toBranch(strings.Split(branchNamesAfter, "\n"))
+	branchesAfter := toBranch(splitLines(branchNamesAfter))
 
 	return checkDeleted(branches, branchesAfter), nil
 }
@@ -360,6 +475,21 @@ func (conn *ConnectionImpl) GetBranchNames() (string, error) {
 	return run("git", args)
 }
 
+func (conn *ConnectionImpl) GetLog(branchName string) (string, error) {
+	args := []string{
+		"log", "--first-parent", "--format=%H", branchName,
+	}
+	return run("git", args)
+}
+
+func (conn *ConnectionImpl) GetAssociatedBranchNames(oid string) (string, error) {
+	args := []string{
+		"branch", "--format=%(refname:lstrip=2)",
+		"--contains", oid,
+	}
+	return run("git", args)
+}
+
 func (conn *ConnectionImpl) GetPullRequests(
 	hostname string, repoNames []string, queryHashes string) (string, error) {
 	args := []string{
@@ -375,6 +505,13 @@ func (conn *ConnectionImpl) GetPullRequests(
           url
           state
           headRefName
+          commits(last: 10) {
+            nodes {
+              commit {
+                oid
+              }
+            }
+          }
           author { login }
         }
       }
@@ -401,6 +538,10 @@ func getQueryRepos(repoNames []string) string {
 		repos.WriteString(fmt.Sprintf("repo:%s ", name))
 	}
 	return repos.String()
+}
+
+func splitLines(text string) []string {
+	return strings.FieldsFunc(text, func(c rune) bool { return c == '\n' })
 }
 
 func run(name string, args []string) (string, error) {

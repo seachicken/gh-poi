@@ -316,7 +316,7 @@ func getRepo(jsonResp string) (string, []string, string, error) {
 }
 
 func getHostname(url string) string {
-	r := regexp.MustCompile("//(.+?)/")
+	r := regexp.MustCompile(`//(.+?)/`)
 	found := r.FindSubmatch([]byte(url))
 	return string(found[1])
 }

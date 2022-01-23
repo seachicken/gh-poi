@@ -87,7 +87,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 
 	var branches []Branch
 	if names, err := conn.GetBranchNames(); err == nil {
-		branches = toBranch(strings.Split(names, "\n"))
+		branches = toBranch(splitLines(names))
 		branches, err = applyCommits(branches, defaultBranchName, conn)
 		if err != nil {
 			return nil, err
@@ -127,7 +127,7 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 			return nil, err
 		}
 
-		trimmedOids, err := trimBranch(strings.Split(oids, "\n"), branch.Name, conn)
+		trimmedOids, err := trimBranch(splitLines(oids), branch.Name, conn)
 		if err != nil {
 			return nil, err
 		}
@@ -148,7 +148,7 @@ func trimBranch(oids []string, branchName string, conn Connection) ([]string, er
 		if err != nil {
 			return nil, err
 		}
-		names := strings.FieldsFunc(namesResult, func(c rune) bool { return c == '\n' })
+		names := splitLines(namesResult)
 
 		if i == 0 {
 			for _, name := range names {
@@ -404,7 +404,7 @@ func DeleteBranches(branches []Branch, conn Connection) ([]Branch, error) {
 	if err != nil {
 		return nil, err
 	}
-	branchesAfter := toBranch(strings.Split(branchNamesAfter, "\n"))
+	branchesAfter := toBranch(splitLines(branchNamesAfter))
 
 	return checkDeleted(branches, branchesAfter), nil
 }
@@ -539,6 +539,10 @@ func getQueryRepos(repoNames []string) string {
 		repos.WriteString(fmt.Sprintf("repo:%s ", name))
 	}
 	return repos.String()
+}
+
+func splitLines(text string) []string {
+	return strings.FieldsFunc(text, func(c rune) bool { return c == '\n' })
 }
 
 func run(name string, args []string) (string, error) {

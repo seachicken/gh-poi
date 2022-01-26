@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml/badge.svg)](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/seachicken/gh-poi/branch/main/graph/badge.svg?token=tcPxPgst2q)](https://codecov.io/gh/seachicken/gh-poi)
+[![Stake to support us](https://badge.devprotocol.xyz/0x9ca78E1ca8E49a0e9C8BfB59A8Ed58E1E4440615/descriptive)](https://stakes.social/0x9ca78E1ca8E49a0e9C8BfB59A8Ed58E1E4440615)
 
 A [gh](https://github.com/cli/cli) extension for deleting merged local branches.
 

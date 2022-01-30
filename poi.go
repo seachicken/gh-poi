@@ -18,9 +18,11 @@ type (
 		CheckRepos(hostname string, repoNames []string) error
 		GetRepoNames() (string, error)
 		GetBranchNames() (string, error)
-		GetLog(string) (string, error)
-		GetAssociatedBranchNames(string) (string, error)
+		GetLog(branchName string) (string, error)
+		GetAssociatedRefNames(oid string) (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
+		GetUncommittedChanges() (string, error)
+		CheckoutBranch(branchName string) (string, error)
 		DeleteBranches(branchNames []string) (string, error)
 	}
 
@@ -70,7 +72,7 @@ const (
 
 var ErrNotFound = errors.New("not found")
 
-func GetBranches(conn Connection) ([]Branch, error) {
+func GetBranches(conn Connection, check bool) ([]Branch, error) {
 	var hostname string
 	var repoNames []string
 	var defaultBranchName string
@@ -109,7 +111,55 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	}
 
 	branches = applyPullRequest(branches, prs)
-	branches = checkDeletion(branches)
+
+	uncommittedChanges, err := conn.GetUncommittedChanges()
+	if err != nil {
+		return nil, err
+	}
+
+	branches = checkDeletion(branches, uncommittedChanges)
+
+	needsCheckout := false
+	for _, branch := range branches {
+		if branch.Head && branch.State == Deletable {
+			needsCheckout = true
+			break
+		}
+	}
+
+	if needsCheckout {
+		result := []Branch{}
+
+		if !check {
+			_, err := conn.CheckoutBranch(defaultBranchName)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if !branchNameExists(defaultBranchName, branches) {
+			result = append(result, Branch{
+				true, defaultBranchName,
+				[]string{},
+				[]PullRequest{},
+				NotDeletable,
+			})
+		}
+
+		for _, branch := range branches {
+			if branch.Name == defaultBranchName {
+				branch.Head = true
+			} else {
+				branch.Head = false
+			}
+			result = append(result, branch)
+		}
+
+		branches = result
+	}
+
+	sort.Slice(branches, func(i, j int) bool { return branches[i].Name < branches[j].Name })
+
 	return branches, nil
 }
 
@@ -144,11 +194,11 @@ func trimBranch(oids []string, branchName string, conn Connection) ([]string, er
 	childNames := []string{}
 
 	for i, oid := range oids {
-		namesResult, err := conn.GetAssociatedBranchNames(oid)
+		refNames, err := conn.GetAssociatedRefNames(oid)
 		if err != nil {
 			return nil, err
 		}
-		names := splitLines(namesResult)
+		names := extractBranchNames(splitLines(refNames))
 
 		if i == 0 {
 			for _, name := range names {
@@ -177,6 +227,15 @@ func trimBranch(oids []string, branchName string, conn Connection) ([]string, er
 	}
 
 	return results, nil
+}
+
+func extractBranchNames(refNames []string) []string {
+	result := []string{}
+	r := regexp.MustCompile(`^refs/(?:heads|remotes/.+?)/`)
+	for _, name := range refNames {
+		result = append(result, r.ReplaceAllString(name, ""))
+	}
+	return result
 }
 
 func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
@@ -210,17 +269,17 @@ func findMatchedPullRequest(branchName string, prs []PullRequest) []PullRequest 
 	return results
 }
 
-func checkDeletion(branches []Branch) []Branch {
+func checkDeletion(branches []Branch, uncommittedChanges string) []Branch {
 	results := []Branch{}
 	for _, branch := range branches {
-		branch.State = getDeleteStatus(branch)
+		branch.State = getDeleteStatus(branch, uncommittedChanges)
 		results = append(results, branch)
 	}
 	return results
 }
 
-func getDeleteStatus(branch Branch) BranchState {
-	if branch.Head {
+func getDeleteStatus(branch Branch, uncommittedChanges string) BranchState {
+	if branch.Head && len(uncommittedChanges) > 0 {
 		return NotDeletable
 	}
 
@@ -482,9 +541,9 @@ func (conn *ConnectionImpl) GetLog(branchName string) (string, error) {
 	return run("git", args)
 }
 
-func (conn *ConnectionImpl) GetAssociatedBranchNames(oid string) (string, error) {
+func (conn *ConnectionImpl) GetAssociatedRefNames(oid string) (string, error) {
 	args := []string{
-		"branch", "--format=%(refname:lstrip=2)",
+		"branch", "--all", "--format=%(refname)",
 		"--contains", oid,
 	}
 	return run("git", args)
@@ -523,6 +582,18 @@ func (conn *ConnectionImpl) GetPullRequests(
 		),
 	}
 	return run("gh", args)
+}
+
+func (conn *ConnectionImpl) GetUncommittedChanges() (string, error) {
+	args := append([]string{
+		"status", "--short"})
+	return run("git", args)
+}
+
+func (conn *ConnectionImpl) CheckoutBranch(branchName string) (string, error) {
+	args := append([]string{
+		"checkout", "--quiet", branchName})
+	return run("git", args)
 }
 
 func (conn *ConnectionImpl) DeleteBranches(branchNames []string) (string, error) {

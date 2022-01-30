@@ -47,6 +47,21 @@ func (mr *MockConnectionMockRecorder) CheckRepos(hostname, repoNames interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRepos", reflect.TypeOf((*MockConnection)(nil).CheckRepos), hostname, repoNames)
 }
 
+// CheckoutBranch mocks base method.
+func (m *MockConnection) CheckoutBranch(branchName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckoutBranch", branchName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckoutBranch indicates an expected call of CheckoutBranch.
+func (mr *MockConnectionMockRecorder) CheckoutBranch(branchName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockConnection)(nil).CheckoutBranch), branchName)
+}
+
 // DeleteBranches mocks base method.
 func (m *MockConnection) DeleteBranches(branchNames []string) (string, error) {
 	m.ctrl.T.Helper()
@@ -62,19 +77,19 @@ func (mr *MockConnectionMockRecorder) DeleteBranches(branchNames interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), branchNames)
 }
 
-// GetAssociatedBranchNames mocks base method.
-func (m *MockConnection) GetAssociatedBranchNames(arg0 string) (string, error) {
+// GetAssociatedRefNames mocks base method.
+func (m *MockConnection) GetAssociatedRefNames(oid string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAssociatedBranchNames", arg0)
+	ret := m.ctrl.Call(m, "GetAssociatedRefNames", oid)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAssociatedBranchNames indicates an expected call of GetAssociatedBranchNames.
-func (mr *MockConnectionMockRecorder) GetAssociatedBranchNames(arg0 interface{}) *gomock.Call {
+// GetAssociatedRefNames indicates an expected call of GetAssociatedRefNames.
+func (mr *MockConnectionMockRecorder) GetAssociatedRefNames(oid interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssociatedBranchNames", reflect.TypeOf((*MockConnection)(nil).GetAssociatedBranchNames), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssociatedRefNames", reflect.TypeOf((*MockConnection)(nil).GetAssociatedRefNames), oid)
 }
 
 // GetBranchNames mocks base method.
@@ -93,18 +108,18 @@ func (mr *MockConnectionMockRecorder) GetBranchNames() *gomock.Call {
 }
 
 // GetLog mocks base method.
-func (m *MockConnection) GetLog(arg0 string) (string, error) {
+func (m *MockConnection) GetLog(branchName string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLog", arg0)
+	ret := m.ctrl.Call(m, "GetLog", branchName)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetLog indicates an expected call of GetLog.
-func (mr *MockConnectionMockRecorder) GetLog(arg0 interface{}) *gomock.Call {
+func (mr *MockConnectionMockRecorder) GetLog(branchName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockConnection)(nil).GetLog), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockConnection)(nil).GetLog), branchName)
 }
 
 // GetPullRequests mocks base method.
@@ -135,4 +150,19 @@ func (m *MockConnection) GetRepoNames() (string, error) {
 func (mr *MockConnectionMockRecorder) GetRepoNames() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoNames", reflect.TypeOf((*MockConnection)(nil).GetRepoNames))
+}
+
+// GetUncommittedChanges mocks base method.
+func (m *MockConnection) GetUncommittedChanges() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUncommittedChanges")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUncommittedChanges indicates an expected call of GetUncommittedChanges.
+func (mr *MockConnectionMockRecorder) GetUncommittedChanges() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges))
 }

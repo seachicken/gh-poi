@@ -97,7 +97,7 @@ func GetBranches(conn Connection) ([]Branch, error) {
 	}
 
 	prs := []PullRequest{}
-	for _, queryHashes := range GetQueryHashes(branches) {
+	for _, queryHashes := range getQueryHashes(branches) {
 		json, err := conn.GetPullRequests(hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err

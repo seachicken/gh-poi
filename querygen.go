@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func GetQueryHashes(branches []Branch) []string {
+func getQueryHashes(branches []Branch) []string {
 	results := []string{}
 
 	var hashes strings.Builder

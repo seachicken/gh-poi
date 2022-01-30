@@ -1,2 +1,2 @@
-issue1
-main
+refs/heads/issue1
+refs/heads/main

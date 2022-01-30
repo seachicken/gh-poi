@@ -39,7 +39,7 @@ func runMain(check bool) {
 	sp.Start()
 	var fetchingErr error
 
-	branches, fetchingErr := GetBranches(conn)
+	branches, fetchingErr := GetBranches(conn, check)
 
 	sp.Stop()
 

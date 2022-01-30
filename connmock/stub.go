@@ -61,35 +61,35 @@ func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
 	return s
 }
 
-func (s *Stub) GetRepoNames(path string, err error, conf *Conf) *Stub {
+func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetRepoNames().
-			Return(s.readFile("gh", "repo", path), err),
+			Return(s.readFile("gh", "repo", filename), err),
 		conf,
 	)
 	return s
 }
 
-func (s *Stub) GetBranchNames(name string, err error, conf *Conf) *Stub {
+func (s *Stub) GetBranchNames(filename string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(
 		s.Conn.EXPECT().
 			GetBranchNames().
-			Return(s.readFile("git", "branch", name), err),
+			Return(s.readFile("git", "branch", filename), err),
 		conf,
 	)
 	return s
 }
 
-func (s *Stub) GetAssociatedBranchNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
+func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
-				GetAssociatedBranchNames(stub.Oid).
+				GetAssociatedRefNames(stub.Oid).
 				Return(s.readFile("git", "abranch", stub.Filename), err),
 			conf,
 		)
@@ -110,13 +110,37 @@ func (s *Stub) GetLog(stubs []LogStub, err error, conf *Conf) *Stub {
 	return s
 }
 
-func (s *Stub) GetPullRequests(path string, err error, conf *Conf) *Stub {
+func (s *Stub) GetPullRequests(filename string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetPullRequests(gomock.Any(), gomock.Any(), gomock.Any()).
-			Return(s.readFile("gh", "pr", path), err),
+			Return(s.readFile("gh", "pr", filename), err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetUncommittedChanges(uncommittedChanges string, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			GetUncommittedChanges().
+			Return(uncommittedChanges, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) CheckoutBranch(err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			CheckoutBranch(gomock.Any()).
+			Return("", err),
 		conf,
 	)
 	return s

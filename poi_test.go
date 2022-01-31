@@ -437,6 +437,52 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 	}, actual)
 }
 
+func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := connmock.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]connmock.LogStub{
+			{"main", "main"}, {"issue1", "issue1"},
+		}, nil, nil).
+		GetAssociatedRefNames([]connmock.AssociatedBranchNamesStub{
+			{"356a192b7913b04c54574d18c28d46e6395428ab", "issue1"},
+			{"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c", "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("mainMerged", nil, nil).
+		GetUncommittedChanges("", nil, nil)
+
+	actual, _ := GetBranches(s.Conn, false)
+
+	assert.Equal(t, []Branch{
+		{
+			false, "issue1",
+			[]string{
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+			},
+			[]PullRequest{},
+			NotDeletable,
+		},
+		{
+			true, "main",
+			[]string{},
+			[]PullRequest{
+				{
+					"main", Merged, 1,
+					[]string{
+						"b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
+					},
+					"https://github.com/owner/repo/pull/1", "owner",
+				},
+			},
+			NotDeletable,
+		},
+	}, actual)
+}
+
 func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

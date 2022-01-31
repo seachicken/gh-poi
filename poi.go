@@ -304,7 +304,7 @@ func getDeleteStatus(branch Branch, uncommittedChanges string) BranchState {
 }
 
 func isFullyMerged(branch Branch, pr PullRequest) bool {
-	if pr.State != Merged {
+	if pr.State != Merged || len(branch.Commits) == 0 {
 		return false
 	}
 

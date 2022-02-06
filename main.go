@@ -8,6 +8,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/seachicken/gh-poi/conn"
 )
 
 var (
@@ -31,7 +32,7 @@ func runMain(check bool) {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
-	conn := &ConnectionImpl{}
+	conn := &conn.Connection{}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 
 	fetchingMsg := " Fetching pull requests..."

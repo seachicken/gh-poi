@@ -6,14 +6,14 @@
         {
           "node": {
             "number": 1,
-            "url": "https://github.com/parent-owner/repo/pull/1",
-            "state": "MERGED",
+            "url": "https://github.com/owner/repo/pull/1",
+            "state": "CLOSED",
             "headRefName": "issue1",
             "commits": {
               "nodes": [
                 {
                   "commit": {
-                    "oid": "356a192b7913b04c54574d18c28d46e6395428ab"
+                    "oid": "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0"
                   }
                 }
               ]

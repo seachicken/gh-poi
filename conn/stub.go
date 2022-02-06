@@ -1,4 +1,4 @@
-package connmock
+package conn
 
 import (
 	"io/ioutil"
@@ -173,7 +173,7 @@ func (s *Stub) readFile(command string, category string, name string) string {
 	if command == "gh" {
 		ext = ".json"
 	}
-	b, err := ioutil.ReadFile(path.Join(filename, "../..", fixturePath, command, category+"_"+name+ext))
+	b, err := ioutil.ReadFile(path.Join(filename, "..", fixturePath, command, category+"_"+name+ext))
 	if err != nil {
 		s.t.Fatalf("%v", err)
 	}

@@ -1,0 +1,2 @@
+# If it's a directory, it will be recognized as a submodule, so zip it up.
+/repo_basic

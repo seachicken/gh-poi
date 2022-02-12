@@ -493,6 +493,18 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 	}, actual)
 }
 
+func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		GetRemoteNames("origin", errors.New("failed to run external command: git"), nil)
+
+	_, err := GetBranches(s.Conn, false)
+
+	assert.NotNil(t, err)
+}
+
 func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

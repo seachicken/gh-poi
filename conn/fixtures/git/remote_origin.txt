@@ -1,0 +1,2 @@
+origin	git@github.com:owner/repo.git (fetch)
+origin	git@github.com:owner/repo.git (push)

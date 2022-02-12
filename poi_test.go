@@ -15,6 +15,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -61,6 +62,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -107,6 +109,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -154,6 +157,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -201,6 +205,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -248,6 +253,7 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -295,6 +301,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -341,6 +348,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testi
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -394,6 +402,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -443,6 +452,7 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -488,6 +498,7 @@ func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 	defer ctrl.Finish()
 
 	s := conn.Setup(ctrl).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", errors.New("failed to run external command: git"), nil)
 
 	_, err := GetBranches(s.Conn, false)
@@ -501,6 +512,7 @@ func Test_ReturnsAnErrorWhenCheckReposFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(errors.New("failed to run external command: gh"), nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil)
 
 	_, err := GetBranches(s.Conn, false)
@@ -514,6 +526,7 @@ func Test_ReturnsAnErrorWhenGetBranchNamesFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", errors.New("failed to run external command: gh"), nil)
 
@@ -528,6 +541,7 @@ func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -545,6 +559,7 @@ func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -566,6 +581,7 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -588,6 +604,7 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
@@ -611,6 +628,7 @@ func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetLog([]conn.LogStub{

@@ -61,12 +61,24 @@ func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) GetRemoteNames(filename string, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			GetRemoteNames().
+			Return(s.readFile("git", "remote", filename), err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
-			GetRepoNames().
+			GetRepoNames(gomock.Any()).
 			Return(s.readFile("gh", "repo", filename), err),
 		conf,
 	)

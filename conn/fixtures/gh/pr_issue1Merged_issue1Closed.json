@@ -8,6 +8,7 @@
             "number": 1,
             "url": "https://github.com/owner/repo/pull/1",
             "state": "CLOSED",
+            "isDraft": false,
             "headRefName": "issue1",
             "commits": {
               "nodes": [
@@ -28,6 +29,7 @@
             "number": 2,
             "url": "https://github.com/owner/repo/pull/2",
             "state": "MERGED",
+            "isDraft": false,
             "headRefName": "issue1",
             "commits": {
               "nodes": [

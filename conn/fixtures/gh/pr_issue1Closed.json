@@ -8,6 +8,7 @@
             "number": 1,
             "url": "https://github.com/owner/repo/pull/1",
             "state": "CLOSED",
+            "isDraft": false,
             "headRefName": "issue1",
             "commits": {
               "nodes": [

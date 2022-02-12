@@ -45,6 +45,7 @@ type (
 	PullRequest struct {
 		Name    string
 		State   PullRequestState
+		IsDraft bool
 		Number  int
 		Commits []string
 		Url     string
@@ -421,6 +422,7 @@ func toPullRequests(jsonResp string) ([]PullRequest, error) {
 						HeadRefOid  string
 						Url         string
 						State       string
+						IsDraft     bool
 						Commits     struct {
 							Nodes []struct {
 								Commit struct {
@@ -457,6 +459,7 @@ func toPullRequests(jsonResp string) ([]PullRequest, error) {
 		results = append(results, PullRequest{
 			edge.Node.HeadRefName,
 			state,
+			edge.Node.IsDraft,
 			edge.Node.Number,
 			commits,
 			edge.Node.Url,

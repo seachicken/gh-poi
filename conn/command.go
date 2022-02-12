@@ -81,6 +81,7 @@ func (conn *Connection) GetPullRequests(
           number
           url
           state
+          isDraft
           headRefName
           commits(last: 10) {
             nodes {

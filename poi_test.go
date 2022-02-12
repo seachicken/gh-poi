@@ -38,7 +38,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -85,7 +85,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -133,7 +133,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -181,7 +181,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -229,7 +229,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -277,7 +277,7 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -324,7 +324,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 			},
 			[]PullRequest{
 				{
-					"issue1", Closed, 1,
+					"issue1", Closed, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -371,14 +371,14 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testi
 			},
 			[]PullRequest{
 				{
-					"issue1", Closed, 1,
+					"issue1", Closed, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
 					"https://github.com/owner/repo/pull/1", "owner",
 				},
 				{
-					"issue1", Merged, 2,
+					"issue1", Merged, false, 2,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -428,7 +428,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 			},
 			[]PullRequest{
 				{
-					"issue1", Merged, 1,
+					"issue1", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -481,7 +481,7 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 			[]string{},
 			[]PullRequest{
 				{
-					"main", Merged, 1,
+					"main", Merged, false, 1,
 					[]string{
 						"6ebe3d30d23531af56bd23b5a098d3ccae2a534a",
 					},

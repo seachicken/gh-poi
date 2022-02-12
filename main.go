@@ -111,7 +111,7 @@ func printBranches(branches []Branch) {
 
 		for i, pr := range branch.PullRequests {
 			number := fmt.Sprintf("#%v", pr.Number)
-			issueNoColor := getIssueNoColor(pr.State)
+			issueNoColor := getIssueNoColor(pr.State, pr.IsDraft)
 			var line string
 			if i == len(branch.PullRequests)-1 {
 				line = "└─"
@@ -129,7 +129,11 @@ func printBranches(branches []Branch) {
 	}
 }
 
-func getIssueNoColor(state PullRequestState) color.Attribute {
+func getIssueNoColor(state PullRequestState, isDraft bool) color.Attribute {
+	if isDraft {
+		return color.FgHiBlack
+	}
+
 	switch state {
 	case Open:
 		return color.FgGreen

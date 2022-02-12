@@ -16,6 +16,14 @@ func Test_RepoBasic(t *testing.T) {
 	conn := &Connection{}
 	stub := &Stub{nil, t}
 
+	t.Run("GetRemoteNames", func(t *testing.T) {
+		actual, _ := conn.GetRemoteNames()
+		assert.Equal(t,
+			stub.readFile("git", "remote", "origin"),
+			actual,
+		)
+	})
+
 	t.Run("GetBranchNames", func(t *testing.T) {
 		actual, _ := conn.GetBranchNames()
 		assert.Equal(t,

@@ -14,7 +14,8 @@ import (
 type (
 	Connection interface {
 		CheckRepos(hostname string, repoNames []string) error
-		GetRepoNames() (string, error)
+		GetRemoteNames() (string, error)
+		GetRepoNames(repoName string) (string, error)
 		GetBranchNames() (string, error)
 		GetLog(branchName string) (string, error)
 		GetAssociatedRefNames(oid string) (string, error)
@@ -24,10 +25,9 @@ type (
 		DeleteBranches(branchNames []string) (string, error)
 	}
 
-	Repo struct {
-		Hostname string
-		Origin   string
-		Upstream string
+	Remote struct {
+		Name     string
+		RepoName string
 	}
 
 	BranchState int
@@ -68,10 +68,20 @@ const (
 var ErrNotFound = errors.New("not found")
 
 func GetBranches(conn Connection, check bool) ([]Branch, error) {
+	primaryRepoName := ""
+	if remoteNames, err := conn.GetRemoteNames(); err == nil {
+		remotes := toRemotes(splitLines(remoteNames))
+		if remote, err := getPrimaryRemote(remotes); err == nil {
+			primaryRepoName = remote.RepoName
+		}
+	} else {
+		return nil, err
+	}
+
 	var hostname string
 	var repoNames []string
 	var defaultBranchName string
-	if json, err := conn.GetRepoNames(); err == nil {
+	if json, err := conn.GetRepoNames(primaryRepoName); err == nil {
 		hostname, repoNames, defaultBranchName, _ = getRepo(json)
 	} else {
 		return nil, err
@@ -156,6 +166,31 @@ func GetBranches(conn Connection, check bool) ([]Branch, error) {
 	sort.Slice(branches, func(i, j int) bool { return branches[i].Name < branches[j].Name })
 
 	return branches, nil
+}
+
+func toRemotes(remoteNames []string) []Remote {
+	results := []Remote{}
+	r := regexp.MustCompile(`^(.+?)\s+.+(?::|/)(.+?/.+?)(?:\.git|)\s+.+$`)
+	for _, name := range remoteNames {
+		found := r.FindStringSubmatch(name)
+		if len(found) == 3 {
+			results = append(results, Remote{found[1], found[2]})
+		}
+	}
+	return results
+}
+
+func getPrimaryRemote(remotes []Remote) (Remote, error) {
+	if len(remotes) == 0 {
+		return Remote{}, ErrNotFound
+	}
+
+	for _, remote := range remotes {
+		if remote.Name == "origin" {
+			return remote, nil
+		}
+	}
+	return remotes[0], nil
 }
 
 func applyCommits(branches []Branch, defaultBranchName string, conn Connection) ([]Branch, error) {

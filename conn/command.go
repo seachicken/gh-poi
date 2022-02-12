@@ -25,9 +25,16 @@ func (conn *Connection) CheckRepos(hostname string, repoNames []string) error {
 	return nil
 }
 
-func (conn *Connection) GetRepoNames() (string, error) {
+func (conn *Connection) GetRemoteNames() (string, error) {
 	args := []string{
-		"repo", "view",
+		"remote", "-v",
+	}
+	return run("git", args)
+}
+
+func (conn *Connection) GetRepoNames(repoName string) (string, error) {
+	args := []string{
+		"repo", "view", repoName,
 		"--json", "url",
 		"--json", "owner",
 		"--json", "name",

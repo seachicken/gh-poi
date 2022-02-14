@@ -32,10 +32,9 @@ func (conn *Connection) GetRemoteNames() (string, error) {
 	return run("git", args)
 }
 
-func (conn *Connection) GetRepoNames(repoName string) (string, error) {
+func (conn *Connection) GetRepoNames(hostname string, repoName string) (string, error) {
 	args := []string{
-		"repo", "view", repoName,
-		"--json", "url",
+		"repo", "view", hostname + "/" + repoName,
 		"--json", "owner",
 		"--json", "name",
 		"--json", "parent",

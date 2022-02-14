@@ -78,7 +78,7 @@ func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			GetRepoNames(gomock.Any()).
+			GetRepoNames(gomock.Any(), gomock.Any()).
 			Return(s.readFile("gh", "repo", filename), err),
 		conf,
 	)

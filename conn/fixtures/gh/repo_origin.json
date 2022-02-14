@@ -7,6 +7,5 @@
     "id": "1",
     "login": "owner"
   },
-  "parent": null,
-  "url": "https://github.com/owner/repo"
+  "parent": null
 }

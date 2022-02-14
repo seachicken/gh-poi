@@ -15,7 +15,7 @@ type (
 	Connection interface {
 		CheckRepos(hostname string, repoNames []string) error
 		GetRemoteNames() (string, error)
-		GetRepoNames(repoName string) (string, error)
+		GetRepoNames(hostname string, repoName string) (string, error)
 		GetBranchNames() (string, error)
 		GetLog(branchName string) (string, error)
 		GetAssociatedRefNames(oid string) (string, error)
@@ -27,6 +27,7 @@ type (
 
 	Remote struct {
 		Name     string
+		Hostname string
 		RepoName string
 	}
 
@@ -69,21 +70,22 @@ const (
 var ErrNotFound = errors.New("not found")
 
 func GetBranches(conn Connection, check bool) ([]Branch, error) {
+	var hostname string
 	primaryRepoName := ""
 	if remoteNames, err := conn.GetRemoteNames(); err == nil {
 		remotes := toRemotes(splitLines(remoteNames))
 		if remote, err := getPrimaryRemote(remotes); err == nil {
+			hostname = remote.Hostname
 			primaryRepoName = remote.RepoName
 		}
 	} else {
 		return nil, err
 	}
 
-	var hostname string
 	var repoNames []string
 	var defaultBranchName string
-	if json, err := conn.GetRepoNames(primaryRepoName); err == nil {
-		hostname, repoNames, defaultBranchName, _ = getRepo(json)
+	if json, err := conn.GetRepoNames(hostname, primaryRepoName); err == nil {
+		repoNames, defaultBranchName, _ = getRepo(json)
 	} else {
 		return nil, err
 	}
@@ -171,11 +173,11 @@ func GetBranches(conn Connection, check bool) ([]Branch, error) {
 
 func toRemotes(remoteNames []string) []Remote {
 	results := []Remote{}
-	r := regexp.MustCompile(`^(.+?)\s+.+(?::|/)(.+?/.+?)(?:\.git|)\s+.+$`)
+	r := regexp.MustCompile(`^(.+?)\s+.+(?:@|//)(.+?)(?::|/)(.+?/.+?)(?:\.git|)\s+.+$`)
 	for _, name := range remoteNames {
 		found := r.FindStringSubmatch(name)
-		if len(found) == 3 {
-			results = append(results, Remote{found[1], found[2]})
+		if len(found) == 4 {
+			results = append(results, Remote{found[1], found[2], found[3]})
 		}
 	}
 	return results
@@ -370,7 +372,7 @@ func toBranch(branchNames []string) []Branch {
 	return results
 }
 
-func getRepo(jsonResp string) (string, []string, string, error) {
+func getRepo(jsonResp string) ([]string, string, error) {
 	type response struct {
 		DefaultBranchRef struct {
 			Name string
@@ -386,12 +388,11 @@ func getRepo(jsonResp string) (string, []string, string, error) {
 			}
 			DefaultBranchName string
 		}
-		Url string
 	}
 
 	var resp response
 	if err := json.Unmarshal([]byte(jsonResp), &resp); err != nil {
-		return "", nil, "", fmt.Errorf("error unmarshaling response: %w", err)
+		return nil, "", fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
 	repoNames := []string{
@@ -401,7 +402,7 @@ func getRepo(jsonResp string) (string, []string, string, error) {
 		repoNames = append(repoNames, resp.Parent.Owner.Login+"/"+resp.Parent.Name)
 	}
 
-	return getHostname(resp.Url), repoNames, resp.DefaultBranchRef.Name, nil
+	return repoNames, resp.DefaultBranchRef.Name, nil
 }
 
 func getHostname(url string) string {

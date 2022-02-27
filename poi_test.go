@@ -536,6 +536,42 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 	}, actual)
 }
 
+func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWithTheDefaultBranch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]conn.LogStub{
+			{"main", "main"}, {"issue1", "main"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("notFound", nil, nil).
+		GetUncommittedChanges("", nil, nil)
+
+	actual, _ := GetBranches(s.Conn, false)
+
+	assert.Equal(t, []Branch{
+		{
+			false, "issue1",
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+		{
+			true, "main",
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+	}, actual)
+}
+
 func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

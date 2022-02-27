@@ -493,6 +493,49 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 	}, actual)
 }
 
+func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetLog([]conn.LogStub{
+			{"main", "main"},
+			{"issue1", "issue1ManyCommits"}, // return with '--max-count=3'
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{"62d5d8280031f607f1db058da959a97f6a8e6d90", "issue1"},
+			{"b8a2645298053fb62ea03e27feea6c483d3fd27e", "issue1"},
+			{"d787669ee4a103fe0b361fe31c10ea037c72f27c", "issue1"},
+		}, nil, nil).
+		GetPullRequests("notFound", nil, nil).
+		GetUncommittedChanges("", nil, nil)
+
+	actual, _ := GetBranches(s.Conn, false)
+
+	assert.Equal(t, []Branch{
+		{
+			false, "issue1",
+			[]string{
+				"62d5d8280031f607f1db058da959a97f6a8e6d90",
+				"b8a2645298053fb62ea03e27feea6c483d3fd27e",
+				"d787669ee4a103fe0b361fe31c10ea037c72f27c",
+			},
+			[]PullRequest{},
+			NotDeletable,
+		},
+		{
+			true, "main",
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+	}, actual)
+}
+
 func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

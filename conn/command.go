@@ -53,7 +53,7 @@ func (conn *Connection) GetBranchNames() (string, error) {
 
 func (conn *Connection) GetLog(branchName string) (string, error) {
 	args := []string{
-		"log", "--first-parent", "--format=%H", branchName,
+		"log", "--first-parent", "--max-count=30", "--format=%H", branchName,
 	}
 	return run("git", args)
 }

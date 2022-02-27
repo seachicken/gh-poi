@@ -210,7 +210,7 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 			return nil, err
 		}
 
-		trimmedOids, err := trimBranch(splitLines(oids), branch.Name, conn)
+		trimmedOids, err := trimBranch(splitLines(oids), branch.Name, defaultBranchName, conn)
 		if err != nil {
 			return nil, err
 		}
@@ -222,7 +222,7 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 	return results, nil
 }
 
-func trimBranch(oids []string, branchName string, conn Connection) ([]string, error) {
+func trimBranch(oids []string, branchName string, defaultBranchName string, conn Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
 
@@ -235,6 +235,9 @@ func trimBranch(oids []string, branchName string, conn Connection) ([]string, er
 
 		if i == 0 {
 			for _, name := range names {
+				if name == defaultBranchName {
+					return []string{}, nil
+				}
 				if name != branchName {
 					childNames = append(childNames, name)
 				}

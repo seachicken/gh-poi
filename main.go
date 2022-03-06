@@ -130,13 +130,13 @@ func printBranches(branches []Branch) {
 }
 
 func getIssueNoColor(state PullRequestState, isDraft bool) color.Attribute {
-	if isDraft {
-		return color.FgHiBlack
-	}
-
 	switch state {
 	case Open:
-		return color.FgGreen
+		if isDraft {
+			return color.FgHiBlack
+		} else {
+			return color.FgGreen
+		}
 	case Merged:
 		return color.FgMagenta
 	case Closed:

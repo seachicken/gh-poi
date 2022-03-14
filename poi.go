@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -21,6 +22,7 @@ type (
 		GetAssociatedRefNames(oid string) (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
 		GetUncommittedChanges() (string, error)
+		GetConfig(key string) (string, error)
 		CheckoutBranch(branchName string) (string, error)
 		DeleteBranches(branchNames []string) (string, error)
 	}
@@ -118,7 +120,7 @@ func GetBranches(conn Connection, check bool) ([]Branch, error) {
 		}
 	}
 
-	branches = applyPullRequest(branches, prs)
+	branches = applyPullRequest(branches, prs, conn)
 
 	uncommittedChanges, err := conn.GetUncommittedChanges()
 	if err != nil {
@@ -274,10 +276,18 @@ func extractBranchNames(refNames []string) []string {
 	return result
 }
 
-func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
+func applyPullRequest(branches []Branch, prs []PullRequest, conn Connection) []Branch {
+	prNumbers := map[string]int{}
+	for _, branch := range branches {
+		mergeConfig, _ := conn.GetConfig(fmt.Sprintf("branch.%s.merge", branch.Name))
+		if n := getPRNumber(mergeConfig); n > 0 {
+			prNumbers[branch.Name] = n
+		}
+	}
+
 	results := []Branch{}
 	for _, branch := range branches {
-		prs := findMatchedPullRequest(branch.Name, prs)
+		prs := findMatchedPullRequest(branch.Name, prs, prNumbers)
 		sort.Slice(prs, func(i, j int) bool { return prs[i].Number < prs[j].Number })
 		branch.PullRequests = prs
 		results = append(results, branch)
@@ -285,10 +295,24 @@ func applyPullRequest(branches []Branch, prs []PullRequest) []Branch {
 	return results
 }
 
-func findMatchedPullRequest(branchName string, prs []PullRequest) []PullRequest {
+func getPRNumber(mergeConfig string) int {
+	r := regexp.MustCompile(`^refs/pull/(\d+)`)
+	found := r.FindStringSubmatch(mergeConfig)
+	if len(found) > 0 {
+		num, err := strconv.Atoi(found[1])
+		if err != nil {
+			return 0
+		}
+		return num
+	} else {
+		return 0
+	}
+}
+
+func findMatchedPullRequest(branchName string, prs []PullRequest, prNumbers map[string]int) []PullRequest {
 	results := []PullRequest{}
 
-	exists := func(pr PullRequest) bool {
+	prExists := func(pr PullRequest) bool {
 		for _, result := range results {
 			if pr.Number == result.Number {
 				return true
@@ -297,11 +321,29 @@ func findMatchedPullRequest(branchName string, prs []PullRequest) []PullRequest 
 		return false
 	}
 
+	prNumberExists := func(prNumber int) bool {
+		for _, n := range prNumbers {
+			if n == prNumber {
+				return true
+			}
+		}
+		return false
+	}
+
 	for _, pr := range prs {
-		if pr.Name == branchName && !exists(pr) {
+		if prExists(pr) {
+			continue
+		}
+
+		if prNumberExists(pr.Number) {
+			if pr.Number == prNumbers[branchName] {
+				results = append(results, pr)
+			}
+		} else if pr.Name == branchName {
 			results = append(results, pr)
 		}
 	}
+
 	return results
 }
 

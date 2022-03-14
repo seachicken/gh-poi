@@ -74,6 +74,14 @@ func Test_RepoBasic(t *testing.T) {
 		actual, _ := conn.GetUncommittedChanges()
 		assert.Equal(t, "A  README.md\n", actual)
 	})
+
+	t.Run("GetConfig", func(t *testing.T) {
+		actual, _ := conn.GetConfig("branch.main.merge")
+		assert.Equal(t,
+			stub.readFile("git", "configMerge", "main"),
+			actual,
+		)
+	})
 }
 
 func setGitDir(repoName string, t *testing.T) {

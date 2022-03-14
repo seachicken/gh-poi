@@ -32,6 +32,11 @@ type (
 		BranchName string
 		Filename   string
 	}
+
+	ConfigStub struct {
+		BranchName string
+		Filename   string
+	}
 )
 
 var (
@@ -143,6 +148,20 @@ func (s *Stub) GetUncommittedChanges(uncommittedChanges string, err error, conf 
 			Return(uncommittedChanges, err),
 		conf,
 	)
+	return s
+}
+
+func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	for _, stub := range stubs {
+		configure(
+			s.Conn.
+				EXPECT().
+				GetConfig(stub.BranchName).
+				Return(s.readFile("git", "configMerge", stub.Filename), err),
+			conf,
+		)
+	}
 	return s
 }
 

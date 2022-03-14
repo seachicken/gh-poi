@@ -280,7 +280,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
 			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "issue1_origin-main"},
+			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "issue1_originMain"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).

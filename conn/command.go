@@ -108,6 +108,13 @@ func (conn *Connection) GetUncommittedChanges() (string, error) {
 	return run("git", args)
 }
 
+func (conn *Connection) GetConfig(key string) (string, error) {
+	args := []string{
+		"config", "--get", key,
+	}
+	return run("git", args)
+}
+
 func (conn *Connection) CheckoutBranch(branchName string) (string, error) {
 	args := append([]string{
 		"checkout", "--quiet", branchName})

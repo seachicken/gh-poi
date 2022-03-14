@@ -1,0 +1,30 @@
+{
+  "data": {
+    "search": {
+      "issueCount": 1,
+      "edges": [
+        {
+          "node": {
+            "number": 1,
+            "url": "https://github.com/parent-owner/repo/pull/1",
+            "state": "MERGED",
+            "isDraft": false,
+            "headRefName": "main",
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "oid": "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0"
+                  }
+                }
+              ]
+            },
+            "author": {
+              "login": "owner"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

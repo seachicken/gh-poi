@@ -26,7 +26,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -73,7 +77,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1UpMerged", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -86,6 +94,57 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 			[]PullRequest{
 				{
 					"issue1", Merged, false, 1,
+					[]string{
+						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
+					},
+					"https://github.com/parent-owner/repo/pull/1", "owner",
+				},
+			},
+			Deletable,
+		},
+		{
+			true, "main",
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+	}, actual)
+}
+
+func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamMergedPR(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetRepoNames("origin_upstream", nil, nil).
+		GetBranchNames("@main_forkMain", nil, nil).
+		GetLog([]conn.LogStub{
+			{"main", "main"}, {"fork/main", "issue1"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "forkMain"},
+			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_forkMain"},
+		}, nil, nil).
+		GetPullRequests("forkMainUpMerged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.fork/main.merge", "forkMain"},
+			{"branch.main.merge", "main"},
+		}, nil, nil)
+
+	actual, _ := GetBranches(s.Conn, false)
+
+	assert.Equal(t, []Branch{
+		{
+			false, "fork/main",
+			[]string{
+				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
+			},
+			[]PullRequest{
+				{
+					"main", Merged, false, 1,
 					[]string{
 						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
 					},
@@ -121,6 +180,10 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 1}))
 
 	actual, _ := GetBranches(s.Conn, false)
@@ -169,6 +232,10 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 0}))
 
 	actual, _ := GetBranches(s.Conn, true)
@@ -217,6 +284,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil).
 		CheckoutBranch(nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
@@ -265,6 +335,10 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges(" M README.md", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil).
 		CheckoutBranch(nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
@@ -312,7 +386,11 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Closed", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -359,7 +437,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testi
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -415,7 +497,11 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -463,7 +549,11 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("mainMerged", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -512,7 +602,11 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 			{"d787669ee4a103fe0b361fe31c10ea037c72f27c", "issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -552,7 +646,11 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
-		GetUncommittedChanges("", nil, nil)
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	actual, _ := GetBranches(s.Conn, false)
 
@@ -706,7 +804,11 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", errors.New("failed to run external command: git"), nil)
+		GetUncommittedChanges("", errors.New("failed to run external command: git"), nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	_, err := GetBranches(s.Conn, false)
 
@@ -731,7 +833,11 @@ func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
-		CheckoutBranch(errors.New("failed to run external command: git"), nil)
+		CheckoutBranch(errors.New("failed to run external command: git"), nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
 
 	_, err := GetBranches(s.Conn, false)
 

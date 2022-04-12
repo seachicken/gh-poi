@@ -114,7 +114,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 	}, actual)
 }
 
-func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing.T) {
+func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -166,7 +166,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamMergedPR(t *testing
 	}, actual)
 }
 
-func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamMergedPR(t *testing.T) {
+func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -481,7 +481,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 	}, actual)
 }
 
-func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedAndClosedPRs(t *testing.T) {
+func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

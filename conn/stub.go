@@ -101,6 +101,17 @@ func (s *Stub) GetBranchNames(filename string, err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetMergedBranchNames().
+			Return(s.readFile("git", "branchMerged", filename), err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	for _, stub := range stubs {

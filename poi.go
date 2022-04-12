@@ -18,6 +18,7 @@ type (
 		GetRemoteNames() (string, error)
 		GetRepoNames(hostname string, repoName string) (string, error)
 		GetBranchNames() (string, error)
+		GetMergedBranchNames() (string, error)
 		GetLog(branchName string) (string, error)
 		GetAssociatedRefNames(oid string) (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
@@ -38,6 +39,7 @@ type (
 	Branch struct {
 		Head         bool
 		Name         string
+		IsMerged     bool
 		Commits      []string
 		PullRequests []PullRequest
 		State        BranchState
@@ -100,6 +102,11 @@ func GetBranches(conn Connection, check bool) ([]Branch, error) {
 	var branches []Branch
 	if names, err := conn.GetBranchNames(); err == nil {
 		branches = toBranch(splitLines(names))
+		mergedNames, err := conn.GetMergedBranchNames()
+		if err != nil {
+			return nil, err
+		}
+		branches = applyMerged(branches, extractMergedBranchNames(splitLines(mergedNames)))
 		branches, err = applyCommits(branches, defaultBranchName, conn)
 		if err != nil {
 			return nil, err
@@ -150,6 +157,7 @@ func GetBranches(conn Connection, check bool) ([]Branch, error) {
 		if !branchNameExists(defaultBranchName, branches) {
 			result = append(result, Branch{
 				true, defaultBranchName,
+				false,
 				[]string{},
 				[]PullRequest{},
 				NotDeletable,
@@ -198,6 +206,36 @@ func getPrimaryRemote(remotes []Remote) (Remote, error) {
 	return remotes[0], nil
 }
 
+func extractMergedBranchNames(mergedNames []string) []string {
+	result := []string{}
+	r := regexp.MustCompile(`^[ *]+(.+)`)
+	for _, name := range mergedNames {
+		found := r.FindStringSubmatch(name)
+		if len(found) > 1 {
+			result = append(result, found[1])
+		}
+	}
+	return result
+}
+
+func applyMerged(branches []Branch, mergedNames []string) []Branch {
+	results := []Branch{}
+	for _, branch := range branches {
+		branch.IsMerged = nameExists(branch.Name, mergedNames)
+		results = append(results, branch)
+	}
+	return results
+}
+
+func nameExists(name string, names []string) bool {
+	for _, n := range names {
+		if n == name {
+			return true
+		}
+	}
+	return false
+}
+
 func applyCommits(branches []Branch, defaultBranchName string, conn Connection) ([]Branch, error) {
 	results := []Branch{}
 
@@ -212,7 +250,8 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 			return nil, err
 		}
 
-		trimmedOids, err := trimBranch(splitLines(oids), branch.Name, defaultBranchName, conn)
+		trimmedOids, err := trimBranch(splitLines(oids), branch.IsMerged,
+			branch.Name, defaultBranchName, conn)
 		if err != nil {
 			return nil, err
 		}
@@ -224,11 +263,17 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 	return results, nil
 }
 
-func trimBranch(oids []string, branchName string, defaultBranchName string, conn Connection) ([]string, error) {
+func trimBranch(oids []string, isMerged bool,
+	branchName string, defaultBranchName string, conn Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
 
 	for i, oid := range oids {
+		if isMerged {
+			results = append(results, oid)
+			break
+		}
+
 		refNames, err := conn.GetAssociatedRefNames(oid)
 		if err != nil {
 			return nil, err
@@ -408,6 +453,7 @@ func toBranch(branchNames []string) []Branch {
 		results = append(results, Branch{
 			head,
 			splitedNames[1],
+			false,
 			[]string{},
 			[]PullRequest{},
 			Unknown,

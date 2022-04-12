@@ -137,6 +137,21 @@ func (mr *MockConnectionMockRecorder) GetLog(branchName interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockConnection)(nil).GetLog), branchName)
 }
 
+// GetMergedBranchNames mocks base method.
+func (m *MockConnection) GetMergedBranchNames() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMergedBranchNames")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMergedBranchNames indicates an expected call of GetMergedBranchNames.
+func (mr *MockConnectionMockRecorder) GetMergedBranchNames() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMergedBranchNames", reflect.TypeOf((*MockConnection)(nil).GetMergedBranchNames))
+}
+
 // GetPullRequests mocks base method.
 func (m *MockConnection) GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error) {
 	m.ctrl.T.Helper()

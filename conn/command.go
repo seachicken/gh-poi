@@ -51,6 +51,13 @@ func (conn *Connection) GetBranchNames() (string, error) {
 	return run("git", args)
 }
 
+func (conn *Connection) GetMergedBranchNames() (string, error) {
+	args := []string{
+		"branch", "--merged",
+	}
+	return run("git", args)
+}
+
 func (conn *Connection) GetLog(branchName string) (string, error) {
 	args := []string{
 		"log", "--first-parent", "--max-count=30", "--format=%H", branchName,

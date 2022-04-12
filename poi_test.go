@@ -754,7 +754,7 @@ func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
-		GetRepoNames("origin", errors.New("failed to run external command: git"), nil)
+		GetRepoNames("origin", errors.New("failed to run external command: gh"), nil)
 
 	_, err := GetBranches(s.Conn, false)
 
@@ -783,7 +783,7 @@ func Test_ReturnsAnErrorWhenGetBranchNamesFails(t *testing.T) {
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
 		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_issue1", errors.New("failed to run external command: gh"), nil)
+		GetBranchNames("@main_issue1", errors.New("failed to run external command: git"), nil)
 
 	_, err := GetBranches(s.Conn, false)
 

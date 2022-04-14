@@ -20,15 +20,16 @@ var (
 )
 
 func main() {
-	var check bool
-	flag.BoolVar(&check, "check", false, "Show branches to delete")
+	var dryRun bool
+	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
+	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
 	flag.Parse()
 
-	runMain(check)
+	runMain(dryRun)
 }
 
-func runMain(check bool) {
-	if check {
+func runMain(dryRun bool) {
+	if dryRun {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
@@ -40,7 +41,7 @@ func runMain(check bool) {
 	sp.Start()
 	var fetchingErr error
 
-	branches, fetchingErr := GetBranches(conn, check)
+	branches, fetchingErr := GetBranches(conn, dryRun)
 
 	sp.Stop()
 
@@ -55,7 +56,7 @@ func runMain(check bool) {
 	deletingMsg := " Deleting branches..."
 	var deletingErr error
 
-	if check {
+	if dryRun {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
 	} else {
 		sp.Suffix = deletingMsg
@@ -78,7 +79,7 @@ func runMain(check bool) {
 
 	var deletedStates []BranchState
 	var notDeletedStates []BranchState
-	if check {
+	if dryRun {
 		deletedStates = []BranchState{Deletable}
 		notDeletedStates = []BranchState{NotDeletable}
 	} else {

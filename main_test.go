@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_DeletingBranchesWhenTheCheckOptionIsFalse(t *testing.T) {
+func Test_DeletingBranchesWhenTheDryRunOptionIsFalse(t *testing.T) {
 	onlyCI(t)
 
 	actual := captureOutput(func() { runMain(false) })
@@ -20,7 +20,7 @@ func Test_DeletingBranchesWhenTheCheckOptionIsFalse(t *testing.T) {
 	assert.Contains(t, actual, expected)
 }
 
-func Test_DoNotDeleteBranchesWhenTheCheckOptionIsTrue(t *testing.T) {
+func Test_DoNotDeleteBranchesWhenTheDryRunOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
 	actual := captureOutput(func() { runMain(true) })

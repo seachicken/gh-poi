@@ -73,7 +73,7 @@ const (
 
 var ErrNotFound = errors.New("not found")
 
-func GetBranches(conn Connection, check bool) ([]Branch, error) {
+func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 	var hostname string
 	primaryRepoName := ""
 	if remoteNames, err := conn.GetRemoteNames(); err == nil {
@@ -147,7 +147,7 @@ func GetBranches(conn Connection, check bool) ([]Branch, error) {
 	if needsCheckout {
 		result := []Branch{}
 
-		if !check {
+		if !dryRun {
 			_, err := conn.CheckoutBranch(defaultBranchName)
 			if err != nil {
 				return nil, err

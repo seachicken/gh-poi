@@ -736,6 +736,46 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 	}, actual)
 }
 
+func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("main_@detached", nil, nil).
+		GetMergedBranchNames("main", nil, nil).
+		GetLog([]conn.LogStub{
+			{"main", "main"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("notFound", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+		}, nil, nil)
+
+	actual, _ := GetBranches(s.Conn, false)
+
+	assert.Equal(t, []Branch{
+		{
+			true, "(HEAD detached at a97e963)", false,
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+		{
+			false, "main", true,
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+	}, actual)
+}
+
 func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

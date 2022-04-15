@@ -71,6 +71,7 @@ const (
 	Open
 )
 
+var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
 func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
@@ -240,7 +241,7 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 	results := []Branch{}
 
 	for _, branch := range branches {
-		if branch.Name == defaultBranchName {
+		if branch.Name == defaultBranchName || branch.IsDetached() {
 			results = append(results, branch)
 			continue
 		}
@@ -324,6 +325,9 @@ func extractBranchNames(refNames []string) []string {
 func applyPullRequest(branches []Branch, prs []PullRequest, conn Connection) []Branch {
 	prNumbers := map[string]int{}
 	for _, branch := range branches {
+		if branch.IsDetached() {
+			continue
+		}
 		mergeConfig, _ := conn.GetConfig(fmt.Sprintf("branch.%s.merge", branch.Name))
 		if n := getPRNumber(mergeConfig); n > 0 {
 			prNumbers[branch.Name] = n
@@ -626,4 +630,8 @@ func branchNameExists(branchName string, branches []Branch) bool {
 
 func splitLines(text string) []string {
 	return strings.FieldsFunc(text, func(c rune) bool { return c == '\n' })
+}
+
+func (b Branch) IsDetached() bool {
+	return detachedBranchNameRegex.MatchString(b.Name)
 }

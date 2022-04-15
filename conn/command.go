@@ -151,12 +151,13 @@ func run(name string, args []string) (string, error) {
 
 	err := cmd.Start()
 	if err != nil {
-		return "", fmt.Errorf("failed to run external command: %s", name)
+		return "", fmt.Errorf("failed to run external command: %s, args: %v", name, args)
 	}
 	cmd.Wait()
 
 	if stderr.Len() > 0 {
-		return "", fmt.Errorf("failed to run external command: %s\n%s", name, stderr.String())
+		return "", fmt.Errorf("failed to run external command: %s, args: %v\n%s",
+			name, args, stderr.String())
 	}
 
 	return stdout.String(), nil

@@ -197,6 +197,21 @@ func (mr *MockConnectionMockRecorder) GetRepoNames(hostname, repoName interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoNames", reflect.TypeOf((*MockConnection)(nil).GetRepoNames), hostname, repoName)
 }
 
+// GetSshConfig mocks base method.
+func (m *MockConnection) GetSshConfig(name string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSshConfig", name)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSshConfig indicates an expected call of GetSshConfig.
+func (mr *MockConnectionMockRecorder) GetSshConfig(name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSshConfig", reflect.TypeOf((*MockConnection)(nil).GetSshConfig), name)
+}
+
 // GetUncommittedChanges mocks base method.
 func (m *MockConnection) GetUncommittedChanges() (string, error) {
 	m.ctrl.T.Helper()

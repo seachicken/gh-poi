@@ -32,6 +32,13 @@ func (conn *Connection) GetRemoteNames() (string, error) {
 	return run("git", args)
 }
 
+func (conn *Connection) GetSshConfig(name string) (string, error) {
+	args := []string{
+		"-T", "-G", name,
+	}
+	return run("ssh", args)
+}
+
 func (conn *Connection) GetRepoNames(hostname string, repoName string) (string, error) {
 	args := []string{
 		"repo", "view", hostname + "/" + repoName,

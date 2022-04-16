@@ -78,6 +78,18 @@ func (s *Stub) GetRemoteNames(filename string, err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) GetSshConfig(filename string, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			GetSshConfig(gomock.Any()).
+			Return(s.readFile("ssh", "config", filename), err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(

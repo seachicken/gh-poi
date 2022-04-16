@@ -16,6 +16,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
@@ -69,6 +70,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -121,6 +123,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -173,6 +176,7 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBranchNames("@main_forkMain", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -225,6 +229,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
@@ -278,6 +283,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
@@ -331,6 +337,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@issue1", nil, nil).
 		GetMergedBranchNames("empty", nil, nil).
@@ -383,6 +390,7 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
@@ -436,6 +444,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -488,6 +497,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -547,6 +557,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -602,6 +613,7 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -654,6 +666,7 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -702,6 +715,7 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -743,6 +757,7 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@detached", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
@@ -788,12 +803,43 @@ func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func Test_DoesNotReturnsAnErrorWhenGetSshConfigFails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", errors.New("failed to run external command: ssh"), nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetMergedBranchNames("@main", nil, nil).
+		GetLog([]conn.LogStub{
+			{"main", "main"}, {"issue1", "issue1"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
+			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("issue1Merged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{"branch.main.merge", "main"},
+			{"branch.issue1.merge", "issue1"},
+		}, nil, nil)
+
+	_, err := GetBranches(s.Conn, false)
+
+	assert.Nil(t, err)
+}
+
 func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", errors.New("failed to run external command: gh"), nil)
 
 	_, err := GetBranches(s.Conn, false)
@@ -808,6 +854,7 @@ func Test_ReturnsAnErrorWhenCheckReposFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(errors.New("failed to run external command: gh"), nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil)
 
 	_, err := GetBranches(s.Conn, false)
@@ -822,6 +869,7 @@ func Test_ReturnsAnErrorWhenGetBranchNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", errors.New("failed to run external command: git"), nil)
 
@@ -837,6 +885,7 @@ func Test_ReturnsAnErrorWhenGetMergedBranchNames(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", errors.New("failed to run external command: git"), nil)
@@ -853,6 +902,7 @@ func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -872,6 +922,7 @@ func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -895,6 +946,7 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -919,6 +971,7 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
@@ -948,6 +1001,7 @@ func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		CheckRepos(nil, nil).
 		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).

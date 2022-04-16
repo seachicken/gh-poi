@@ -16,6 +16,7 @@ type (
 	Connection interface {
 		CheckRepos(hostname string, repoNames []string) error
 		GetRemoteNames() (string, error)
+		GetSshConfig(name string) (string, error)
 		GetRepoNames(hostname string, repoName string) (string, error)
 		GetBranchNames() (string, error)
 		GetMergedBranchNames() (string, error)
@@ -81,6 +82,9 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 		remotes := toRemotes(splitLines(remoteNames))
 		if remote, err := getPrimaryRemote(remotes); err == nil {
 			hostname = remote.Hostname
+			if config, err := conn.GetSshConfig(hostname); err == nil {
+				hostname = findHostname(splitLines(config), hostname)
+			}
 			primaryRepoName = remote.RepoName
 		}
 	} else {
@@ -205,6 +209,16 @@ func getPrimaryRemote(remotes []Remote) (Remote, error) {
 		}
 	}
 	return remotes[0], nil
+}
+
+func findHostname(params []string, defaultName string) string {
+	for _, param := range params {
+		kv := strings.Split(param, " ")
+		if kv[0] == "hostname" {
+			return kv[1]
+		}
+	}
+	return defaultName
 }
 
 func extractMergedBranchNames(mergedNames []string) []string {

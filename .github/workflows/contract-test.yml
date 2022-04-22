@@ -10,12 +10,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        git: ["git=1:2.*"]
+        git: ["git=1:2.35.*", "git=1:2.*"]
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
+    - run: sudo add-apt-repository ppa:git-core/ppa
     - run: sudo apt-get update
 
     - name: Set up Go

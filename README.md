@@ -4,11 +4,15 @@
 [![codecov](https://codecov.io/gh/seachicken/gh-poi/branch/main/graph/badge.svg?token=tcPxPgst2q)](https://codecov.io/gh/seachicken/gh-poi)
 [![Stake to support us](https://badge.devprotocol.xyz/0x9ca78E1ca8E49a0e9C8BfB59A8Ed58E1E4440615/descriptive)](https://stakes.social/0x9ca78E1ca8E49a0e9C8BfB59A8Ed58E1E4440615)
 
-A [gh](https://github.com/cli/cli) extension for deleting merged local branches.
-
-This extension checks the state of remote pull requests, so it works even when you "Squash and merge" pull requests.
+This [gh](https://github.com/cli/cli) extension determines which local branches have been merged and safely deletes them.
 
 ![demo](https://user-images.githubusercontent.com/5178598/140624593-bf38ded3-388b-4a4b-a5c0-4053f8de51ad.gif)
+
+## Motivation
+
+In daily development, it is difficult to know which branch is the active branch when there are many unnecessary branches left locally, which causes a small amount of stress. If you squash merge a pull request, there is no history of the merge to the default branch, so you have to force delete the branch to clean it up, and you have to be careful not to accidentally delete the active branch.
+
+We have made it possible to automatically determine which branches have been merged and clean up the local environment without worry.
 
 ## Installation
 
@@ -20,8 +24,3 @@ gh extension install seachicken/gh-poi
 
 - `gh poi` Delete the merged local branches
 - `gh poi --dry-run` You can check the branch to be deleted without actually deleting it
-
-## ✨ Local branch to be deleted
-
-- Branches merged in the origin repository
-- Branches merged in the upstream repository

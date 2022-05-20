@@ -40,8 +40,9 @@ func (conn *Connection) GetSshConfig(name string) (string, error) {
 }
 
 func (conn *Connection) GetRepoNames(hostname string, repoName string) (string, error) {
+	fmt.Printf("hostname: %v, repoName: %v\n", hostname, repoName)
 	args := []string{
-		"repo", "view", hostname + "/" + repoName,
+		"repo", "view", fmt.Sprintf("%s/%s", hostname, repoName),
 		"--json", "owner",
 		"--json", "name",
 		"--json", "parent",

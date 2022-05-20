@@ -82,10 +82,10 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 		remotes := toRemotes(splitLines(remoteNames))
 		if remote, err := getPrimaryRemote(remotes); err == nil {
 			hostname = remote.Hostname
-      fmt.Printf("remote -v. hostname: %v\n", hostname)
+			fmt.Printf("remote -v. hostname: %v\n", hostname)
 			if config, err := conn.GetSshConfig(hostname); err == nil {
 				hostname = findHostname(splitLines(config), hostname)
-        fmt.Printf("ssh. hostname: %v\n", hostname)
+				fmt.Printf("ssh. hostname: %v\n", hostname)
 			}
 			primaryRepoName = remote.RepoName
 		}
@@ -645,7 +645,8 @@ func branchNameExists(branchName string, branches []Branch) bool {
 }
 
 func splitLines(text string) []string {
-	return strings.Split(strings.Replace(text, "\r\n", "\n", -1), "\n")
+	return strings.FieldsFunc(strings.Replace(text, "\r\n", "\n", -1),
+		func(c rune) bool { return c == '\n' })
 }
 
 func (b Branch) IsDetached() bool {

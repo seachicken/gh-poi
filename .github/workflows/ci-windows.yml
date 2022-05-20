@@ -37,11 +37,7 @@ jobs:
         foreach ($branch in $(git branch --all | grep '^\s*remotes' | findstr /v /r '(:?HEAD|main)$')) { \
           git branch --track "${branch##*/}" "$branch" \
         }
+        git branch
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-        go test .. -v -race -coverprofile=coverage.out -covermode=atomic
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        directory: ./ci-test/
+        go test .. -v -race
 

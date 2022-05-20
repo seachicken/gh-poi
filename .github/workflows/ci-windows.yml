@@ -34,7 +34,9 @@ jobs:
     - name: Test
       working-directory: ./ci-test
       run: |
-        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|main)$'); do git branch --track "${branch##*/}" "$branch"; done
+        foreach ($branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|main)$')) { \
+          git branch --track "${branch##*/}" "$branch" \
+        }
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test .. -v -race -coverprofile=coverage.out -covermode=atomic
 

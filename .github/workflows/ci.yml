@@ -38,12 +38,10 @@ jobs:
     - name: Test
       working-directory: ./ci-test
       run: |
-        echo "-----"
-        git branch --all
-        echo "-----"
-        git branch --all | grep '^\s*remotes' | egrep --invert-match 'main$'
-        echo "-----"
-        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match 'main$'); do echo $branch && git branch --track "${branch##*/}" "$branch"; done
+        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match 'main$')
+        do
+          git branch --track "${branch##*/}" "$branch"
+        done
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test .. -v -race -coverprofile=coverage.out -covermode=atomic
 

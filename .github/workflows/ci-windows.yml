@@ -35,11 +35,8 @@ jobs:
       working-directory: ./ci-test
       run: |
         foreach ($branch in $(git branch --all | findstr /r '\<\s*remotes' | findstr /v /r 'main$')) {
-          echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}
-          echo "$branch".trim()
           git branch --track $(echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}) "$branch".trim()
         }
-        git branch
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
         go test .. -v -race
 

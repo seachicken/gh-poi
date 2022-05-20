@@ -643,7 +643,8 @@ func branchNameExists(branchName string, branches []Branch) bool {
 }
 
 func splitLines(text string) []string {
-	return strings.FieldsFunc(text, func(c rune) bool { return c == '\n' })
+	return strings.FieldsFunc(strings.Replace(text, "\r\n", "\n", -1),
+		func(c rune) bool { return c == '\n' })
 }
 
 func (b Branch) IsDetached() bool {

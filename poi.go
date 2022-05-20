@@ -82,10 +82,8 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 		remotes := toRemotes(splitLines(remoteNames))
 		if remote, err := getPrimaryRemote(remotes); err == nil {
 			hostname = remote.Hostname
-			fmt.Printf("remote -v. hostname: %v\n", hostname)
 			if config, err := conn.GetSshConfig(hostname); err == nil {
 				hostname = findHostname(splitLines(config), hostname)
-				fmt.Printf("ssh. hostname: %v\n", hostname)
 			}
 			primaryRepoName = remote.RepoName
 		}

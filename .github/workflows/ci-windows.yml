@@ -36,8 +36,8 @@ jobs:
       run: |
         git branch --all | findstr /r '\<\s*remotes'
         foreach ($branch in $(git branch --all | findstr /r '\<\s*remotes' | findstr /v /r 'main$')) {
-          echo $branch
-          git branch --track $(echo branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}) "$branch"
+          echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}
+          git branch --track $(echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}) "$branch"
         }
         git branch
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token

@@ -34,9 +34,9 @@ jobs:
     - name: Test
       working-directory: ./ci-test
       run: |
-        foreach ($branch in $(git branch --all | grep '^\s*remotes' | findstr /v /r '(:?HEAD|main)$')) { \
+        foreach ($branch in $(git branch --all | grep '^\s*remotes' | findstr /v /r '(:?HEAD|main)$')) {
           echo $branch
-          git branch --track "${branch##*/}" "$branch" \
+          git branch --track "${branch##*/}" "$branch"
         }
         git branch
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token

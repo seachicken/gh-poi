@@ -35,6 +35,7 @@ jobs:
       working-directory: ./ci-test
       run: |
         foreach ($branch in $(git branch --all | grep '^\s*remotes' | findstr /v /r '(:?HEAD|main)$')) { \
+          echo $branch
           git branch --track "${branch##*/}" "$branch" \
         }
         git branch

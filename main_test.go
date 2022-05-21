@@ -12,10 +12,10 @@ import (
 )
 
 func Test_DeletingBranchesWhenTheDryRunOptionIsFalse(t *testing.T) {
-  fmt.Println("enter test")
+  //fmt.Println("enter test")
 	onlyCI(t)
 
-  fmt.Println("before runMain")
+  //fmt.Println("before runMain")
 	actual := captureOutput(func() { runMain(false) })
   //fmt.Println("after runMain")
 

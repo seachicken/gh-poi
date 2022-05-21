@@ -76,6 +76,7 @@ var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
 func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
+  fmt.Println("enter GetBranches")
 	var hostname string
 	primaryRepoName := ""
 	if remoteNames, err := conn.GetRemoteNames(); err == nil {

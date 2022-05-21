@@ -17,7 +17,7 @@ func Test_DeletingBranchesWhenTheDryRunOptionIsFalse(t *testing.T) {
 
   fmt.Println("before runMain")
 	actual := captureOutput(func() { runMain(false) })
-  fmt.Println("after runMain")
+  //fmt.Println("after runMain")
 
 	expected := fmt.Sprintf("%s %s", green("✔"), "Deleting branches...")
 	assert.Contains(t, actual, expected)

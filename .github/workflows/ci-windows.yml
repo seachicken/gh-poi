@@ -1,4 +1,4 @@
-name: CI
+name: CI for Windows
 
 on:
   pull_request:
@@ -8,13 +8,12 @@ on:
 jobs:
 
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
+    - name: Prepare git
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v2
 
     - name: Set up Go
@@ -35,14 +34,9 @@ jobs:
     - name: Test
       working-directory: ./ci-test
       run: |
-        for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match 'main$')
-        do
-          git branch --track "${branch##*/}" "$branch"
-        done
+        foreach ($branch in $(git branch --all | findstr /r '\<\s*remotes' | findstr /v /r 'main$')) {
+          git branch --track $(echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}) "$branch".trim()
+        }
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-        go test .. -v -race -coverprofile=coverage.out -covermode=atomic
+        go test .. -v
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        directory: ./ci-test/

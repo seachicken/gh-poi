@@ -29,7 +29,7 @@ func main() {
 }
 
 func runMain(dryRun bool) {
-  //fmt.Println("enter runMain")
+  fmt.Println("enter runMain")
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}

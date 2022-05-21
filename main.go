@@ -33,16 +33,23 @@ func runMain(dryRun bool) {
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
+  fmt.Println("after dry run output")
 
+  fmt.Println("before new spinner")
 	conn := &conn.Connection{}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
+  fmt.Println("after new spinner")
 
 	fetchingMsg := " Fetching pull requests..."
 	sp.Suffix = fetchingMsg
+  fmt.Println("before start spinner")
 	sp.Start()
+  fmt.Println("after start spinner")
 	var fetchingErr error
 
+  fmt.Println("before getbranches")
 	branches, fetchingErr := GetBranches(conn, dryRun)
+  fmt.Println("after getbranches")
 
 	sp.Stop()
 

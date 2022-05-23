@@ -133,12 +133,7 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 	}
 
 	branches = applyPullRequest(branches, prs, conn)
-
-	uncommittedChanges, err := conn.GetUncommittedChanges()
-	if err != nil {
-		return nil, err
-	}
-
+	uncommittedChanges, _ := conn.GetUncommittedChanges()
 	branches = checkDeletion(branches, uncommittedChanges)
 
 	needsCheckout := false

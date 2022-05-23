@@ -964,7 +964,8 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
+// https://github.com/seachicken/gh-poi/issues/57
+func Test_DoesNotReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -991,7 +992,7 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 
 	_, err := GetBranches(s.Conn, false)
 
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 }
 
 func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {

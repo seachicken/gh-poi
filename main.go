@@ -33,7 +33,7 @@ func runMain(dryRun bool) {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
-	conn := &conn.Connection{}
+	connection := &conn.Connection{}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 
 	fetchingMsg := " Fetching pull requests..."
@@ -41,7 +41,7 @@ func runMain(dryRun bool) {
 	sp.Start()
 	var fetchingErr error
 
-	branches, fetchingErr := GetBranches(conn, dryRun)
+	branches, fetchingErr := GetBranches(connection, dryRun)
 
 	sp.Stop()
 
@@ -62,7 +62,7 @@ func runMain(dryRun bool) {
 		sp.Suffix = deletingMsg
 		sp.Restart()
 
-		branches, deletingErr = DeleteBranches(branches, conn)
+		branches, deletingErr = DeleteBranches(branches, connection)
 
 		sp.Stop()
 

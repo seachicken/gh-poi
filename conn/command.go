@@ -2,13 +2,31 @@ package conn
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 
 	exec "golang.org/x/sys/execabs"
 )
 
-type Connection struct{}
+type (
+	Connection struct{}
+
+	ErrCommand struct {
+		msg string
+		err error
+	}
+)
+
+func (e *ErrCommand) Error() string {
+	return e.msg
+}
+
+func (e *ErrCommand) Unwrap() error {
+	return e.err
+}
+
+var ErrStd = errors.New("stderr")
 
 func (conn *Connection) CheckRepos(hostname string, repoNames []string) error {
 	for _, name := range repoNames {
@@ -163,8 +181,10 @@ func run(name string, args []string) (string, error) {
 	cmd.Wait()
 
 	if stderr.Len() > 0 {
-		return "", fmt.Errorf("failed to run external command: %s, args: %v\n%s",
-			name, args, stderr.String())
+		return "", &ErrCommand{
+			fmt.Sprintf("failed to run external command: %s, args: %v\n%s", name, args, stderr.String()),
+			ErrStd,
+		}
 	}
 
 	return stdout.String(), nil

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/seachicken/gh-poi/conn"
 )
 
 type (
@@ -75,14 +76,14 @@ const (
 var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
-func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
+func GetBranches(connection Connection, dryRun bool) ([]Branch, error) {
 	var hostname string
 	primaryRepoName := ""
-	if remoteNames, err := conn.GetRemoteNames(); err == nil {
+	if remoteNames, err := connection.GetRemoteNames(); err == nil {
 		remotes := toRemotes(splitLines(remoteNames))
 		if remote, err := getPrimaryRemote(remotes); err == nil {
 			hostname = remote.Hostname
-			if config, err := conn.GetSshConfig(hostname); err == nil {
+			if config, err := connection.GetSshConfig(hostname); err == nil {
 				hostname = findHostname(splitLines(config), hostname)
 			}
 			primaryRepoName = remote.RepoName
@@ -93,26 +94,26 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 
 	var repoNames []string
 	var defaultBranchName string
-	if json, err := conn.GetRepoNames(hostname, primaryRepoName); err == nil {
+	if json, err := connection.GetRepoNames(hostname, primaryRepoName); err == nil {
 		repoNames, defaultBranchName, _ = getRepo(json)
 	} else {
 		return nil, err
 	}
 
-	err := conn.CheckRepos(hostname, repoNames)
+	err := connection.CheckRepos(hostname, repoNames)
 	if err != nil {
 		return nil, err
 	}
 
 	var branches []Branch
-	if names, err := conn.GetBranchNames(); err == nil {
+	if names, err := connection.GetBranchNames(); err == nil {
 		branches = toBranch(splitLines(names))
-		mergedNames, err := conn.GetMergedBranchNames()
+		mergedNames, err := connection.GetMergedBranchNames()
 		if err != nil {
 			return nil, err
 		}
 		branches = applyMerged(branches, extractMergedBranchNames(splitLines(mergedNames)))
-		branches, err = applyCommits(branches, defaultBranchName, conn)
+		branches, err = applyCommits(branches, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -122,7 +123,7 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 
 	prs := []PullRequest{}
 	for _, queryHashes := range getQueryHashes(branches) {
-		json, err := conn.GetPullRequests(hostname, repoNames, queryHashes)
+		json, err := connection.GetPullRequests(hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
 		}
@@ -132,8 +133,13 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 		}
 	}
 
-	branches = applyPullRequest(branches, prs, conn)
-	uncommittedChanges, _ := conn.GetUncommittedChanges()
+	branches = applyPullRequest(branches, prs, connection)
+
+	uncommittedChanges, err := connection.GetUncommittedChanges()
+	if err != nil && !errors.Is(err, conn.ErrStd) {
+		return nil, err
+	}
+
 	branches = checkDeletion(branches, uncommittedChanges)
 
 	needsCheckout := false
@@ -148,7 +154,7 @@ func GetBranches(conn Connection, dryRun bool) ([]Branch, error) {
 		result := []Branch{}
 
 		if !dryRun {
-			_, err := conn.CheckoutBranch(defaultBranchName)
+			_, err := connection.CheckoutBranch(defaultBranchName)
 			if err != nil {
 				return nil, err
 			}
@@ -246,7 +252,7 @@ func nameExists(name string, names []string) bool {
 	return false
 }
 
-func applyCommits(branches []Branch, defaultBranchName string, conn Connection) ([]Branch, error) {
+func applyCommits(branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
 	results := []Branch{}
 
 	for _, branch := range branches {
@@ -255,13 +261,13 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 			continue
 		}
 
-		oids, err := conn.GetLog(branch.Name)
+		oids, err := connection.GetLog(branch.Name)
 		if err != nil {
 			return nil, err
 		}
 
 		trimmedOids, err := trimBranch(splitLines(oids), branch.IsMerged,
-			branch.Name, defaultBranchName, conn)
+			branch.Name, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -274,7 +280,7 @@ func applyCommits(branches []Branch, defaultBranchName string, conn Connection) 
 }
 
 func trimBranch(oids []string, isMerged bool,
-	branchName string, defaultBranchName string, conn Connection) ([]string, error) {
+	branchName string, defaultBranchName string, connection Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
 
@@ -284,7 +290,7 @@ func trimBranch(oids []string, isMerged bool,
 			break
 		}
 
-		refNames, err := conn.GetAssociatedRefNames(oid)
+		refNames, err := connection.GetAssociatedRefNames(oid)
 		if err != nil {
 			return nil, err
 		}
@@ -331,13 +337,13 @@ func extractBranchNames(refNames []string) []string {
 	return result
 }
 
-func applyPullRequest(branches []Branch, prs []PullRequest, conn Connection) []Branch {
+func applyPullRequest(branches []Branch, prs []PullRequest, connection Connection) []Branch {
 	prNumbers := map[string]int{}
 	for _, branch := range branches {
 		if branch.IsDetached() {
 			continue
 		}
-		mergeConfig, _ := conn.GetConfig(fmt.Sprintf("branch.%s.merge", branch.Name))
+		mergeConfig, _ := connection.GetConfig(fmt.Sprintf("branch.%s.merge", branch.Name))
 		if n := getPRNumber(mergeConfig); n > 0 {
 			prNumbers[branch.Name] = n
 		}
@@ -588,15 +594,15 @@ func toPullRequestState(state string) (PullRequestState, error) {
 	}
 }
 
-func DeleteBranches(branches []Branch, conn Connection) ([]Branch, error) {
+func DeleteBranches(branches []Branch, connection Connection) ([]Branch, error) {
 	branchNames := getBranchNames(branches, Deletable)
 	if len(branchNames) == 0 {
 		return branches, nil
 	}
 
-	conn.DeleteBranches(branchNames)
+	connection.DeleteBranches(branchNames)
 
-	branchNamesAfter, err := conn.GetBranchNames()
+	branchNamesAfter, err := connection.GetBranchNames()
 	if err != nil {
 		return nil, err
 	}

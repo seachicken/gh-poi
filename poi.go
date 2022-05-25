@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/seachicken/gh-poi/conn"
 )
 
 type (
@@ -136,7 +135,7 @@ func GetBranches(connection Connection, dryRun bool) ([]Branch, error) {
 	branches = applyPullRequest(branches, prs, connection)
 
 	uncommittedChanges, err := connection.GetUncommittedChanges()
-	if err != nil && !errors.Is(err, conn.ErrStd) {
+	if err != nil {
 		return nil, err
 	}
 

@@ -2,7 +2,6 @@ package conn
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -10,24 +9,7 @@ import (
 	"github.com/cli/safeexec"
 )
 
-type (
-	Connection struct{}
-
-	ErrCommand struct {
-		msg string
-		err error
-	}
-)
-
-func (e *ErrCommand) Error() string {
-	return e.msg
-}
-
-func (e *ErrCommand) Unwrap() error {
-	return e.err
-}
-
-var ErrStd = errors.New("stderr")
+type Connection struct{}
 
 func (conn *Connection) CheckRepos(hostname string, repoNames []string) error {
 	for _, name := range repoNames {

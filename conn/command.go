@@ -143,6 +143,13 @@ func (conn *Connection) DeleteBranches(branchNames []string) (string, error) {
 	return run("git", args)
 }
 
+func (conn *Connection) PruneRemoteBranches(remoteName string) (string, error) {
+	args := []string{
+		"remote", "prune", remoteName,
+	}
+	return run("git", args)
+}
+
 func getQueryRepos(repoNames []string) string {
 	var repos strings.Builder
 	for _, name := range repoNames {

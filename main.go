@@ -41,7 +41,13 @@ func runMain(dryRun bool) {
 	sp.Start()
 	var fetchingErr error
 
-	branches, fetchingErr := GetBranches(connection, dryRun)
+	remote, err := GetRemote(connection)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+
+	branches, fetchingErr := GetBranches(remote, connection, dryRun)
 
 	sp.Stop()
 
@@ -63,6 +69,7 @@ func runMain(dryRun bool) {
 		sp.Restart()
 
 		branches, deletingErr = DeleteBranches(branches, connection)
+		connection.PruneRemoteBranches(remote.Name)
 
 		sp.Stop()
 

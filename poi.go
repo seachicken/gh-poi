@@ -75,31 +75,34 @@ const (
 var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
-func GetBranches(connection Connection, dryRun bool) ([]Branch, error) {
-	var hostname string
-	primaryRepoName := ""
-	if remoteNames, err := connection.GetRemoteNames(); err == nil {
-		remotes := toRemotes(splitLines(remoteNames))
-		if remote, err := getPrimaryRemote(remotes); err == nil {
-			hostname = remote.Hostname
-			if config, err := connection.GetSshConfig(hostname); err == nil {
-				hostname = findHostname(splitLines(config), hostname)
-			}
-			primaryRepoName = remote.RepoName
-		}
-	} else {
-		return nil, err
+func GetRemote(connection Connection) (Remote, error) {
+	remoteNames, err := connection.GetRemoteNames()
+	if err != nil {
+		return Remote{}, err
 	}
 
+	remotes := toRemotes(splitLines(remoteNames))
+	if remote, err := getPrimaryRemote(remotes); err == nil {
+		hostname := remote.Hostname
+		if config, err := connection.GetSshConfig(hostname); err == nil {
+			remote.Hostname = findHostname(splitLines(config), hostname)
+		}
+		return remote, nil
+	} else {
+		return Remote{}, err
+	}
+}
+
+func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
-	if json, err := connection.GetRepoNames(hostname, primaryRepoName); err == nil {
+	if json, err := connection.GetRepoNames(remote.Hostname, remote.RepoName); err == nil {
 		repoNames, defaultBranchName, _ = getRepo(json)
 	} else {
 		return nil, err
 	}
 
-	err := connection.CheckRepos(hostname, repoNames)
+	err := connection.CheckRepos(remote.Hostname, repoNames)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +125,7 @@ func GetBranches(connection Connection, dryRun bool) ([]Branch, error) {
 
 	prs := []PullRequest{}
 	for _, queryHashes := range getQueryHashes(branches) {
-		json, err := connection.GetPullRequests(hostname, repoNames, queryHashes)
+		json, err := connection.GetPullRequests(remote.Hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
 		}

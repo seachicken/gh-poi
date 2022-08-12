@@ -34,8 +34,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -87,8 +88,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -140,8 +142,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -193,8 +196,9 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 			{"branch.fork/main.merge", "forkMain"},
 			{"branch.main.merge", "main"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -247,8 +251,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 1}))
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -301,8 +306,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 0}))
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, true)
+	actual, _ := GetBranches(remote, s.Conn, true)
 
 	assert.Equal(t, []Branch{
 		{
@@ -354,8 +360,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -408,8 +415,9 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -461,8 +469,9 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -514,8 +523,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -576,8 +586,9 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -630,8 +641,9 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -685,8 +697,9 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -731,8 +744,9 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -772,8 +786,9 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		GetConfig([]conn.ConfigStub{
 			{"branch.main.merge", "main"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	actual, _ := GetBranches(s.Conn, false)
+	actual, _ := GetBranches(remote, s.Conn, false)
 
 	assert.Equal(t, []Branch{
 		{
@@ -798,7 +813,7 @@ func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", errors.New("failed to run external command: git"), nil)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetRemote(s.Conn)
 
 	assert.NotNil(t, err)
 }
@@ -827,8 +842,9 @@ func Test_DoesNotReturnsAnErrorWhenGetSshConfigFails(t *testing.T) {
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.Nil(t, err)
 }
@@ -841,8 +857,9 @@ func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", errors.New("failed to run external command: gh"), nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -856,8 +873,9 @@ func Test_ReturnsAnErrorWhenCheckReposFails(t *testing.T) {
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -872,8 +890,9 @@ func Test_ReturnsAnErrorWhenGetBranchNamesFails(t *testing.T) {
 		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", errors.New("failed to run external command: git"), nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -889,8 +908,9 @@ func Test_ReturnsAnErrorWhenGetMergedBranchNames(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", errors.New("failed to run external command: git"), nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -909,8 +929,9 @@ func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
 		GetLog([]conn.LogStub{
 			{"main", "main"}, {"issue1", "issue1"},
 		}, errors.New("failed to run external command: git"), nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -933,8 +954,9 @@ func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, errors.New("failed to run external command: git"), nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -958,8 +980,9 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", errors.New("failed to run external command: gh"), nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -988,8 +1011,9 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }
@@ -1019,8 +1043,9 @@ func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
 			{"branch.main.merge", "main"},
 			{"branch.issue1.merge", "issue1"},
 		}, nil, nil)
+	remote, _ := GetRemote(s.Conn)
 
-	_, err := GetBranches(s.Conn, false)
+	_, err := GetBranches(remote, s.Conn, false)
 
 	assert.NotNil(t, err)
 }

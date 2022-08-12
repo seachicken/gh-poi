@@ -118,8 +118,9 @@ func (conn *Connection) GetPullRequests(
 }
 
 func (conn *Connection) GetUncommittedChanges() (string, error) {
-	args := append([]string{
-		"status", "--short"})
+	args := []string{
+		"status", "--short",
+	}
 	return run("git", args)
 }
 
@@ -131,15 +132,17 @@ func (conn *Connection) GetConfig(key string) (string, error) {
 }
 
 func (conn *Connection) CheckoutBranch(branchName string) (string, error) {
-	args := append([]string{
-		"checkout", "--quiet", branchName})
+	args := []string{
+		"checkout", "--quiet", branchName,
+	}
 	return run("git", args)
 }
 
 func (conn *Connection) DeleteBranches(branchNames []string) (string, error) {
 	args := append([]string{
 		"branch", "-D"},
-		branchNames...)
+		branchNames...,
+	)
 	return run("git", args)
 }
 

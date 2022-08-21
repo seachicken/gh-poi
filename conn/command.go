@@ -54,7 +54,7 @@ func (conn *Connection) GetRepoNames(hostname string, repoName string) (string, 
 func (conn *Connection) GetBranchNames() (string, error) {
 	args := []string{
 		"branch", "-v", "--no-abbrev",
-		"--format=%(HEAD),%(refname:lstrip=2),%(objectname)",
+		"--format=%(HEAD):%(refname:lstrip=2):%(objectname)",
 	}
 	return run("git", args)
 }

@@ -1,2 +1,2 @@
-*,issue1,a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0
- ,main,6ebe3d30d23531af56bd23b5a098d3ccae2a534a
+*:issue1:a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0
+ :main:6ebe3d30d23531af56bd23b5a098d3ccae2a534a

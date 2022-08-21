@@ -467,14 +467,11 @@ func toBranch(branchNames []string) []Branch {
 
 	for _, branchName := range branchNames {
 		splitedNames := strings.Split(branchName, ":")
+		head := splitedNames[0] == "*"
 
-		headValue := splitedNames[0]
-		refNameValue := splitedNames[1]
-
-		head := headValue == "*"
 		results = append(results, Branch{
 			head,
-			refNameValue,
+			splitedNames[1],
 			false,
 			[]string{},
 			[]PullRequest{},

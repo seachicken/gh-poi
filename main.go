@@ -110,11 +110,10 @@ func printBranches(branches []Branch) {
 	}
 
 	for _, branch := range branches {
-		branchName := fmt.Sprintf("%s", branch.Name)
 		if branch.Head {
-			fmt.Fprintf(color.Output, "* %s\n", green(branchName))
+			fmt.Fprintf(color.Output, "* %s\n", green(branch.Name))
 		} else {
-			fmt.Fprintf(color.Output, "  %s\n", white(branchName))
+			fmt.Fprintf(color.Output, "  %s\n", white(branch.Name))
 		}
 
 		for i, pr := range branch.PullRequests {

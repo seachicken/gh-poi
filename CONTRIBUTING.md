@@ -11,4 +11,6 @@ Clone the project and `gh extension install .` (If already installed, then run `
 
 Run `gh poi` in any project directory.
 
-Run tests in gh-poi root directory with: `go test ./...`
+Please run:
+- `go test ./...`
+- `go vet ./...`

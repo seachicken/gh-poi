@@ -21,18 +21,18 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main_issue1Merged"}, {"issue1", "issue1Merged"},
+			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"b8a2645298053fb62ea03e27feea6c483d3fd27e", "main_issue1"},
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "main_issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "b8a2645298053fb62ea03e27feea6c483d3fd27e", Filename: "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "main_issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -76,17 +76,17 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -130,17 +130,17 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1UpMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -184,17 +184,17 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 		GetBranchNames("@main_forkMain", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"fork/main", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "fork/main", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "forkMain"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_forkMain"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "forkMain"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_forkMain"},
 		}, nil, nil).
 		GetPullRequests("forkMainUpMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.fork/main.merge", "forkMain"},
-			{"branch.main.merge", "main"},
+			{BranchName: "branch.fork/main.merge", Filename: "forkMain"},
+			{BranchName: "branch.main.merge", Filename: "main"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -238,17 +238,17 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 1}))
 	remote, _ := GetRemote(s.Conn)
@@ -293,17 +293,17 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 0}))
 	remote, _ := GetRemote(s.Conn)
@@ -348,16 +348,16 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 		GetBranchNames("@issue1", nil, nil).
 		GetMergedBranchNames("empty", nil, nil).
 		GetLog([]conn.LogStub{
-			{"issue1", "issue1"},
+			{BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "issue1_originMain"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "issue1_originMain"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(s.Conn)
@@ -402,17 +402,17 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges(" M README.md", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(s.Conn)
@@ -457,17 +457,17 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Closed", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -511,17 +511,17 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -572,19 +572,19 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main_issue1SquashAndMerged"}, {"issue1", "issue1CommitAfterMerge"},
+			{BranchName: "main", Filename: "main_issue1SquashAndMerged"}, {BranchName: "issue1", Filename: "issue1CommitAfterMerge"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"cb197ba87e4ad323b1008c611212deb7da2a4a49", "main"},
-			{"b8a2645298053fb62ea03e27feea6c483d3fd27e", "issue1"},
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "cb197ba87e4ad323b1008c611212deb7da2a4a49", Filename: "main"},
+			{Oid: "b8a2645298053fb62ea03e27feea6c483d3fd27e", Filename: "issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -629,17 +629,17 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("mainMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -683,19 +683,19 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"},
-			{"issue1", "issue1ManyCommits"}, // return with '--max-count=3'
+			{BranchName: "main", Filename: "main"},
+			{BranchName: "issue1", Filename: "issue1ManyCommits"}, // return with '--max-count=3'
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"62d5d8280031f607f1db058da959a97f6a8e6d90", "issue1"},
-			{"b8a2645298053fb62ea03e27feea6c483d3fd27e", "issue1"},
-			{"d787669ee4a103fe0b361fe31c10ea037c72f27c", "issue1"},
+			{Oid: "62d5d8280031f607f1db058da959a97f6a8e6d90", Filename: "issue1"},
+			{Oid: "b8a2645298053fb62ea03e27feea6c483d3fd27e", Filename: "issue1"},
+			{Oid: "d787669ee4a103fe0b361fe31c10ea037c72f27c", Filename: "issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -733,16 +733,16 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "main"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "main"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -776,15 +776,15 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		GetBranchNames("main_@detached", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"},
+			{BranchName: "main", Filename: "main"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
+			{BranchName: "branch.main.merge", Filename: "main"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -830,17 +830,17 @@ func Test_DoesNotReturnsAnErrorWhenGetSshConfigFails(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -927,7 +927,7 @@ func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, errors.New("failed to run external command: git"), nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -948,11 +948,11 @@ func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, errors.New("failed to run external command: git"), nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -973,11 +973,11 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", errors.New("failed to run external command: gh"), nil)
 	remote, _ := GetRemote(s.Conn)
@@ -999,17 +999,17 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", errors.New("failed to run external command: git"), nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 
@@ -1030,18 +1030,18 @@ func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{
-			{"main", "main"}, {"issue1", "issue1"},
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
 		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", "issue1"},
-			{"6ebe3d30d23531af56bd23b5a098d3ccae2a534a", "main_issue1"},
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		CheckoutBranch(errors.New("failed to run external command: git"), nil).
 		GetConfig([]conn.ConfigStub{
-			{"branch.main.merge", "main"},
-			{"branch.issue1.merge", "issue1"},
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
 		}, nil, nil)
 	remote, _ := GetRemote(s.Conn)
 

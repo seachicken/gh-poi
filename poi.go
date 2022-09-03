@@ -514,12 +514,6 @@ func getRepo(jsonResp string) ([]string, string, error) {
 	return repoNames, resp.DefaultBranchRef.Name, nil
 }
 
-func getHostname(url string) string {
-	r := regexp.MustCompile(`//(.+?)/`)
-	found := r.FindSubmatch([]byte(url))
-	return string(found[1])
-}
-
 func toPullRequests(jsonResp string) ([]PullRequest, error) {
 	type response struct {
 		Data struct {

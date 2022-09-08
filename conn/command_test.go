@@ -33,7 +33,7 @@ func Test_RepoBasic(t *testing.T) {
 	})
 
 	t.Run("GetMergedBranchNames", func(t *testing.T) {
-		actual, _ := conn.GetMergedBranchNames()
+		actual, _ := conn.GetMergedBranchNames("remote", "main")
 		assert.Equal(t,
 			stub.readFile("git", "branchMerged", "@main"),
 			actual,

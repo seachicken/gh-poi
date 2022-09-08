@@ -19,7 +19,7 @@ type (
 		GetSshConfig(name string) (string, error)
 		GetRepoNames(hostname string, repoName string) (string, error)
 		GetBranchNames() (string, error)
-		GetMergedBranchNames() (string, error)
+		GetMergedBranchNames(remoteName string, branchName string) (string, error)
 		GetLog(branchName string) (string, error)
 		GetAssociatedRefNames(oid string) (string, error)
 		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
@@ -110,7 +110,7 @@ func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, e
 	var branches []Branch
 	if names, err := connection.GetBranchNames(); err == nil {
 		branches = toBranch(splitLines(names))
-		mergedNames, err := connection.GetMergedBranchNames()
+		mergedNames, err := connection.GetMergedBranchNames(remote.Name, defaultBranchName)
 		if err != nil {
 			return nil, err
 		}

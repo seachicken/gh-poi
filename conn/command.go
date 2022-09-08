@@ -59,9 +59,9 @@ func (conn *Connection) GetBranchNames() (string, error) {
 	return run("git", args)
 }
 
-func (conn *Connection) GetMergedBranchNames() (string, error) {
+func (conn *Connection) GetMergedBranchNames(remoteName string, branchName string) (string, error) {
 	args := []string{
-		"branch", "--merged",
+		"branch", "--merged", fmt.Sprintf("%s/%s", remoteName, branchName),
 	}
 	return run("git", args)
 }

@@ -117,7 +117,7 @@ func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stu
 	s.t.Helper()
 	configure(
 		s.Conn.EXPECT().
-			GetMergedBranchNames().
+			GetMergedBranchNames("origin", "main").
 			Return(s.readFile("git", "branchMerged", filename), err),
 		conf,
 	)

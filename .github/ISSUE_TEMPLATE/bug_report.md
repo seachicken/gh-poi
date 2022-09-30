@@ -13,4 +13,4 @@ assignees: ''
 **Your Environment**
 - OS: 
 - gh (Check with `gh --version`): 
-- gh-poi (For gh v2.6+ check with `gh extension list`): 
+- gh-poi (Check with `gh ext ls`): 

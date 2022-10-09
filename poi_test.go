@@ -390,7 +390,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 	}, actual)
 }
 
-func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
+func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -438,6 +438,61 @@ func Test_ShouldNotDeletableWhenBranchHasUncommittedChanges(t *testing.T) {
 		},
 		{
 			false, "main", true,
+			[]string{},
+			[]PullRequest{},
+			NotDeletable,
+		},
+	}, actual)
+}
+
+func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("main_@issue1", nil, nil).
+		GetMergedBranchNames("main", nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("issue1Merged", nil, nil).
+		GetUncommittedChanges("?? new.txt", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "main"},
+			{BranchName: "branch.issue1.merge", Filename: "issue1"},
+		}, nil, nil).
+		CheckoutBranch(nil, nil)
+	remote, _ := GetRemote(s.Conn)
+
+	actual, _ := GetBranches(remote, s.Conn, false)
+
+	assert.Equal(t, []Branch{
+		{
+			false, "issue1", false,
+			[]string{
+				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
+			},
+			[]PullRequest{
+				{
+					"issue1", Merged, false, 1,
+					[]string{
+						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
+					},
+					"https://github.com/owner/repo/pull/1", "owner",
+				},
+			},
+			Deletable,
+		},
+		{
+			true, "main", true,
 			[]string{},
 			[]PullRequest{},
 			NotDeletable,

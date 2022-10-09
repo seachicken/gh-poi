@@ -57,6 +57,12 @@ type (
 		Url     string
 		Author  string
 	}
+
+	UncommittedChange struct {
+		X    string
+		Y    string
+		Path string
+	}
 )
 
 const (
@@ -137,8 +143,10 @@ func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, e
 
 	branches = applyPullRequest(branches, prs, connection)
 
-	uncommittedChanges, err := connection.GetUncommittedChanges()
-	if err != nil {
+	var uncommittedChanges []UncommittedChange
+	if changes, err := connection.GetUncommittedChanges(); err == nil {
+		uncommittedChanges = toUncommittedChange(splitLines(changes))
+	} else {
 		return nil, err
 	}
 
@@ -413,7 +421,19 @@ func findMatchedPullRequest(branchName string, prs []PullRequest, prNumbers map[
 	return results
 }
 
-func checkDeletion(branches []Branch, uncommittedChanges string) []Branch {
+func toUncommittedChange(changes []string) []UncommittedChange {
+	results := []UncommittedChange{}
+	for _, change := range changes {
+		results = append(results, UncommittedChange{
+			string(change[0]),
+			string(change[1]),
+			string(change[3:]),
+		})
+	}
+	return results
+}
+
+func checkDeletion(branches []Branch, uncommittedChanges []UncommittedChange) []Branch {
 	results := []Branch{}
 	for _, branch := range branches {
 		branch.State = getDeleteStatus(branch, uncommittedChanges)
@@ -422,8 +442,15 @@ func checkDeletion(branches []Branch, uncommittedChanges string) []Branch {
 	return results
 }
 
-func getDeleteStatus(branch Branch, uncommittedChanges string) BranchState {
-	if branch.Head && len(uncommittedChanges) > 0 {
+func getDeleteStatus(branch Branch, uncommittedChanges []UncommittedChange) BranchState {
+	hasTrackedChanges := false
+	for _, change := range uncommittedChanges {
+		if !change.IsUntracked() {
+			hasTrackedChanges = true
+			break
+		}
+	}
+	if branch.Head && hasTrackedChanges {
 		return NotDeletable
 	}
 
@@ -643,4 +670,8 @@ func splitLines(text string) []string {
 
 func (b Branch) IsDetached() bool {
 	return detachedBranchNameRegex.MatchString(b.Name)
+}
+
+func (uc *UncommittedChange) IsUntracked() bool {
+	return uc.Y == "?"
 }

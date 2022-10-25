@@ -78,6 +78,11 @@ const (
 	Open
 )
 
+const (
+	github    = "github.com"
+	localhost = "github.localhost"
+)
+
 var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
@@ -91,7 +96,7 @@ func GetRemote(connection Connection) (Remote, error) {
 	if remote, err := getPrimaryRemote(remotes); err == nil {
 		hostname := remote.Hostname
 		if config, err := connection.GetSshConfig(hostname); err == nil {
-			remote.Hostname = findHostname(splitLines(config), hostname)
+			remote.Hostname = normalizeHostname(findHostname(splitLines(config), hostname))
 		}
 		return remote, nil
 	} else {
@@ -195,6 +200,18 @@ func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, e
 	sort.Slice(branches, func(i, j int) bool { return branches[i].Name < branches[j].Name })
 
 	return branches, nil
+}
+
+// https://github.com/cli/cli/blob/8f28d1f9d5b112b222f96eb793682ff0b5a7927d/internal/ghinstance/host.go#L26
+func normalizeHostname(host string) string {
+	hostname := strings.ToLower(host)
+	if strings.HasSuffix(hostname, "."+github) {
+		return github
+	}
+	if strings.HasSuffix(hostname, "."+localhost) {
+		return localhost
+	}
+	return hostname
 }
 
 func toRemotes(remoteNames []string) []Remote {

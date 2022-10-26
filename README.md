@@ -11,7 +11,7 @@ This [gh](https://github.com/cli/cli) extension determines which local branches 
 
 ## Motivation
 
-In daily development, it is difficult to know which branch is the active branch when there are many unnecessary branches left locally, which causes a small amount of stress. If you squash merge a pull request, there is no history of the merge to the default branch, so you have to force delete the branch to clean it up, and you have to be careful not to accidentally delete the active branch.
+Daily development makes it difficult to know which branch is active when there are many unnecessary branches left locally, which causes a small amount of stress. If you squash merge a pull request, there is no history of the merge to the default branch, so you have to force delete the branch to clean it up, and you have to be careful not to accidentally delete the active branch.
 
 We have made it possible to automatically determine which branches have been merged and clean up the local environment without worry.
 

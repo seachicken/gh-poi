@@ -59,7 +59,7 @@ func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			CheckRepos(gomock.Any(), gomock.Any()).
+			CheckRepos(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(err),
 		conf,
 	)
@@ -71,7 +71,7 @@ func (s *Stub) GetRemoteNames(filename string, err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			GetRemoteNames().
+			GetRemoteNames(gomock.Any()).
 			Return(s.readFile("git", "remote", filename), err),
 		conf,
 	)
@@ -83,7 +83,7 @@ func (s *Stub) GetSshConfig(filename string, err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			GetSshConfig(gomock.Any()).
+			GetSshConfig(gomock.Any(), gomock.Any()).
 			Return(s.readFile("ssh", "config", filename), err),
 		conf,
 	)
@@ -95,7 +95,7 @@ func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			GetRepoNames(gomock.Any(), gomock.Any()).
+			GetRepoNames(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(s.readFile("gh", "repo", filename), err),
 		conf,
 	)
@@ -106,7 +106,7 @@ func (s *Stub) GetBranchNames(filename string, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	configure(
 		s.Conn.EXPECT().
-			GetBranchNames().
+			GetBranchNames(gomock.Any()).
 			Return(s.readFile("git", "branch", filename), err),
 		conf,
 	)
@@ -117,7 +117,7 @@ func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stu
 	s.t.Helper()
 	configure(
 		s.Conn.EXPECT().
-			GetMergedBranchNames("origin", "main").
+			GetMergedBranchNames(gomock.Any(), "origin", "main").
 			Return(s.readFile("git", "branchMerged", filename), err),
 		conf,
 	)
@@ -129,7 +129,7 @@ func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err erro
 	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
-				GetAssociatedRefNames(stub.Oid).
+				GetAssociatedRefNames(gomock.Any(), stub.Oid).
 				Return(s.readFile("git", "abranch", stub.Filename), err),
 			conf,
 		)
@@ -142,7 +142,7 @@ func (s *Stub) GetLog(stubs []LogStub, err error, conf *Conf) *Stub {
 	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
-				GetLog(stub.BranchName).
+				GetLog(gomock.Any(), stub.BranchName).
 				Return(s.readFile("git", "log", stub.Filename), err),
 			conf,
 		)
@@ -155,7 +155,7 @@ func (s *Stub) GetPullRequests(filename string, err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			GetPullRequests(gomock.Any(), gomock.Any(), gomock.Any()).
+			GetPullRequests(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(s.readFile("gh", "pr", filename), err),
 		conf,
 	)
@@ -167,7 +167,7 @@ func (s *Stub) GetUncommittedChanges(uncommittedChanges string, err error, conf 
 	configure(
 		s.Conn.
 			EXPECT().
-			GetUncommittedChanges().
+			GetUncommittedChanges(gomock.Any()).
 			Return(uncommittedChanges, err),
 		conf,
 	)
@@ -180,7 +180,7 @@ func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
 		configure(
 			s.Conn.
 				EXPECT().
-				GetConfig(stub.BranchName).
+				GetConfig(gomock.Any(), stub.BranchName).
 				Return(s.readFile("git", "configMerge", stub.Filename), err),
 			conf,
 		)
@@ -193,7 +193,7 @@ func (s *Stub) CheckoutBranch(err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			CheckoutBranch(gomock.Any()).
+			CheckoutBranch(gomock.Any(), gomock.Any()).
 			Return("", err),
 		conf,
 	)
@@ -205,7 +205,7 @@ func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			DeleteBranches(gomock.Any()).
+			DeleteBranches(gomock.Any(), gomock.Any()).
 			Return("", err),
 		conf,
 	)

@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"context"
 	"os"
 	"path"
 	"testing"
@@ -17,7 +18,7 @@ func Test_RepoBasic(t *testing.T) {
 	stub := &Stub{nil, t}
 
 	t.Run("GetRemoteNames", func(t *testing.T) {
-		actual, _ := conn.GetRemoteNames()
+		actual, _ := conn.GetRemoteNames(context.Background())
 		assert.Equal(t,
 			stub.readFile("git", "remote", "origin"),
 			actual,
@@ -25,7 +26,7 @@ func Test_RepoBasic(t *testing.T) {
 	})
 
 	t.Run("GetBranchNames", func(t *testing.T) {
-		actual, _ := conn.GetBranchNames()
+		actual, _ := conn.GetBranchNames(context.Background())
 		assert.Equal(t,
 			stub.readFile("git", "branch", "@main_issue1"),
 			actual,
@@ -35,7 +36,7 @@ func Test_RepoBasic(t *testing.T) {
 	t.Run("GetLog", func(t *testing.T) {
 
 		t.Run("main", func(t *testing.T) {
-			actual, _ := conn.GetLog("main")
+			actual, _ := conn.GetLog(context.Background(), "main")
 			assert.Equal(t,
 				stub.readFile("git", "log", "main"),
 				actual,
@@ -43,7 +44,7 @@ func Test_RepoBasic(t *testing.T) {
 		})
 
 		t.Run("issue1", func(t *testing.T) {
-			actual, _ := conn.GetLog("issue1")
+			actual, _ := conn.GetLog(context.Background(), "issue1")
 			assert.Equal(t,
 				stub.readFile("git", "log", "issue1"),
 				actual,
@@ -54,7 +55,7 @@ func Test_RepoBasic(t *testing.T) {
 	t.Run("GetAssociatedRefNames", func(t *testing.T) {
 
 		t.Run("issue1", func(t *testing.T) {
-			actual, _ := conn.GetAssociatedRefNames("a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0")
+			actual, _ := conn.GetAssociatedRefNames(context.Background(), "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0")
 			assert.Equal(t,
 				stub.readFile("git", "abranch", "issue1"),
 				actual,
@@ -62,7 +63,7 @@ func Test_RepoBasic(t *testing.T) {
 		})
 
 		t.Run("main_issue1", func(t *testing.T) {
-			actual, _ := conn.GetAssociatedRefNames("6ebe3d30d23531af56bd23b5a098d3ccae2a534a")
+			actual, _ := conn.GetAssociatedRefNames(context.Background(), "6ebe3d30d23531af56bd23b5a098d3ccae2a534a")
 			assert.Equal(t,
 				stub.readFile("git", "abranch", "main_issue1"),
 				actual,
@@ -71,12 +72,12 @@ func Test_RepoBasic(t *testing.T) {
 	})
 
 	t.Run("GetUncommittedChanges", func(t *testing.T) {
-		actual, _ := conn.GetUncommittedChanges()
+		actual, _ := conn.GetUncommittedChanges(context.Background())
 		assert.Equal(t, "A  README.md\n", actual)
 	})
 
 	t.Run("GetConfig", func(t *testing.T) {
-		actual, _ := conn.GetConfig("branch.main.merge")
+		actual, _ := conn.GetConfig(context.Background(), "branch.main.merge")
 		assert.Equal(t,
 			stub.readFile("git", "configMerge", "main"),
 			actual,

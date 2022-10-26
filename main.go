@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -29,25 +31,29 @@ func main() {
 }
 
 func runMain(dryRun bool) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
 	connection := &conn.Connection{}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
+	defer sp.Stop()
 
 	fetchingMsg := " Fetching pull requests..."
 	sp.Suffix = fetchingMsg
 	sp.Start()
 	var fetchingErr error
 
-	remote, err := GetRemote(connection)
+	remote, err := GetRemote(ctx, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	branches, fetchingErr := GetBranches(remote, connection, dryRun)
+	branches, fetchingErr := GetBranches(ctx, remote, connection, dryRun)
 
 	sp.Stop()
 
@@ -68,8 +74,8 @@ func runMain(dryRun bool) {
 		sp.Suffix = deletingMsg
 		sp.Restart()
 
-		branches, deletingErr = DeleteBranches(branches, connection)
-		connection.PruneRemoteBranches(remote.Name)
+		branches, deletingErr = DeleteBranches(ctx, branches, connection)
+		connection.PruneRemoteBranches(ctx, remote.Name)
 
 		sp.Stop()
 

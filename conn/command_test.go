@@ -2,7 +2,7 @@ package conn
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -88,8 +88,8 @@ func setGitDir(repoName string, t *testing.T) {
 	gitDirOrg := os.Getenv("GIT_DIR")
 	gitWorkTreeOrg := os.Getenv("GIT_WORK_TREE")
 
-	os.Setenv("GIT_DIR", path.Join(fixturePath, repoName, ".git"))
-	os.Setenv("GIT_WORK_TREE", path.Join(fixturePath, repoName))
+	os.Setenv("GIT_DIR", filepath.Join(fixturePath, repoName, ".git"))
+	os.Setenv("GIT_WORK_TREE", filepath.Join(fixturePath, repoName))
 
 	t.Cleanup(func() {
 		os.Setenv("GIT_DIR", gitDirOrg)

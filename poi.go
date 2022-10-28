@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -14,19 +15,19 @@ import (
 
 type (
 	Connection interface {
-		CheckRepos(hostname string, repoNames []string) error
-		GetRemoteNames() (string, error)
-		GetSshConfig(name string) (string, error)
-		GetRepoNames(hostname string, repoName string) (string, error)
-		GetBranchNames() (string, error)
-		GetMergedBranchNames(remoteName string, branchName string) (string, error)
-		GetLog(branchName string) (string, error)
-		GetAssociatedRefNames(oid string) (string, error)
-		GetPullRequests(hostname string, repoNames []string, queryHashes string) (string, error)
-		GetUncommittedChanges() (string, error)
-		GetConfig(key string) (string, error)
-		CheckoutBranch(branchName string) (string, error)
-		DeleteBranches(branchNames []string) (string, error)
+		CheckRepos(ctx context.Context, hostname string, repoNames []string) error
+		GetRemoteNames(ctx context.Context) (string, error)
+		GetSshConfig(ctx context.Context, name string) (string, error)
+		GetRepoNames(ctx context.Context, hostname string, repoName string) (string, error)
+		GetBranchNames(ctx context.Context) (string, error)
+		GetMergedBranchNames(ctx context.Context, remoteName string, branchName string) (string, error)
+		GetLog(ctx context.Context, branchName string) (string, error)
+		GetAssociatedRefNames(ctx context.Context, oid string) (string, error)
+		GetPullRequests(ctx context.Context, hostname string, repoNames []string, queryHashes string) (string, error)
+		GetUncommittedChanges(ctx context.Context) (string, error)
+		GetConfig(ctx context.Context, key string) (string, error)
+		CheckoutBranch(ctx context.Context, branchName string) (string, error)
+		DeleteBranches(ctx context.Context, branchNames []string) (string, error)
 	}
 
 	Remote struct {
@@ -86,8 +87,8 @@ const (
 var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
-func GetRemote(connection Connection) (Remote, error) {
-	remoteNames, err := connection.GetRemoteNames()
+func GetRemote(ctx context.Context, connection Connection) (Remote, error) {
+	remoteNames, err := connection.GetRemoteNames(ctx)
 	if err != nil {
 		return Remote{}, err
 	}
@@ -95,7 +96,7 @@ func GetRemote(connection Connection) (Remote, error) {
 	remotes := toRemotes(splitLines(remoteNames))
 	if remote, err := getPrimaryRemote(remotes); err == nil {
 		hostname := remote.Hostname
-		if config, err := connection.GetSshConfig(hostname); err == nil {
+		if config, err := connection.GetSshConfig(ctx, hostname); err == nil {
 			remote.Hostname = normalizeHostname(findHostname(splitLines(config), hostname))
 		}
 		return remote, nil
@@ -104,29 +105,29 @@ func GetRemote(connection Connection) (Remote, error) {
 	}
 }
 
-func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, error) {
+func GetBranches(ctx context.Context, remote Remote, connection Connection, dryRun bool) ([]Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
-	if json, err := connection.GetRepoNames(remote.Hostname, remote.RepoName); err == nil {
+	if json, err := connection.GetRepoNames(ctx, remote.Hostname, remote.RepoName); err == nil {
 		repoNames, defaultBranchName, _ = getRepo(json)
 	} else {
 		return nil, err
 	}
 
-	err := connection.CheckRepos(remote.Hostname, repoNames)
+	err := connection.CheckRepos(ctx, remote.Hostname, repoNames)
 	if err != nil {
 		return nil, err
 	}
 
 	var branches []Branch
-	if names, err := connection.GetBranchNames(); err == nil {
+	if names, err := connection.GetBranchNames(ctx); err == nil {
 		branches = toBranch(splitLines(names))
-		mergedNames, err := connection.GetMergedBranchNames(remote.Name, defaultBranchName)
+		mergedNames, err := connection.GetMergedBranchNames(ctx, remote.Name, defaultBranchName)
 		if err != nil {
 			return nil, err
 		}
 		branches = applyMerged(branches, extractMergedBranchNames(splitLines(mergedNames)))
-		branches, err = applyCommits(branches, defaultBranchName, connection)
+		branches, err = applyCommits(ctx, branches, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -136,7 +137,7 @@ func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, e
 
 	prs := []PullRequest{}
 	for _, queryHashes := range getQueryHashes(branches) {
-		json, err := connection.GetPullRequests(remote.Hostname, repoNames, queryHashes)
+		json, err := connection.GetPullRequests(ctx, remote.Hostname, repoNames, queryHashes)
 		if err != nil {
 			return nil, err
 		}
@@ -146,10 +147,10 @@ func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, e
 		}
 	}
 
-	branches = applyPullRequest(branches, prs, connection)
+	branches = applyPullRequest(ctx, branches, prs, connection)
 
 	var uncommittedChanges []UncommittedChange
-	if changes, err := connection.GetUncommittedChanges(); err == nil {
+	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
 		uncommittedChanges = toUncommittedChange(splitLines(changes))
 	} else {
 		return nil, err
@@ -169,7 +170,7 @@ func GetBranches(remote Remote, connection Connection, dryRun bool) ([]Branch, e
 		result := []Branch{}
 
 		if !dryRun {
-			_, err := connection.CheckoutBranch(defaultBranchName)
+			_, err := connection.CheckoutBranch(ctx, defaultBranchName)
 			if err != nil {
 				return nil, err
 			}
@@ -279,7 +280,7 @@ func nameExists(name string, names []string) bool {
 	return false
 }
 
-func applyCommits(branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
+func applyCommits(ctx context.Context, branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
 	results := []Branch{}
 
 	for _, branch := range branches {
@@ -288,12 +289,12 @@ func applyCommits(branches []Branch, defaultBranchName string, connection Connec
 			continue
 		}
 
-		oids, err := connection.GetLog(branch.Name)
+		oids, err := connection.GetLog(ctx, branch.Name)
 		if err != nil {
 			return nil, err
 		}
 
-		trimmedOids, err := trimBranch(splitLines(oids), branch.IsMerged,
+		trimmedOids, err := trimBranch(ctx, splitLines(oids), branch.IsMerged,
 			branch.Name, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
@@ -306,7 +307,7 @@ func applyCommits(branches []Branch, defaultBranchName string, connection Connec
 	return results, nil
 }
 
-func trimBranch(oids []string, isMerged bool,
+func trimBranch(ctx context.Context, oids []string, isMerged bool,
 	branchName string, defaultBranchName string, connection Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
@@ -317,7 +318,7 @@ func trimBranch(oids []string, isMerged bool,
 			break
 		}
 
-		refNames, err := connection.GetAssociatedRefNames(oid)
+		refNames, err := connection.GetAssociatedRefNames(ctx, oid)
 		if err != nil {
 			return nil, err
 		}
@@ -364,13 +365,13 @@ func extractBranchNames(refNames []string) []string {
 	return result
 }
 
-func applyPullRequest(branches []Branch, prs []PullRequest, connection Connection) []Branch {
+func applyPullRequest(ctx context.Context, branches []Branch, prs []PullRequest, connection Connection) []Branch {
 	prNumbers := map[string]int{}
 	for _, branch := range branches {
 		if branch.IsDetached() {
 			continue
 		}
-		mergeConfig, _ := connection.GetConfig(fmt.Sprintf("branch.%s.merge", branch.Name))
+		mergeConfig, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.merge", branch.Name))
 		if n := getPRNumber(mergeConfig); n > 0 {
 			prNumbers[branch.Name] = n
 		}
@@ -631,15 +632,15 @@ func toPullRequestState(state string) (PullRequestState, error) {
 	}
 }
 
-func DeleteBranches(branches []Branch, connection Connection) ([]Branch, error) {
+func DeleteBranches(ctx context.Context, branches []Branch, connection Connection) ([]Branch, error) {
 	branchNames := getBranchNames(branches, Deletable)
 	if len(branchNames) == 0 {
 		return branches, nil
 	}
 
-	connection.DeleteBranches(branchNames)
+	connection.DeleteBranches(ctx, branchNames)
 
-	branchNamesAfter, err := connection.GetBranchNames()
+	branchNamesAfter, err := connection.GetBranchNames(ctx)
 	if err != nil {
 		return nil, err
 	}

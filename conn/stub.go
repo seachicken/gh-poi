@@ -1,8 +1,8 @@
 package conn
 
 import (
-	"io/ioutil"
-	"path"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/golang/mock/gomock"
@@ -227,7 +227,7 @@ func (s *Stub) readFile(command string, category string, name string) string {
 	if command == "gh" {
 		ext = ".json"
 	}
-	b, err := ioutil.ReadFile(path.Join(filename, "..", fixturePath, command, category+"_"+name+ext))
+	b, err := os.ReadFile(filepath.Join(filename, "..", fixturePath, command, category+"_"+name+ext))
 	if err != nil {
 		s.t.Fatalf("%v", err)
 	}

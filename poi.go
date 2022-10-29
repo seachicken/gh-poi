@@ -109,7 +109,10 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 	var repoNames []string
 	var defaultBranchName string
 	if json, err := connection.GetRepoNames(ctx, remote.Hostname, remote.RepoName); err == nil {
-		repoNames, defaultBranchName, _ = getRepo(json)
+		repoNames, defaultBranchName, err = getRepo(json)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		return nil, err
 	}

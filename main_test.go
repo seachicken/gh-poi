@@ -14,7 +14,7 @@ import (
 func Test_DeletingBranchesWhenTheDryRunOptionIsFalse(t *testing.T) {
 	onlyCI(t)
 
-	actual := captureOutput(func() { runMain(false) })
+	actual := captureOutput(func() { runMain(false, false) })
 
 	expected := fmt.Sprintf("%s %s", green("✔"), "Deleting branches...")
 	assert.Contains(t, actual, expected)
@@ -23,7 +23,7 @@ func Test_DeletingBranchesWhenTheDryRunOptionIsFalse(t *testing.T) {
 func Test_DoNotDeleteBranchesWhenTheDryRunOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
-	actual := captureOutput(func() { runMain(true) })
+	actual := captureOutput(func() { runMain(true, false) })
 
 	expected := fmt.Sprintf("%s %s", hiBlack("-"), "Deleting branches...")
 	assert.Contains(t, actual, expected)

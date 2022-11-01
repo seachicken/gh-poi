@@ -10,7 +10,18 @@ import (
 	"github.com/cli/safeexec"
 )
 
-type Connection struct{}
+type (
+	Connection struct {
+		Debug bool
+	}
+
+	DebugMask int
+)
+
+const (
+	None DebugMask = iota
+	Output
+)
 
 func (conn *Connection) CheckRepos(ctx context.Context, hostname string, repoNames []string) error {
 	for _, name := range repoNames {
@@ -20,7 +31,7 @@ func (conn *Connection) CheckRepos(ctx context.Context, hostname string, repoNam
 			"repos/" + name,
 			"--silent",
 		}
-		if _, err := run(ctx, "gh", args); err != nil {
+		if _, err := conn.run(ctx, "gh", args, None); err != nil {
 			return err
 		}
 	}
@@ -31,14 +42,14 @@ func (conn *Connection) GetRemoteNames(ctx context.Context) (string, error) {
 	args := []string{
 		"remote", "-v",
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) GetSshConfig(ctx context.Context, name string) (string, error) {
 	args := []string{
 		"-T", "-G", name,
 	}
-	return run(ctx, "ssh", args)
+	return conn.run(ctx, "ssh", args, Output)
 }
 
 func (conn *Connection) GetRepoNames(ctx context.Context, hostname string, repoName string) (string, error) {
@@ -49,7 +60,7 @@ func (conn *Connection) GetRepoNames(ctx context.Context, hostname string, repoN
 		"--json", "parent",
 		"--json", "defaultBranchRef",
 	}
-	return run(ctx, "gh", args)
+	return conn.run(ctx, "gh", args, None)
 }
 
 func (conn *Connection) GetBranchNames(ctx context.Context) (string, error) {
@@ -57,21 +68,21 @@ func (conn *Connection) GetBranchNames(ctx context.Context) (string, error) {
 		"branch", "-v", "--no-abbrev",
 		"--format=%(HEAD):%(refname:lstrip=2):%(objectname)",
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) GetMergedBranchNames(ctx context.Context, remoteName string, branchName string) (string, error) {
 	args := []string{
 		"branch", "--merged", fmt.Sprintf("%s/%s", remoteName, branchName),
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
 	args := []string{
 		"log", "--first-parent", "--max-count=30", "--format=%H", branchName, "--",
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (string, error) {
@@ -79,7 +90,7 @@ func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (
 		"branch", "--all", "--format=%(refname)",
 		"--contains", oid,
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) GetPullRequests(
@@ -116,28 +127,28 @@ func (conn *Connection) GetPullRequests(
 			queryHashes,
 		),
 	}
-	return run(ctx, "gh", args)
+	return conn.run(ctx, "gh", args, None)
 }
 
 func (conn *Connection) GetUncommittedChanges(ctx context.Context) (string, error) {
 	args := []string{
 		"status", "--short",
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) GetConfig(ctx context.Context, key string) (string, error) {
 	args := []string{
 		"config", "--get", key,
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) CheckoutBranch(ctx context.Context, branchName string) (string, error) {
 	args := []string{
 		"checkout", "--quiet", branchName,
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) DeleteBranches(ctx context.Context, branchNames []string) (string, error) {
@@ -145,25 +156,17 @@ func (conn *Connection) DeleteBranches(ctx context.Context, branchNames []string
 		"branch", "-D"},
 		branchNames...,
 	)
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
 func (conn *Connection) PruneRemoteBranches(ctx context.Context, remoteName string) (string, error) {
 	args := []string{
 		"remote", "prune", remoteName,
 	}
-	return run(ctx, "git", args)
+	return conn.run(ctx, "git", args, None)
 }
 
-func getQueryRepos(repoNames []string) string {
-	var repos strings.Builder
-	for _, name := range repoNames {
-		repos.WriteString(fmt.Sprintf("repo:%s ", name))
-	}
-	return repos.String()
-}
-
-func run(ctx context.Context, name string, args []string) (string, error) {
+func (conn *Connection) run(ctx context.Context, name string, args []string, mask DebugMask) (string, error) {
 	cmdPath, err := safeexec.LookPath(name)
 	if err != nil {
 		return "", err
@@ -178,5 +181,22 @@ func run(ctx context.Context, name string, args []string) (string, error) {
 		err = fmt.Errorf("failed to run external command: %s, args: %v\n%w", name, args, err)
 	}
 
+	if conn.Debug {
+		switch mask {
+		case None:
+			fmt.Printf("run %s %v -> %s\n", name, args, stdout.String())
+		case Output:
+			fmt.Printf("run %s %v -> *****\n", name, args)
+		}
+	}
+
 	return stdout.String(), err
+}
+
+func getQueryRepos(repoNames []string) string {
+	var repos strings.Builder
+	for _, name := range repoNames {
+		repos.WriteString(fmt.Sprintf("repo:%s ", name))
+	}
+	return repos.String()
 }

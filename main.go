@@ -23,14 +23,16 @@ var (
 
 func main() {
 	var dryRun bool
+	var debug bool
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
+	flag.BoolVar(&debug, "debug", false, "Show debug log")
 	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
 	flag.Parse()
 
-	runMain(dryRun)
+	runMain(dryRun, debug)
 }
 
-func runMain(dryRun bool) {
+func runMain(dryRun bool, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -38,13 +40,15 @@ func runMain(dryRun bool) {
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
 	}
 
-	connection := &conn.Connection{}
+	connection := &conn.Connection{Debug: debug}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 	defer sp.Stop()
 
 	fetchingMsg := " Fetching pull requests..."
 	sp.Suffix = fetchingMsg
-	sp.Start()
+	if !debug {
+		sp.Start()
+	}
 	var fetchingErr error
 
 	remote, err := GetRemote(ctx, connection)
@@ -72,7 +76,9 @@ func runMain(dryRun bool) {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
 	} else {
 		sp.Suffix = deletingMsg
-		sp.Restart()
+		if !debug {
+			sp.Restart()
+		}
 
 		branches, deletingErr = DeleteBranches(ctx, branches, connection)
 		connection.PruneRemoteBranches(ctx, remote.Name)

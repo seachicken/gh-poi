@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/cli/safeexec"
 )
@@ -176,7 +178,9 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	cmd := exec.CommandContext(ctx, cmdPath, args...)
 	cmd.Stdout = &stdout
 
+	start := time.Now()
 	err = cmd.Run()
+	duration := time.Since(start)
 	if err != nil {
 		err = fmt.Errorf("failed to run external command: %s, args: %v\n%w", name, args, err)
 	}
@@ -184,9 +188,9 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	if conn.Debug {
 		switch mask {
 		case None:
-			fmt.Printf("run %s %v -> %s\n", name, args, stdout.String())
+			log.Printf("[%v] run %s %v -> %s\n", duration, name, args, stdout.String())
 		case Output:
-			fmt.Printf("run %s %v -> *****\n", name, args)
+			log.Printf("[%v] run %s %v -> *****\n", duration, name, args)
 		}
 	}
 

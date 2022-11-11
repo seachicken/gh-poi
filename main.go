@@ -110,7 +110,7 @@ func runMain(dryRun bool, debug bool) {
 	printBranches(getBranches(branches, deletedStates))
 	fmt.Println()
 
-	fmt.Fprintf(color.Output, "%s\n", whiteBold("Not deleted branches"))
+	fmt.Fprintf(color.Output, "%s\n", whiteBold("Branches not deleted"))
 	printBranches(getBranches(branches, notDeletedStates))
 	fmt.Println()
 }

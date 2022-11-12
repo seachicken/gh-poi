@@ -57,10 +57,9 @@ func (conn *Connection) GetSshConfig(ctx context.Context, name string) (string, 
 func (conn *Connection) GetRepoNames(ctx context.Context, hostname string, repoName string) (string, error) {
 	args := []string{
 		"repo", "view", hostname + "/" + repoName,
-		"--json", "owner",
-		"--json", "name",
-		"--json", "parent",
-		"--json", "defaultBranchRef",
+		"--json", "owner,name,parent,defaultBranchRef",
+		// disable colored outputs (https://github.com/seachicken/gh-poi/issues/79)
+		"--jq", ".",
 	}
 	return conn.run(ctx, "gh", args, None)
 }
@@ -101,6 +100,7 @@ func (conn *Connection) GetPullRequests(
 	args := []string{
 		"api", "graphql",
 		"--hostname", hostname,
+		"--jq", ".",
 		"-f", fmt.Sprintf(`query=query {
   search(type: ISSUE, query: "is:pr %s %s", last: 100) {
     issueCount

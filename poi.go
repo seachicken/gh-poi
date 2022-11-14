@@ -145,9 +145,11 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 			return nil, err
 		}
 
-		if pr, err := toPullRequests(json); err == nil {
-			prs = append(prs, pr...)
+		pr, err := toPullRequests(json)
+		if err != nil {
+			return nil, err
 		}
+		prs = append(prs, pr...)
 	}
 
 	branches = applyPullRequest(ctx, branches, prs, connection)

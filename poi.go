@@ -21,6 +21,8 @@ type (
 		GetRepoNames(ctx context.Context, hostname string, repoName string) (string, error)
 		GetBranchNames(ctx context.Context) (string, error)
 		GetMergedBranchNames(ctx context.Context, remoteName string, branchName string) (string, error)
+		GetRemoteHeadOid(ctx context.Context, remoteName string, branchName string) (string, error)
+		GetLsRemoteHeadOid(ctx context.Context, url string, branchName string) (string, error)
 		GetLog(ctx context.Context, branchName string) (string, error)
 		GetAssociatedRefNames(ctx context.Context, oid string) (string, error)
 		GetPullRequests(ctx context.Context, hostname string, repoNames []string, queryHashes string) (string, error)
@@ -39,12 +41,13 @@ type (
 	BranchState int
 
 	Branch struct {
-		Head         bool
-		Name         string
-		IsMerged     bool
-		Commits      []string
-		PullRequests []PullRequest
-		State        BranchState
+		Head          bool
+		Name          string
+		IsMerged      bool
+		RemoteHeadOid string
+		Commits       []string
+		PullRequests  []PullRequest
+		State         BranchState
 	}
 
 	PullRequestState int
@@ -130,7 +133,7 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 			return nil, err
 		}
 		branches = applyMerged(branches, extractMergedBranchNames(splitLines(mergedNames)))
-		branches, err = applyCommits(ctx, branches, defaultBranchName, connection)
+		branches, err = applyCommits(ctx, remote, branches, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -185,6 +188,7 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 			result = append(result, Branch{
 				true, defaultBranchName,
 				false,
+				"",
 				[]string{},
 				[]PullRequest{},
 				NotDeletable,
@@ -285,7 +289,7 @@ func nameExists(name string, names []string) bool {
 	return false
 }
 
-func applyCommits(ctx context.Context, branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
+func applyCommits(ctx context.Context, remote Remote, branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
 	results := []Branch{}
 
 	for _, branch := range branches {
@@ -294,12 +298,29 @@ func applyCommits(ctx context.Context, branches []Branch, defaultBranchName stri
 			continue
 		}
 
+		if remoteHeadOid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
+			branch.RemoteHeadOid = remoteHeadOid
+		} else {
+			result, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.remote", branch.Name))
+			splitResults := splitLines(result)
+			if len(splitResults) > 0 {
+				remoteUrl := splitResults[0]
+				if result, err := connection.GetLsRemoteHeadOid(ctx, remoteUrl, branch.Name); err == nil {
+					splitResults := strings.Split(result, " ")
+					if len(splitResults) > 0 {
+						branch.RemoteHeadOid = splitResults[0]
+					}
+				}
+			}
+		}
+
 		oids, err := connection.GetLog(ctx, branch.Name)
 		if err != nil {
 			return nil, err
 		}
 
-		trimmedOids, err := trimBranch(ctx, splitLines(oids), branch.IsMerged,
+		trimmedOids, err := trimBranch(
+			ctx, splitLines(oids), branch.RemoteHeadOid, branch.IsMerged,
 			branch.Name, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
@@ -312,13 +333,13 @@ func applyCommits(ctx context.Context, branches []Branch, defaultBranchName stri
 	return results, nil
 }
 
-func trimBranch(ctx context.Context, oids []string, isMerged bool,
+func trimBranch(ctx context.Context, oids []string, remoteHeadOid string, isMerged bool,
 	branchName string, defaultBranchName string, connection Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
 
 	for i, oid := range oids {
-		if isMerged {
+		if len(remoteHeadOid) > 0 || isMerged {
 			results = append(results, oid)
 			break
 		}
@@ -522,6 +543,7 @@ func toBranch(branchNames []string) []Branch {
 			splitedNames[0] == "*",
 			splitedNames[1],
 			false,
+			"",
 			[]string{},
 			[]PullRequest{},
 			Unknown,

@@ -124,6 +124,28 @@ func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stu
 	return s
 }
 
+func (s *Stub) GetRemoteHeadOid(err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return("", err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetLsRemoteHeadOid(err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return("", err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
 	s.t.Helper()
 	for _, stub := range stubs {

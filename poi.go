@@ -299,14 +299,14 @@ func applyCommits(ctx context.Context, remote Remote, branches []Branch, default
 		}
 
 		if remoteHeadOid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
-			branch.RemoteHeadOid = remoteHeadOid
+			branch.RemoteHeadOid = splitLines(remoteHeadOid)[0]
 		} else {
 			result, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.remote", branch.Name))
 			splitResults := splitLines(result)
 			if len(splitResults) > 0 {
 				remoteUrl := splitResults[0]
 				if result, err := connection.GetLsRemoteHeadOid(ctx, remoteUrl, branch.Name); err == nil {
-					splitResults := strings.Split(result, " ")
+					splitResults := strings.Fields(result)
 					if len(splitResults) > 0 {
 						branch.RemoteHeadOid = splitResults[0]
 					}

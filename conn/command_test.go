@@ -79,7 +79,7 @@ func Test_RepoBasic(t *testing.T) {
 	t.Run("GetConfig", func(t *testing.T) {
 		actual, _ := conn.GetConfig(context.Background(), "branch.main.merge")
 		assert.Equal(t,
-			stub.readFile("git", "configMerge", "main"),
+			stub.readFile("git", "config", "mergeMain"),
 			actual,
 		)
 	})

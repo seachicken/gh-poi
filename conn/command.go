@@ -81,7 +81,7 @@ func (conn *Connection) GetMergedBranchNames(ctx context.Context, remoteName str
 
 func (conn *Connection) GetRemoteHeadOid(ctx context.Context, remoteName string, branchName string) (string, error) {
 	args := []string{
-		"rev-parse", fmt.Sprintf("%s/%s", remoteName, branchName), "--",
+		"rev-parse", fmt.Sprintf("%s/%s", remoteName, branchName),
 	}
 	return conn.run(ctx, "git", args, None)
 }

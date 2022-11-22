@@ -23,6 +23,16 @@ type (
 		Times *Times
 	}
 
+	RemoteHeadStub struct {
+		BranchName string
+		Filename   string
+	}
+
+	LsRemoteHeadStub struct {
+		BranchName string
+		Filename   string
+	}
+
 	AssociatedBranchNamesStub struct {
 		Oid      string
 		Filename string
@@ -124,25 +134,47 @@ func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stu
 	return s
 }
 
-func (s *Stub) GetRemoteHeadOid(err error, conf *Conf) *Stub {
+func (s *Stub) GetRemoteHeadOid(stubs []RemoteHeadStub, err error, conf *Conf) *Stub {
 	s.t.Helper()
-	configure(
-		s.Conn.EXPECT().
-			GetRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
-			Return("", err),
-		conf,
-	)
+	if stubs == nil {
+		configure(
+			s.Conn.EXPECT().
+				GetRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return("", err),
+			conf,
+		)
+	} else {
+		for _, stub := range stubs {
+			configure(
+				s.Conn.EXPECT().
+					GetRemoteHeadOid(gomock.Any(), gomock.Any(), stub.BranchName).
+					Return(s.readFile("git", "remoteHead", stub.Filename), err),
+				conf,
+			)
+		}
+	}
 	return s
 }
 
-func (s *Stub) GetLsRemoteHeadOid(err error, conf *Conf) *Stub {
+func (s *Stub) GetLsRemoteHeadOid(stubs []LsRemoteHeadStub, err error, conf *Conf) *Stub {
 	s.t.Helper()
-	configure(
-		s.Conn.EXPECT().
-			GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
-			Return("", err),
-		conf,
-	)
+	if stubs == nil {
+		configure(
+			s.Conn.EXPECT().
+				GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return("", err),
+			conf,
+		)
+	} else {
+		for _, stub := range stubs {
+			configure(
+				s.Conn.EXPECT().
+					GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), stub.BranchName).
+					Return(s.readFile("git", "lsRemoteHead", stub.Filename), err),
+				conf,
+			)
+		}
+	}
 	return s
 }
 
@@ -203,7 +235,7 @@ func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
 			s.Conn.
 				EXPECT().
 				GetConfig(gomock.Any(), stub.BranchName).
-				Return(s.readFile("git", "configMerge", stub.Filename), err),
+				Return(s.readFile("git", "config", stub.Filename), err),
 			conf,
 		)
 	}

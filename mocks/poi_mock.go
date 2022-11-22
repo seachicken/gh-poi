@@ -169,18 +169,18 @@ func (mr *MockConnectionMockRecorder) GetMergedBranchNames(ctx, remoteName, bran
 }
 
 // GetPullRequests mocks base method.
-func (m *MockConnection) GetPullRequests(ctx context.Context, hostname string, repoNames []string, queryHashes string) (string, error) {
+func (m *MockConnection) GetPullRequests(ctx context.Context, hostname, orgs, repos, queryHashes string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPullRequests", ctx, hostname, repoNames, queryHashes)
+	ret := m.ctrl.Call(m, "GetPullRequests", ctx, hostname, orgs, repos, queryHashes)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPullRequests indicates an expected call of GetPullRequests.
-func (mr *MockConnectionMockRecorder) GetPullRequests(ctx, hostname, repoNames, queryHashes interface{}) *gomock.Call {
+func (mr *MockConnectionMockRecorder) GetPullRequests(ctx, hostname, orgs, repos, queryHashes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequests", reflect.TypeOf((*MockConnection)(nil).GetPullRequests), ctx, hostname, repoNames, queryHashes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequests", reflect.TypeOf((*MockConnection)(nil).GetPullRequests), ctx, hostname, orgs, repos, queryHashes)
 }
 
 // GetRemoteHeadOid mocks base method.

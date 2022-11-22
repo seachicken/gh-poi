@@ -209,7 +209,7 @@ func (s *Stub) GetPullRequests(filename string, err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			GetPullRequests(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			GetPullRequests(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(s.readFile("gh", "pr", filename), err),
 		conf,
 	)

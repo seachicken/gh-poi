@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/cli/safeexec"
@@ -108,15 +107,16 @@ func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (
 	return conn.run(ctx, "git", args, None)
 }
 
+// https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests#search-within-a-users-or-organizations-repositories
 func (conn *Connection) GetPullRequests(
 	ctx context.Context,
-	hostname string, repoNames []string, queryHashes string) (string, error) {
+	hostname string, orgs string, repos string, queryHashes string) (string, error) {
 	args := []string{
 		"api", "graphql",
 		"--hostname", hostname,
 		"--jq", ".",
 		"-f", fmt.Sprintf(`query=query {
-  search(type: ISSUE, query: "is:pr %s %s", last: 100) {
+  search(type: ISSUE, query: "is:pr %s %s %s", last: 100) {
     issueCount
     edges {
       node {
@@ -139,8 +139,7 @@ func (conn *Connection) GetPullRequests(
     }
   }
 }`,
-			getQueryRepos(repoNames),
-			queryHashes,
+			orgs, repos, queryHashes,
 		),
 	}
 	return conn.run(ctx, "gh", args, None)
@@ -209,12 +208,4 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	}
 
 	return stdout.String(), err
-}
-
-func getQueryRepos(repoNames []string) string {
-	var repos strings.Builder
-	for _, name := range repoNames {
-		repos.WriteString(fmt.Sprintf("repo:%s ", name))
-	}
-	return repos.String()
 }

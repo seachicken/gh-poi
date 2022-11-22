@@ -138,6 +138,21 @@ func (mr *MockConnectionMockRecorder) GetLog(ctx, branchName interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockConnection)(nil).GetLog), ctx, branchName)
 }
 
+// GetLsRemoteHeadOid mocks base method.
+func (m *MockConnection) GetLsRemoteHeadOid(ctx context.Context, url, branchName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLsRemoteHeadOid", ctx, url, branchName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLsRemoteHeadOid indicates an expected call of GetLsRemoteHeadOid.
+func (mr *MockConnectionMockRecorder) GetLsRemoteHeadOid(ctx, url, branchName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLsRemoteHeadOid", reflect.TypeOf((*MockConnection)(nil).GetLsRemoteHeadOid), ctx, url, branchName)
+}
+
 // GetMergedBranchNames mocks base method.
 func (m *MockConnection) GetMergedBranchNames(ctx context.Context, remoteName, branchName string) (string, error) {
 	m.ctrl.T.Helper()
@@ -166,6 +181,21 @@ func (m *MockConnection) GetPullRequests(ctx context.Context, hostname string, r
 func (mr *MockConnectionMockRecorder) GetPullRequests(ctx, hostname, repoNames, queryHashes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequests", reflect.TypeOf((*MockConnection)(nil).GetPullRequests), ctx, hostname, repoNames, queryHashes)
+}
+
+// GetRemoteHeadOid mocks base method.
+func (m *MockConnection) GetRemoteHeadOid(ctx context.Context, remoteName, branchName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRemoteHeadOid", ctx, remoteName, branchName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRemoteHeadOid indicates an expected call of GetRemoteHeadOid.
+func (mr *MockConnectionMockRecorder) GetRemoteHeadOid(ctx, remoteName, branchName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteHeadOid", reflect.TypeOf((*MockConnection)(nil).GetRemoteHeadOid), ctx, remoteName, branchName)
 }
 
 // GetRemoteNames mocks base method.

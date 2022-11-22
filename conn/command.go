@@ -79,6 +79,20 @@ func (conn *Connection) GetMergedBranchNames(ctx context.Context, remoteName str
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) GetRemoteHeadOid(ctx context.Context, remoteName string, branchName string) (string, error) {
+	args := []string{
+		"rev-parse", fmt.Sprintf("%s/%s", remoteName, branchName),
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
+func (conn *Connection) GetLsRemoteHeadOid(ctx context.Context, url string, branchName string) (string, error) {
+	args := []string{
+		"ls-remote", url, branchName,
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
 func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
 	args := []string{
 		"log", "--first-parent", "--max-count=30", "--format=%H", branchName, "--",

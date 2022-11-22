@@ -6,7 +6,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_GetQueryHashes(t *testing.T) {
+func Test_GetQueryOrgs(t *testing.T) {
+	assert.Equal(t,
+		"org:parent-owner org:owner",
+		getQueryOrgs([]string{"parent-owner/repo", "owner/repo"}),
+	)
+}
+
+func Test_GetQueryRepos(t *testing.T) {
+	assert.Equal(t,
+		"repo:parent-owner/repo repo:owner/repo",
+		getQueryRepos([]string{"parent-owner/repo", "owner/repo"}),
+	)
+}
+
+func Test_GetQueryHashesWithCommitOid(t *testing.T) {
 	assert.Equal(t,
 		[]string{
 			"hash:356a192b7913b04c54574d18c28d46e6395428ab " +
@@ -65,5 +79,24 @@ func Test_GetQueryHashes(t *testing.T) {
 				},
 				[]PullRequest{}, Unknown,
 			},
-		}))
+		}),
+	)
+}
+
+func Test_GetQueryHashesWithRemoteOid(t *testing.T) {
+	assert.Equal(t,
+		[]string{
+			"hash:356a192b7913b04c54574d18c28d46e6395428ab",
+		},
+		getQueryHashes([]Branch{
+			{true, "issue1", false,
+				"356a192b7913b04c54574d18c28d46e6395428ab",
+				[]string{
+					"da4b9237bacccdf19c0760cab7aec4a8359010b0",
+					"08a2aaaadff191eb76974b9b3d8b71f202c0156e",
+				},
+				[]PullRequest{}, Unknown,
+			},
+		}),
+	)
 }

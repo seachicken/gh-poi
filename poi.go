@@ -25,7 +25,7 @@ type (
 		GetLsRemoteHeadOid(ctx context.Context, url string, branchName string) (string, error)
 		GetLog(ctx context.Context, branchName string) (string, error)
 		GetAssociatedRefNames(ctx context.Context, oid string) (string, error)
-		GetPullRequests(ctx context.Context, hostname string, repoNames []string, queryHashes string) (string, error)
+		GetPullRequests(ctx context.Context, hostname string, orgs string, repos string, queryHashes string) (string, error)
 		GetUncommittedChanges(ctx context.Context) (string, error)
 		GetConfig(ctx context.Context, key string) (string, error)
 		CheckoutBranch(ctx context.Context, branchName string) (string, error)
@@ -142,8 +142,10 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 	}
 
 	prs := []PullRequest{}
+	orgs := getQueryOrgs(repoNames)
+	repos := getQueryRepos(repoNames)
 	for _, queryHashes := range getQueryHashes(branches) {
-		json, err := connection.GetPullRequests(ctx, remote.Hostname, repoNames, queryHashes)
+		json, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, queryHashes)
 		if err != nil {
 			return nil, err
 		}

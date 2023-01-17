@@ -44,6 +44,7 @@ type (
 		Head          bool
 		Name          string
 		IsMerged      bool
+		IsProtected   bool
 		RemoteHeadOid string
 		Commits       []string
 		PullRequests  []PullRequest
@@ -133,6 +134,10 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 			return nil, err
 		}
 		branches = applyMerged(branches, extractMergedBranchNames(splitLines(mergedNames)))
+		branches, err = applyProtected(ctx, branches, connection)
+		if err != nil {
+			return nil, err
+		}
 		branches, err = applyCommits(ctx, remote, branches, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
@@ -189,6 +194,7 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 		if !branchNameExists(defaultBranchName, branches) {
 			result = append(result, Branch{
 				true, defaultBranchName,
+				false,
 				false,
 				"",
 				[]string{},
@@ -289,6 +295,21 @@ func nameExists(name string, names []string) bool {
 		}
 	}
 	return false
+}
+
+func applyProtected(ctx context.Context, branches []Branch, connection Connection) ([]Branch, error) {
+	results := []Branch{}
+
+	for _, branch := range branches {
+		config, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", branch.Name))
+		splitConfig := splitLines(config)
+		if len(splitConfig) > 0 && splitConfig[0] == "true" {
+			branch.IsProtected = true
+		}
+		results = append(results, branch)
+	}
+
+	return results, nil
 }
 
 func applyCommits(ctx context.Context, remote Remote, branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
@@ -489,6 +510,10 @@ func checkDeletion(branches []Branch, uncommittedChanges []UncommittedChange) []
 }
 
 func getDeleteStatus(branch Branch, uncommittedChanges []UncommittedChange) BranchState {
+	if branch.IsProtected {
+		return NotDeletable
+	}
+
 	hasTrackedChanges := false
 	for _, change := range uncommittedChanges {
 		if !change.IsUntracked() {
@@ -544,6 +569,7 @@ func toBranch(branchNames []string) []Branch {
 		results = append(results, Branch{
 			splitedNames[0] == "*",
 			splitedNames[1],
+			false,
 			false,
 			"",
 			[]string{},

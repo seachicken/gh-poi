@@ -33,7 +33,9 @@ func Test_ShouldBeDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -68,8 +70,10 @@ func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -107,8 +111,10 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -145,8 +151,10 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -183,8 +191,10 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -220,9 +230,11 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 		GetPullRequests("forkMainUpMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.fork/main.merge", Filename: "mergeForkMain"},
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.fork/main.merge", Filename: "mergeForkMain"},
 			{BranchName: "branch.fork/main.remote", Filename: "remote"},
+			{BranchName: "branch.fork/main.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -259,8 +271,10 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 1}))
 	remote, _ := GetRemote(context.Background(), s.Conn)
@@ -298,8 +312,10 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil).
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 0}))
 	remote, _ := GetRemote(context.Background(), s.Conn)
@@ -338,6 +354,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
@@ -375,8 +392,10 @@ func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T
 		GetUncommittedChanges(" M README.md", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
@@ -414,8 +433,10 @@ func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 		GetUncommittedChanges("?? new.txt", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil).
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
@@ -453,8 +474,10 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -491,8 +514,10 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -531,8 +556,10 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -569,8 +596,10 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -580,6 +609,44 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 	assert.Equal(t, "issue1", actual[0].Name)
 	assert.Equal(t, NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
+}
+
+func Test_ShouldNotDeletableWhenBranchIsProtected(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetMergedBranchNames("@main_issue1", nil, nil).
+		GetRemoteHeadOid([]conn.RemoteHeadStub{
+			{BranchName: "issue1", Filename: "issue1"},
+		}, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
+		}, nil, nil).
+		GetPullRequests("issue1Merged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "protected"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, true, actual[0].IsProtected)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, false, actual[1].IsProtected)
 	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
@@ -609,8 +676,10 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -647,8 +716,10 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -685,6 +756,8 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.(HEAD detached at a97e963).gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -734,8 +807,10 @@ func Test_DoesNotReturnsAnErrorWhenGetSshConfigFails(t *testing.T) {
 		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -827,7 +902,9 @@ func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -857,7 +934,9 @@ func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -888,7 +967,9 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -921,8 +1002,10 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 		GetUncommittedChanges("", ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -956,8 +1039,10 @@ func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
 		CheckoutBranch(ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -975,8 +1060,8 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 1}))
 
 	branches := []Branch{
-		{false, "issue1", false, "", []string{}, []PullRequest{}, Deletable},
-		{true, "main", true, "", []string{}, []PullRequest{}, NotDeletable},
+		{false, "issue1", false, false, "", []string{}, []PullRequest{}, Deletable},
+		{true, "main", true, false, "", []string{}, []PullRequest{}, NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
@@ -996,8 +1081,8 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 0}))
 
 	branches := []Branch{
-		{false, "issue1", false, "", []string{}, []PullRequest{}, NotDeletable},
-		{true, "main", true, "", []string{}, []PullRequest{}, NotDeletable},
+		{false, "issue1", false, false, "", []string{}, []PullRequest{}, NotDeletable},
+		{true, "main", true, false, "", []string{}, []PullRequest{}, NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)

@@ -123,9 +123,18 @@ func printBranches(branches []Branch) {
 
 	for _, branch := range branches {
 		if branch.Head {
-			fmt.Fprintf(color.Output, "* %s\n", green(branch.Name))
+			fmt.Fprintf(color.Output, "* %s", green(branch.Name))
 		} else {
-			fmt.Fprintf(color.Output, "  %s\n", white(branch.Name))
+			fmt.Fprintf(color.Output, "  %s", white(branch.Name))
+		}
+		reason := ""
+		if branch.IsProtected {
+			reason = "protected"
+		}
+		if reason == "" {
+			fmt.Fprintln(color.Output, "")
+		} else {
+			fmt.Fprintf(color.Output, " %s\n", hiBlack("["+reason+"]"))
 		}
 
 		for i, pr := range branch.PullRequests {

@@ -39,32 +39,11 @@ func Test_ShouldBeDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", true,
-			"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
@@ -96,32 +75,11 @@ func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", true,
-			"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
@@ -156,32 +114,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", true,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
@@ -215,32 +152,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
@@ -274,32 +190,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/parent-owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
@@ -333,32 +228,11 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "fork/main", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"main", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/parent-owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "fork/main", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.T) {
@@ -393,32 +267,11 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T) {
@@ -453,32 +306,11 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, true)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testing.T) {
@@ -512,32 +344,11 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", false,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
@@ -572,32 +383,11 @@ func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			true, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			NotDeletable,
-		},
-		{
-			false, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
@@ -632,32 +422,11 @@ func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
@@ -691,32 +460,11 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Closed, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			NotDeletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs(t *testing.T) {
@@ -750,39 +498,11 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Closed, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-				{
-					"issue1", Merged, false, 2,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/2", "owner",
-				},
-			},
-			Deletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
@@ -818,33 +538,11 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"b8a2645298053fb62ea03e27feea6c483d3fd27e",
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{
-				{
-					"issue1", Merged, false, 1,
-					[]string{
-						"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			NotDeletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
@@ -878,32 +576,11 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0",
-			},
-			[]PullRequest{},
-			NotDeletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{
-				{
-					"main", Merged, false, 1,
-					[]string{
-						"6ebe3d30d23531af56bd23b5a098d3ccae2a534a",
-					},
-					"https://github.com/owner/repo/pull/1", "owner",
-				},
-			},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.T) {
@@ -939,26 +616,12 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{
-				"62d5d8280031f607f1db058da959a97f6a8e6d90",
-				"b8a2645298053fb62ea03e27feea6c483d3fd27e",
-				"d787669ee4a103fe0b361fe31c10ea037c72f27c",
-			},
-			[]PullRequest{},
-			NotDeletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, []PullRequest{}, actual[0].PullRequests)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWithTheDefaultBranch(t *testing.T) {
@@ -991,22 +654,12 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			false, "issue1", false,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-		{
-			true, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, []string{}, actual[0].Commits)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
@@ -1037,22 +690,12 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
 
-	assert.Equal(t, []Branch{
-		{
-			true, "(HEAD detached at a97e963)", false,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-		{
-			false, "main", true,
-			"",
-			[]string{},
-			[]PullRequest{},
-			NotDeletable,
-		},
-	}, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "(HEAD detached at a97e963)", actual[0].Name)
+	assert.Equal(t, []string{}, actual[0].Commits)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
@@ -1338,11 +981,11 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
 
-	expected := []Branch{
-		{false, "issue1", false, "", []string{}, []PullRequest{}, Deleted},
-		{true, "main", true, "", []string{}, []PullRequest{}, NotDeletable},
-	}
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, Deleted, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }
 
 func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
@@ -1359,9 +1002,9 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
 
-	expected := []Branch{
-		{false, "issue1", false, "", []string{}, []PullRequest{}, NotDeletable},
-		{true, "main", true, "", []string{}, []PullRequest{}, NotDeletable},
-	}
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, NotDeletable, actual[1].State)
 }

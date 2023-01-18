@@ -83,6 +83,26 @@ func Test_RepoBasic(t *testing.T) {
 			actual,
 		)
 	})
+
+	t.Run("AddConfig", func(t *testing.T) {
+		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-protected", "true")
+		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-protected")
+		assert.Equal(t,
+			stub.readFile("git", "config", "protected"),
+			actual,
+		)
+		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-protected")
+	})
+
+	t.Run("AddAndRemoveConfig", func(t *testing.T) {
+		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-protected", "true")
+		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-protected")
+		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-protected")
+		assert.Equal(t,
+			stub.readFile("git", "config", "empty"),
+			actual,
+		)
+	})
 }
 
 func setGitDir(repoName string, t *testing.T) {

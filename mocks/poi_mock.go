@@ -34,6 +34,21 @@ func (m *MockConnection) EXPECT() *MockConnectionMockRecorder {
 	return m.recorder
 }
 
+// AddConfig mocks base method.
+func (m *MockConnection) AddConfig(ctx context.Context, key, value string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddConfig", ctx, key, value)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddConfig indicates an expected call of AddConfig.
+func (mr *MockConnectionMockRecorder) AddConfig(ctx, key, value interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddConfig", reflect.TypeOf((*MockConnection)(nil).AddConfig), ctx, key, value)
+}
+
 // CheckRepos mocks base method.
 func (m *MockConnection) CheckRepos(ctx context.Context, hostname string, repoNames []string) error {
 	m.ctrl.T.Helper()
@@ -256,4 +271,19 @@ func (m *MockConnection) GetUncommittedChanges(ctx context.Context) (string, err
 func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), ctx)
+}
+
+// RemoveConfig mocks base method.
+func (m *MockConnection) RemoveConfig(ctx context.Context, key string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveConfig", ctx, key)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveConfig indicates an expected call of RemoveConfig.
+func (mr *MockConnectionMockRecorder) RemoveConfig(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveConfig", reflect.TypeOf((*MockConnection)(nil).RemoveConfig), ctx, key)
 }

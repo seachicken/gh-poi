@@ -28,8 +28,27 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
 	flag.Parse()
+	args := flag.Args()
 
-	runMain(dryRun, debug)
+	if len(args) == 0 {
+		runMain(dryRun, debug)
+	} else {
+		subcmd, args := args[0], args[1:]
+		switch subcmd {
+		case "protect":
+			protectCmd := flag.NewFlagSet("protect", flag.ExitOnError)
+			protectCmd.Parse(args)
+
+			runProtect(args, debug)
+		case "unprotect":
+			unprotectCmd := flag.NewFlagSet("unprotect", flag.ExitOnError)
+			unprotectCmd.Parse(args)
+
+			runUnprotect(args, debug)
+		default:
+			fmt.Fprintf(os.Stderr, "unknown command %q for poi\n", subcmd)
+		}
+	}
 }
 
 func runMain(dryRun bool, debug bool) {
@@ -113,6 +132,32 @@ func runMain(dryRun bool, debug bool) {
 	fmt.Fprintf(color.Output, "%s\n", whiteBold("Branches not deleted"))
 	printBranches(getBranches(branches, notDeletedStates))
 	fmt.Println()
+}
+
+func runProtect(branchNames []string, debug bool) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	connection := &conn.Connection{Debug: debug}
+
+	err := ProtectBranches(ctx, branchNames, connection)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+}
+
+func runUnprotect(branchNames []string, debug bool) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	connection := &conn.Connection{Debug: debug}
+
+	err := UnprotectBranches(ctx, branchNames, connection)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
 }
 
 func printBranches(branches []Branch) {

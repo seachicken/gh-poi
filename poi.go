@@ -28,6 +28,8 @@ type (
 		GetPullRequests(ctx context.Context, hostname string, orgs string, repos string, queryHashes string) (string, error)
 		GetUncommittedChanges(ctx context.Context) (string, error)
 		GetConfig(ctx context.Context, key string) (string, error)
+		AddConfig(ctx context.Context, key string, value string) (string, error)
+		RemoveConfig(ctx context.Context, key string) (string, error)
 		CheckoutBranch(ctx context.Context, branchName string) (string, error)
 		DeleteBranches(ctx context.Context, branchNames []string) (string, error)
 	}

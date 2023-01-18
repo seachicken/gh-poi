@@ -29,6 +29,16 @@ func Test_DoNotDeleteBranchesWhenTheDryRunOptionIsTrue(t *testing.T) {
 	assert.Contains(t, actual, expected)
 }
 
+func Test_ProtectAndUnprotect(t *testing.T) {
+	onlyCI(t)
+
+	actualProtect := captureOutput(func() { runProtect([]string{"main"}, false) })
+	assert.Equal(t, actualProtect, "")
+
+	actualUnprotect := captureOutput(func() { runUnprotect([]string{"main"}, false) })
+	assert.Equal(t, actualUnprotect, "")
+}
+
 func onlyCI(t *testing.T) {
 	if os.Getenv("CI") == "" {
 		t.Skip("skipping test in local")

@@ -28,8 +28,27 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
 	flag.Parse()
+	args := flag.Args()
 
-	runMain(dryRun, debug)
+	if len(args) == 0 {
+		runMain(dryRun, debug)
+	} else {
+		subcmd, args := args[0], args[1:]
+		switch subcmd {
+		case "protect":
+			protectCmd := flag.NewFlagSet("protect", flag.ExitOnError)
+			protectCmd.Parse(args)
+
+			runProtect(args, debug)
+		case "unprotect":
+			unprotectCmd := flag.NewFlagSet("unprotect", flag.ExitOnError)
+			unprotectCmd.Parse(args)
+
+			runUnprotect(args, debug)
+		default:
+			fmt.Fprintf(os.Stderr, "unknown command %q for poi\n", subcmd)
+		}
+	}
 }
 
 func runMain(dryRun bool, debug bool) {
@@ -115,6 +134,32 @@ func runMain(dryRun bool, debug bool) {
 	fmt.Println()
 }
 
+func runProtect(branchNames []string, debug bool) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	connection := &conn.Connection{Debug: debug}
+
+	err := ProtectBranches(ctx, branchNames, connection)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+}
+
+func runUnprotect(branchNames []string, debug bool) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	connection := &conn.Connection{Debug: debug}
+
+	err := UnprotectBranches(ctx, branchNames, connection)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+}
+
 func printBranches(branches []Branch) {
 	if len(branches) == 0 {
 		fmt.Fprintf(color.Output, "%s\n",
@@ -123,9 +168,18 @@ func printBranches(branches []Branch) {
 
 	for _, branch := range branches {
 		if branch.Head {
-			fmt.Fprintf(color.Output, "* %s\n", green(branch.Name))
+			fmt.Fprintf(color.Output, "* %s", green(branch.Name))
 		} else {
-			fmt.Fprintf(color.Output, "  %s\n", white(branch.Name))
+			fmt.Fprintf(color.Output, "  %s", white(branch.Name))
+		}
+		reason := ""
+		if branch.IsProtected {
+			reason = "protected"
+		}
+		if reason == "" {
+			fmt.Fprintln(color.Output, "")
+		} else {
+			fmt.Fprintf(color.Output, " %s\n", hiBlack("["+reason+"]"))
 		}
 
 		for i, pr := range branch.PullRequests {

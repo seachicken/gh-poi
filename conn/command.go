@@ -159,6 +159,20 @@ func (conn *Connection) GetConfig(ctx context.Context, key string) (string, erro
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) AddConfig(ctx context.Context, key string, value string) (string, error) {
+	args := []string{
+		"config", "--add", key, value,
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
+func (conn *Connection) RemoveConfig(ctx context.Context, key string) (string, error) {
+	args := []string{
+		"config", "--unset", key,
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
 func (conn *Connection) CheckoutBranch(ctx context.Context, branchName string) (string, error) {
 	args := []string{
 		"checkout", "--quiet", branchName,

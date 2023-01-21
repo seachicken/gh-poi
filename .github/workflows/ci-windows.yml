@@ -38,5 +38,5 @@ jobs:
           git branch --track $(echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}) "$branch".trim()
         }
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-        go test .. -v
+        go test $(go list ../... | grep -v /conn) -v
 

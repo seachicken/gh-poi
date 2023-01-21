@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/seachicken/gh-poi/conn"
 	"github.com/seachicken/gh-poi/shared"
 )
 
@@ -117,9 +116,9 @@ func loadBranches(ctx context.Context, remote Remote, defaultBranchName string, 
 	}
 
 	prs := []shared.PullRequest{}
-	orgs := conn.GetQueryOrgs(repoNames)
-	repos := conn.GetQueryRepos(repoNames)
-	for _, queryHashes := range conn.GetQueryHashes(branches) {
+	orgs := shared.GetQueryOrgs(repoNames)
+	repos := shared.GetQueryRepos(repoNames)
+	for _, queryHashes := range shared.GetQueryHashes(branches) {
 		json, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, queryHashes)
 		if err != nil {
 			return nil, err

@@ -10,6 +10,8 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/seachicken/gh-poi/cmd"
+	"github.com/seachicken/gh-poi/cmd/protect"
 	"github.com/seachicken/gh-poi/conn"
 	"github.com/seachicken/gh-poi/shared"
 )
@@ -71,13 +73,13 @@ func runMain(dryRun bool, debug bool) {
 	}
 	var fetchingErr error
 
-	remote, err := GetRemote(ctx, connection)
+	remote, err := cmd.GetRemote(ctx, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	branches, fetchingErr := GetBranches(ctx, remote, connection, dryRun)
+	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, dryRun)
 
 	sp.Stop()
 
@@ -100,7 +102,7 @@ func runMain(dryRun bool, debug bool) {
 			sp.Restart()
 		}
 
-		branches, deletingErr = DeleteBranches(ctx, branches, connection)
+		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
 		connection.PruneRemoteBranches(ctx, remote.Name)
 
 		sp.Stop()
@@ -141,7 +143,7 @@ func runProtect(branchNames []string, debug bool) {
 
 	connection := &conn.Connection{Debug: debug}
 
-	err := ProtectBranches(ctx, branchNames, connection)
+	err := protect.ProtectBranches(ctx, branchNames, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -154,7 +156,7 @@ func runUnprotect(branchNames []string, debug bool) {
 
 	connection := &conn.Connection{Debug: debug}
 
-	err := UnprotectBranches(ctx, branchNames, connection)
+	err := protect.UnprotectBranches(ctx, branchNames, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

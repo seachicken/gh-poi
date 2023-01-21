@@ -1,5 +1,4 @@
-//go:generate mockgen -source=poi.go -package=mocks -destination=./mocks/poi_mock.go
-package main
+package cmd
 
 import (
 	"context"
@@ -11,30 +10,11 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/seachicken/gh-poi/conn"
 	"github.com/seachicken/gh-poi/shared"
 )
 
 type (
-	Connection interface {
-		CheckRepos(ctx context.Context, hostname string, repoNames []string) error
-		GetRemoteNames(ctx context.Context) (string, error)
-		GetSshConfig(ctx context.Context, name string) (string, error)
-		GetRepoNames(ctx context.Context, hostname string, repoName string) (string, error)
-		GetBranchNames(ctx context.Context) (string, error)
-		GetMergedBranchNames(ctx context.Context, remoteName string, branchName string) (string, error)
-		GetRemoteHeadOid(ctx context.Context, remoteName string, branchName string) (string, error)
-		GetLsRemoteHeadOid(ctx context.Context, url string, branchName string) (string, error)
-		GetLog(ctx context.Context, branchName string) (string, error)
-		GetAssociatedRefNames(ctx context.Context, oid string) (string, error)
-		GetPullRequests(ctx context.Context, hostname string, orgs string, repos string, queryHashes string) (string, error)
-		GetUncommittedChanges(ctx context.Context) (string, error)
-		GetConfig(ctx context.Context, key string) (string, error)
-		AddConfig(ctx context.Context, key string, value string) (string, error)
-		RemoveConfig(ctx context.Context, key string) (string, error)
-		CheckoutBranch(ctx context.Context, branchName string) (string, error)
-		DeleteBranches(ctx context.Context, branchNames []string) (string, error)
-	}
-
 	Remote struct {
 		Name     string
 		Hostname string
@@ -55,17 +35,17 @@ const (
 
 var ErrNotFound = errors.New("not found")
 
-func GetRemote(ctx context.Context, connection Connection) (Remote, error) {
+func GetRemote(ctx context.Context, connection shared.Connection) (Remote, error) {
 	remoteNames, err := connection.GetRemoteNames(ctx)
 	if err != nil {
 		return Remote{}, err
 	}
 
-	remotes := toRemotes(splitLines(remoteNames))
+	remotes := toRemotes(SplitLines(remoteNames))
 	if remote, err := getPrimaryRemote(remotes); err == nil {
 		hostname := remote.Hostname
 		if config, err := connection.GetSshConfig(ctx, hostname); err == nil {
-			remote.Hostname = normalizeHostname(findHostname(splitLines(config), hostname))
+			remote.Hostname = normalizeHostname(findHostname(SplitLines(config), hostname))
 		}
 		return remote, nil
 	} else {
@@ -73,7 +53,7 @@ func GetRemote(ctx context.Context, connection Connection) (Remote, error) {
 	}
 }
 
-func GetBranches(ctx context.Context, remote Remote, connection Connection, dryRun bool) ([]shared.
+func GetBranches(ctx context.Context, remote Remote, connection shared.Connection, dryRun bool) ([]shared.
 	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
@@ -98,7 +78,7 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 
 	var uncommittedChanges []UncommittedChange
 	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
-		uncommittedChanges = toUncommittedChange(splitLines(changes))
+		uncommittedChanges = toUncommittedChange(SplitLines(changes))
 	} else {
 		return nil, err
 	}
@@ -115,15 +95,15 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 	return branches, nil
 }
 
-func loadBranches(ctx context.Context, remote Remote, defaultBranchName string, repoNames []string, connection Connection) ([]shared.Branch, error) {
+func loadBranches(ctx context.Context, remote Remote, defaultBranchName string, repoNames []string, connection shared.Connection) ([]shared.Branch, error) {
 	var branches []shared.Branch
 	if names, err := connection.GetBranchNames(ctx); err == nil {
-		branches = toBranch(splitLines(names))
+		branches = ToBranch(SplitLines(names))
 		mergedNames, err := connection.GetMergedBranchNames(ctx, remote.Name, defaultBranchName)
 		if err != nil {
 			return nil, err
 		}
-		branches = applyMerged(branches, extractMergedBranchNames(splitLines(mergedNames)))
+		branches = applyMerged(branches, extractMergedBranchNames(SplitLines(mergedNames)))
 		branches, err = applyProtected(ctx, branches, connection)
 		if err != nil {
 			return nil, err
@@ -137,9 +117,9 @@ func loadBranches(ctx context.Context, remote Remote, defaultBranchName string, 
 	}
 
 	prs := []shared.PullRequest{}
-	orgs := getQueryOrgs(repoNames)
-	repos := getQueryRepos(repoNames)
-	for _, queryHashes := range getQueryHashes(branches) {
+	orgs := conn.GetQueryOrgs(repoNames)
+	repos := conn.GetQueryRepos(repoNames)
+	for _, queryHashes := range conn.GetQueryHashes(branches) {
 		json, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, queryHashes)
 		if err != nil {
 			return nil, err
@@ -225,21 +205,12 @@ func applyMerged(branches []shared.Branch, mergedNames []string) []shared.Branch
 	return results
 }
 
-func nameExists(name string, names []string) bool {
-	for _, n := range names {
-		if n == name {
-			return true
-		}
-	}
-	return false
-}
-
-func applyProtected(ctx context.Context, branches []shared.Branch, connection Connection) ([]shared.Branch, error) {
+func applyProtected(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
 	results := []shared.Branch{}
 
 	for _, branch := range branches {
 		config, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", branch.Name))
-		splitConfig := splitLines(config)
+		splitConfig := SplitLines(config)
 		if len(splitConfig) > 0 && splitConfig[0] == "true" {
 			branch.IsProtected = true
 		}
@@ -249,7 +220,7 @@ func applyProtected(ctx context.Context, branches []shared.Branch, connection Co
 	return results, nil
 }
 
-func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, defaultBranchName string, connection Connection) ([]shared.Branch, error) {
+func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection) ([]shared.Branch, error) {
 	results := []shared.Branch{}
 
 	for _, branch := range branches {
@@ -260,10 +231,10 @@ func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, 
 		}
 
 		if remoteHeadOid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
-			branch.RemoteHeadOid = splitLines(remoteHeadOid)[0]
+			branch.RemoteHeadOid = SplitLines(remoteHeadOid)[0]
 		} else {
 			result, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.remote", branch.Name))
-			splitResults := splitLines(result)
+			splitResults := SplitLines(result)
 			if len(splitResults) > 0 {
 				remoteUrl := splitResults[0]
 				if result, err := connection.GetLsRemoteHeadOid(ctx, remoteUrl, branch.Name); err == nil {
@@ -281,7 +252,7 @@ func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, 
 		}
 
 		trimmedOids, err := trimBranch(
-			ctx, splitLines(oids), branch.RemoteHeadOid, branch.IsMerged,
+			ctx, SplitLines(oids), branch.RemoteHeadOid, branch.IsMerged,
 			branch.Name, defaultBranchName, connection)
 		if err != nil {
 			return nil, err
@@ -295,7 +266,7 @@ func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, 
 }
 
 func trimBranch(ctx context.Context, oids []string, remoteHeadOid string, isMerged bool,
-	branchName string, defaultBranchName string, connection Connection) ([]string, error) {
+	branchName string, defaultBranchName string, connection shared.Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
 
@@ -309,7 +280,7 @@ func trimBranch(ctx context.Context, oids []string, remoteHeadOid string, isMerg
 		if err != nil {
 			return nil, err
 		}
-		names := extractBranchNames(splitLines(refNames))
+		names := extractBranchNames(SplitLines(refNames))
 
 		if i == 0 {
 			for _, name := range names {
@@ -352,7 +323,7 @@ func extractBranchNames(refNames []string) []string {
 	return result
 }
 
-func applyPullRequest(ctx context.Context, branches []shared.Branch, prs []shared.PullRequest, connection Connection) []shared.Branch {
+func applyPullRequest(ctx context.Context, branches []shared.Branch, prs []shared.PullRequest, connection shared.Connection) []shared.Branch {
 	prNumbers := map[string]int{}
 	for _, branch := range branches {
 		if branch.IsDetached() {
@@ -498,7 +469,7 @@ func isFullyMerged(branch shared.Branch, pr shared.PullRequest) bool {
 	return false
 }
 
-func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branch, defaultBranchName string, connection Connection, dryRun bool) ([]shared.Branch, error) {
+func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branch, defaultBranchName string, connection shared.Connection, dryRun bool) ([]shared.Branch, error) {
 	needsCheckout := false
 	for _, branch := range branches {
 		if branch.Head && branch.State == shared.Deletable {
@@ -520,7 +491,7 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branc
 		}
 	}
 
-	if !branchNameExists(defaultBranchName, branches) {
+	if !BranchNameExists(defaultBranchName, branches) {
 		branch := shared.Branch{}
 		branch.Head = true
 		branch.Name = defaultBranchName
@@ -540,7 +511,7 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branc
 	return results, nil
 }
 
-func toBranch(branchNames []string) []shared.Branch {
+func ToBranch(branchNames []string) []shared.Branch {
 	results := []shared.Branch{}
 
 	for _, branchName := range branchNames {
@@ -660,7 +631,7 @@ func toPullRequestState(state string) (shared.PullRequestState, error) {
 	}
 }
 
-func DeleteBranches(ctx context.Context, branches []shared.Branch, connection Connection) ([]shared.Branch, error) {
+func DeleteBranches(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
 	branchNames := getBranchNames(branches, shared.Deletable)
 	if len(branchNames) == 0 {
 		return branches, nil
@@ -672,7 +643,7 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection Co
 	if err != nil {
 		return nil, err
 	}
-	branchesAfter := toBranch(splitLines(branchNamesAfter))
+	branchesAfter := ToBranch(SplitLines(branchNamesAfter))
 
 	return checkDeleted(branches, branchesAfter), nil
 }
@@ -691,7 +662,7 @@ func checkDeleted(branchesBefore []shared.Branch, branchesAfter []shared.Branch)
 	results := []shared.Branch{}
 	for _, branch := range branchesBefore {
 		if branch.State == shared.Deletable {
-			if !branchNameExists(branch.Name, branchesAfter) {
+			if !BranchNameExists(branch.Name, branchesAfter) {
 				branch.State = shared.Deleted
 			}
 		}
@@ -700,7 +671,7 @@ func checkDeleted(branchesBefore []shared.Branch, branchesAfter []shared.Branch)
 	return results
 }
 
-func branchNameExists(branchName string, branches []shared.Branch) bool {
+func BranchNameExists(branchName string, branches []shared.Branch) bool {
 	for _, branch := range branches {
 		if branch.Name == branchName {
 			return true
@@ -709,7 +680,16 @@ func branchNameExists(branchName string, branches []shared.Branch) bool {
 	return false
 }
 
-func splitLines(text string) []string {
+func nameExists(name string, names []string) bool {
+	for _, n := range names {
+		if n == name {
+			return true
+		}
+	}
+	return false
+}
+
+func SplitLines(text string) []string {
 	return strings.FieldsFunc(strings.Replace(text, "\r\n", "\n", -1),
 		func(c rune) bool { return c == '\n' })
 }

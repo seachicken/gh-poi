@@ -14,29 +14,32 @@ import (
 func Test_DeletingBranchesWhenTheDryRunOptionIsFalse(t *testing.T) {
 	onlyCI(t)
 
-	actual := captureOutput(func() { runMain(false, false) })
+	results := captureOutput(func() { runMain(false, false) })
 
 	expected := fmt.Sprintf("%s %s", green("✔"), "Deleting branches...")
-	assert.Contains(t, actual, expected)
+	assert.Contains(t, results, expected)
 }
 
 func Test_DoNotDeleteBranchesWhenTheDryRunOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
-	actual := captureOutput(func() { runMain(true, false) })
+	results := captureOutput(func() { runMain(true, false) })
 
 	expected := fmt.Sprintf("%s %s", hiBlack("-"), "Deleting branches...")
-	assert.Contains(t, actual, expected)
+	assert.Contains(t, results, expected)
 }
 
 func Test_ProtectAndUnprotect(t *testing.T) {
 	onlyCI(t)
 
-	actualProtect := captureOutput(func() { runProtect([]string{"main"}, false) })
-	assert.Equal(t, actualProtect, "")
+	runProtect([]string{"main"}, false)
+	protectResults := captureOutput(func() { runMain(true, false) })
+	expected := fmt.Sprintf("main %s", hiBlack("[protected]"))
+	assert.Contains(t, protectResults, expected)
 
-	actualUnprotect := captureOutput(func() { runUnprotect([]string{"main"}, false) })
-	assert.Equal(t, actualUnprotect, "")
+	runUnprotect([]string{"main"}, false)
+	unprotectResults := captureOutput(func() { runMain(true, false) })
+	assert.NotContains(t, unprotectResults, expected)
 }
 
 func onlyCI(t *testing.T) {

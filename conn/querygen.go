@@ -1,4 +1,4 @@
-package main
+package conn
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/seachicken/gh-poi/shared"
 )
 
-func getQueryOrgs(repoNames []string) string {
+func GetQueryOrgs(repoNames []string) string {
 	var repos strings.Builder
 	for _, name := range repoNames {
 		repos.WriteString(fmt.Sprintf("org:%s ", strings.Split(name, "/")[0]))
@@ -15,7 +15,7 @@ func getQueryOrgs(repoNames []string) string {
 	return strings.TrimSpace(repos.String())
 }
 
-func getQueryRepos(repoNames []string) string {
+func GetQueryRepos(repoNames []string) string {
 	var repos strings.Builder
 	for _, name := range repoNames {
 		repos.WriteString(fmt.Sprintf("repo:%s ", name))
@@ -23,7 +23,7 @@ func getQueryRepos(repoNames []string) string {
 	return strings.TrimSpace(repos.String())
 }
 
-func getQueryHashes(branches []shared.Branch) []string {
+func GetQueryHashes(branches []shared.Branch) []string {
 	results := []string{}
 
 	var hashes strings.Builder

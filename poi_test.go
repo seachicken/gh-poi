@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/seachicken/gh-poi/conn"
+	"github.com/seachicken/gh-poi/shared"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,9 +44,9 @@ func Test_ShouldBeDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
@@ -81,9 +82,9 @@ func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
@@ -122,9 +123,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
@@ -162,9 +163,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
@@ -202,9 +203,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
@@ -242,9 +243,9 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "fork/main", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.T) {
@@ -283,9 +284,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T) {
@@ -324,9 +325,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testing.T) {
@@ -363,9 +364,9 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testin
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
@@ -404,9 +405,9 @@ func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
@@ -445,9 +446,9 @@ func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
@@ -485,9 +486,9 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs(t *testing.T) {
@@ -525,9 +526,9 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deletable, actual[0].State)
+	assert.Equal(t, shared.Deletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
@@ -567,9 +568,9 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
@@ -607,9 +608,9 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldNotDeletableWhenBranchIsProtected(t *testing.T) {
@@ -644,10 +645,10 @@ func Test_ShouldNotDeletableWhenBranchIsProtected(t *testing.T) {
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
 	assert.Equal(t, true, actual[0].IsProtected)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, false, actual[1].IsProtected)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.T) {
@@ -687,10 +688,10 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, []PullRequest{}, actual[0].PullRequests)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, []shared.PullRequest{}, actual[0].PullRequests)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWithTheDefaultBranch(t *testing.T) {
@@ -728,9 +729,9 @@ func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWit
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
 	assert.Equal(t, []string{}, actual[0].Commits)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
@@ -766,9 +767,9 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "(HEAD detached at a97e963)", actual[0].Name)
 	assert.Equal(t, []string{}, actual[0].Commits)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
@@ -1059,18 +1060,18 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 		GetBranchNames("@main", nil, nil).
 		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 1}))
 
-	branches := []Branch{
-		{false, "issue1", false, false, "", []string{}, []PullRequest{}, Deletable},
-		{true, "main", true, false, "", []string{}, []PullRequest{}, NotDeletable},
+	branches := []shared.Branch{
+		{Head: false, Name: "issue1", IsMerged: false, IsProtected: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.Deletable},
+		{Head: true, Name: "main", IsMerged: true, IsProtected: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, Deleted, actual[0].State)
+	assert.Equal(t, shared.Deleted, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
 func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
@@ -1080,16 +1081,16 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 	s := conn.Setup(ctrl).
 		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 0}))
 
-	branches := []Branch{
-		{false, "issue1", false, false, "", []string{}, []PullRequest{}, NotDeletable},
-		{true, "main", true, false, "", []string{}, []PullRequest{}, NotDeletable},
+	branches := []shared.Branch{
+		{Head: false, Name: "issue1", IsMerged: false, IsProtected: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+		{Head: true, Name: "main", IsMerged: true, IsProtected: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, NotDeletable, actual[0].State)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, NotDeletable, actual[1].State)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }

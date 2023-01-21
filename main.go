@@ -11,6 +11,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/seachicken/gh-poi/conn"
+	"github.com/seachicken/gh-poi/shared"
 )
 
 var (
@@ -115,14 +116,14 @@ func runMain(dryRun bool, debug bool) {
 
 	fmt.Println()
 
-	var deletedStates []BranchState
-	var notDeletedStates []BranchState
+	var deletedStates []shared.BranchState
+	var notDeletedStates []shared.BranchState
 	if dryRun {
-		deletedStates = []BranchState{Deletable}
-		notDeletedStates = []BranchState{NotDeletable}
+		deletedStates = []shared.BranchState{shared.Deletable}
+		notDeletedStates = []shared.BranchState{shared.NotDeletable}
 	} else {
-		deletedStates = []BranchState{Deleted}
-		notDeletedStates = []BranchState{Deletable, NotDeletable}
+		deletedStates = []shared.BranchState{shared.Deleted}
+		notDeletedStates = []shared.BranchState{shared.Deletable, shared.NotDeletable}
 	}
 
 	fmt.Fprintf(color.Output, "%s\n", whiteBold("Deleted branches"))
@@ -160,7 +161,7 @@ func runUnprotect(branchNames []string, debug bool) {
 	}
 }
 
-func printBranches(branches []Branch) {
+func printBranches(branches []shared.Branch) {
 	if len(branches) == 0 {
 		fmt.Fprintf(color.Output, "%s\n",
 			hiBlack("  There are no branches in the current directory"))
@@ -202,25 +203,25 @@ func printBranches(branches []Branch) {
 	}
 }
 
-func getIssueNoColor(state PullRequestState, isDraft bool) color.Attribute {
+func getIssueNoColor(state shared.PullRequestState, isDraft bool) color.Attribute {
 	switch state {
-	case Open:
+	case shared.Open:
 		if isDraft {
 			return color.FgHiBlack
 		} else {
 			return color.FgGreen
 		}
-	case Merged:
+	case shared.Merged:
 		return color.FgMagenta
-	case Closed:
+	case shared.Closed:
 		return color.FgRed
 	default:
 		return color.FgHiBlack
 	}
 }
 
-func getBranches(branches []Branch, states []BranchState) []Branch {
-	results := []Branch{}
+func getBranches(branches []shared.Branch, states []shared.BranchState) []shared.Branch {
+	results := []shared.Branch{}
 	for _, branch := range branches {
 		if contains(branch.State, states) {
 			results = append(results, branch)
@@ -229,7 +230,7 @@ func getBranches(branches []Branch, states []BranchState) []Branch {
 	return results
 }
 
-func contains(state BranchState, states []BranchState) bool {
+func contains(state shared.BranchState, states []shared.BranchState) bool {
 	for _, s := range states {
 		if s == state {
 			return true

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/seachicken/gh-poi/shared"
 )
 
 func getQueryOrgs(repoNames []string) string {
@@ -21,7 +23,7 @@ func getQueryRepos(repoNames []string) string {
 	return strings.TrimSpace(repos.String())
 }
 
-func getQueryHashes(branches []Branch) []string {
+func getQueryHashes(branches []shared.Branch) []string {
 	results := []string{}
 
 	var hashes strings.Builder

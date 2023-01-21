@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/seachicken/gh-poi/shared"
 )
 
 type (
@@ -40,31 +41,6 @@ type (
 		RepoName string
 	}
 
-	BranchState int
-
-	Branch struct {
-		Head          bool
-		Name          string
-		IsMerged      bool
-		IsProtected   bool
-		RemoteHeadOid string
-		Commits       []string
-		PullRequests  []PullRequest
-		State         BranchState
-	}
-
-	PullRequestState int
-
-	PullRequest struct {
-		Name    string
-		State   PullRequestState
-		IsDraft bool
-		Number  int
-		Commits []string
-		Url     string
-		Author  string
-	}
-
 	UncommittedChange struct {
 		X    string
 		Y    string
@@ -73,24 +49,10 @@ type (
 )
 
 const (
-	Unknown BranchState = iota
-	NotDeletable
-	Deletable
-	Deleted
-)
-
-const (
-	Closed PullRequestState = iota
-	Merged
-	Open
-)
-
-const (
 	github    = "github.com"
 	localhost = "github.localhost"
 )
 
-var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 var ErrNotFound = errors.New("not found")
 
 func GetRemote(ctx context.Context, connection Connection) (Remote, error) {
@@ -111,7 +73,8 @@ func GetRemote(ctx context.Context, connection Connection) (Remote, error) {
 	}
 }
 
-func GetBranches(ctx context.Context, remote Remote, connection Connection, dryRun bool) ([]Branch, error) {
+func GetBranches(ctx context.Context, remote Remote, connection Connection, dryRun bool) ([]shared.
+	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
 	if json, err := connection.GetRepoNames(ctx, remote.Hostname, remote.RepoName); err == nil {
@@ -128,7 +91,32 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 		return nil, err
 	}
 
-	var branches []Branch
+	branches, err := loadBranches(ctx, remote, defaultBranchName, repoNames, connection)
+	if err != nil {
+		return nil, err
+	}
+
+	var uncommittedChanges []UncommittedChange
+	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
+		uncommittedChanges = toUncommittedChange(splitLines(changes))
+	} else {
+		return nil, err
+	}
+
+	branches = checkDeletion(branches, uncommittedChanges)
+
+	branches, err = switchToDefaultBranchIfDeleted(ctx, branches, defaultBranchName, connection, dryRun)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(branches, func(i, j int) bool { return branches[i].Name < branches[j].Name })
+
+	return branches, nil
+}
+
+func loadBranches(ctx context.Context, remote Remote, defaultBranchName string, repoNames []string, connection Connection) ([]shared.Branch, error) {
+	var branches []shared.Branch
 	if names, err := connection.GetBranchNames(ctx); err == nil {
 		branches = toBranch(splitLines(names))
 		mergedNames, err := connection.GetMergedBranchNames(ctx, remote.Name, defaultBranchName)
@@ -148,7 +136,7 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 		return nil, err
 	}
 
-	prs := []PullRequest{}
+	prs := []shared.PullRequest{}
 	orgs := getQueryOrgs(repoNames)
 	repos := getQueryRepos(repoNames)
 	for _, queryHashes := range getQueryHashes(branches) {
@@ -165,59 +153,6 @@ func GetBranches(ctx context.Context, remote Remote, connection Connection, dryR
 	}
 
 	branches = applyPullRequest(ctx, branches, prs, connection)
-
-	var uncommittedChanges []UncommittedChange
-	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
-		uncommittedChanges = toUncommittedChange(splitLines(changes))
-	} else {
-		return nil, err
-	}
-
-	branches = checkDeletion(branches, uncommittedChanges)
-
-	needsCheckout := false
-	for _, branch := range branches {
-		if branch.Head && branch.State == Deletable {
-			needsCheckout = true
-			break
-		}
-	}
-
-	if needsCheckout {
-		result := []Branch{}
-
-		if !dryRun {
-			_, err := connection.CheckoutBranch(ctx, defaultBranchName)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if !branchNameExists(defaultBranchName, branches) {
-			result = append(result, Branch{
-				true, defaultBranchName,
-				false,
-				false,
-				"",
-				[]string{},
-				[]PullRequest{},
-				NotDeletable,
-			})
-		}
-
-		for _, branch := range branches {
-			if branch.Name == defaultBranchName {
-				branch.Head = true
-			} else {
-				branch.Head = false
-			}
-			result = append(result, branch)
-		}
-
-		branches = result
-	}
-
-	sort.Slice(branches, func(i, j int) bool { return branches[i].Name < branches[j].Name })
 
 	return branches, nil
 }
@@ -281,8 +216,8 @@ func extractMergedBranchNames(mergedNames []string) []string {
 	return result
 }
 
-func applyMerged(branches []Branch, mergedNames []string) []Branch {
-	results := []Branch{}
+func applyMerged(branches []shared.Branch, mergedNames []string) []shared.Branch {
+	results := []shared.Branch{}
 	for _, branch := range branches {
 		branch.IsMerged = nameExists(branch.Name, mergedNames)
 		results = append(results, branch)
@@ -299,8 +234,8 @@ func nameExists(name string, names []string) bool {
 	return false
 }
 
-func applyProtected(ctx context.Context, branches []Branch, connection Connection) ([]Branch, error) {
-	results := []Branch{}
+func applyProtected(ctx context.Context, branches []shared.Branch, connection Connection) ([]shared.Branch, error) {
+	results := []shared.Branch{}
 
 	for _, branch := range branches {
 		config, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", branch.Name))
@@ -314,11 +249,12 @@ func applyProtected(ctx context.Context, branches []Branch, connection Connectio
 	return results, nil
 }
 
-func applyCommits(ctx context.Context, remote Remote, branches []Branch, defaultBranchName string, connection Connection) ([]Branch, error) {
-	results := []Branch{}
+func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, defaultBranchName string, connection Connection) ([]shared.Branch, error) {
+	results := []shared.Branch{}
 
 	for _, branch := range branches {
 		if branch.Name == defaultBranchName || branch.IsDetached() {
+			branch.Commits = []string{}
 			results = append(results, branch)
 			continue
 		}
@@ -416,7 +352,7 @@ func extractBranchNames(refNames []string) []string {
 	return result
 }
 
-func applyPullRequest(ctx context.Context, branches []Branch, prs []PullRequest, connection Connection) []Branch {
+func applyPullRequest(ctx context.Context, branches []shared.Branch, prs []shared.PullRequest, connection Connection) []shared.Branch {
 	prNumbers := map[string]int{}
 	for _, branch := range branches {
 		if branch.IsDetached() {
@@ -428,7 +364,7 @@ func applyPullRequest(ctx context.Context, branches []Branch, prs []PullRequest,
 		}
 	}
 
-	results := []Branch{}
+	results := []shared.Branch{}
 	for _, branch := range branches {
 		prs := findMatchedPullRequest(branch.Name, prs, prNumbers)
 		sort.Slice(prs, func(i, j int) bool { return prs[i].Number < prs[j].Number })
@@ -452,10 +388,10 @@ func getPRNumber(mergeConfig string) int {
 	}
 }
 
-func findMatchedPullRequest(branchName string, prs []PullRequest, prNumbers map[string]int) []PullRequest {
-	results := []PullRequest{}
+func findMatchedPullRequest(branchName string, prs []shared.PullRequest, prNumbers map[string]int) []shared.PullRequest {
+	results := []shared.PullRequest{}
 
-	prExists := func(pr PullRequest) bool {
+	prExists := func(pr shared.PullRequest) bool {
 		for _, result := range results {
 			if pr.Number == result.Number {
 				return true
@@ -502,8 +438,8 @@ func toUncommittedChange(changes []string) []UncommittedChange {
 	return results
 }
 
-func checkDeletion(branches []Branch, uncommittedChanges []UncommittedChange) []Branch {
-	results := []Branch{}
+func checkDeletion(branches []shared.Branch, uncommittedChanges []UncommittedChange) []shared.Branch {
+	results := []shared.Branch{}
 	for _, branch := range branches {
 		branch.State = getDeleteStatus(branch, uncommittedChanges)
 		results = append(results, branch)
@@ -511,9 +447,9 @@ func checkDeletion(branches []Branch, uncommittedChanges []UncommittedChange) []
 	return results
 }
 
-func getDeleteStatus(branch Branch, uncommittedChanges []UncommittedChange) BranchState {
+func getDeleteStatus(branch shared.Branch, uncommittedChanges []UncommittedChange) shared.BranchState {
 	if branch.IsProtected {
-		return NotDeletable
+		return shared.NotDeletable
 	}
 
 	hasTrackedChanges := false
@@ -524,31 +460,31 @@ func getDeleteStatus(branch Branch, uncommittedChanges []UncommittedChange) Bran
 		}
 	}
 	if branch.Head && hasTrackedChanges {
-		return NotDeletable
+		return shared.NotDeletable
 	}
 
 	if len(branch.PullRequests) == 0 {
-		return NotDeletable
+		return shared.NotDeletable
 	}
 
 	fullyMergedCnt := 0
 	for _, pr := range branch.PullRequests {
-		if pr.State == Open {
-			return NotDeletable
+		if pr.State == shared.Open {
+			return shared.NotDeletable
 		}
 		if isFullyMerged(branch, pr) {
 			fullyMergedCnt++
 		}
 	}
 	if fullyMergedCnt == 0 {
-		return NotDeletable
+		return shared.NotDeletable
 	}
 
-	return Deletable
+	return shared.Deletable
 }
 
-func isFullyMerged(branch Branch, pr PullRequest) bool {
-	if pr.State != Merged || len(branch.Commits) == 0 {
+func isFullyMerged(branch shared.Branch, pr shared.PullRequest) bool {
+	if pr.State != shared.Merged || len(branch.Commits) == 0 {
 		return false
 	}
 
@@ -562,22 +498,57 @@ func isFullyMerged(branch Branch, pr PullRequest) bool {
 	return false
 }
 
-func toBranch(branchNames []string) []Branch {
-	results := []Branch{}
+func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branch, defaultBranchName string, connection Connection, dryRun bool) ([]shared.Branch, error) {
+	needsCheckout := false
+	for _, branch := range branches {
+		if branch.Head && branch.State == shared.Deletable {
+			needsCheckout = true
+			break
+		}
+	}
+
+	if !needsCheckout {
+		return branches, nil
+	}
+
+	results := []shared.Branch{}
+
+	if !dryRun {
+		_, err := connection.CheckoutBranch(ctx, defaultBranchName)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if !branchNameExists(defaultBranchName, branches) {
+		branch := shared.Branch{}
+		branch.Head = true
+		branch.Name = defaultBranchName
+		branch.State = shared.NotDeletable
+		results = append(results, branch)
+	}
+
+	for _, branch := range branches {
+		if branch.Name == defaultBranchName {
+			branch.Head = true
+		} else {
+			branch.Head = false
+		}
+		results = append(results, branch)
+	}
+
+	return results, nil
+}
+
+func toBranch(branchNames []string) []shared.Branch {
+	results := []shared.Branch{}
 
 	for _, branchName := range branchNames {
-		splitedNames := strings.Split(branchName, ":")
-
-		results = append(results, Branch{
-			splitedNames[0] == "*",
-			splitedNames[1],
-			false,
-			false,
-			"",
-			[]string{},
-			[]PullRequest{},
-			Unknown,
-		})
+		branch := shared.Branch{}
+		splitNames := strings.Split(branchName, ":")
+		branch.Head = splitNames[0] == "*"
+		branch.Name = splitNames[1]
+		results = append(results, branch)
 	}
 
 	return results
@@ -616,7 +587,7 @@ func getRepo(jsonResp string) ([]string, string, error) {
 	return repoNames, resp.DefaultBranchRef.Name, nil
 }
 
-func toPullRequests(jsonResp string) ([]PullRequest, error) {
+func toPullRequests(jsonResp string) ([]shared.PullRequest, error) {
 	type response struct {
 		Data struct {
 			Search struct {
@@ -650,7 +621,7 @@ func toPullRequests(jsonResp string) ([]PullRequest, error) {
 		return nil, fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
-	results := []PullRequest{}
+	results := []shared.PullRequest{}
 	for _, edge := range resp.Data.Search.Edges {
 		state, err := toPullRequestState(edge.Node.State)
 		if err == ErrNotFound {
@@ -662,35 +633,35 @@ func toPullRequests(jsonResp string) ([]PullRequest, error) {
 			commits = append(commits, node.Commit.Oid)
 		}
 
-		results = append(results, PullRequest{
-			edge.Node.HeadRefName,
-			state,
-			edge.Node.IsDraft,
-			edge.Node.Number,
-			commits,
-			edge.Node.Url,
-			edge.Node.Author.Login,
+		results = append(results, shared.PullRequest{
+			Name:    edge.Node.HeadRefName,
+			State:   state,
+			IsDraft: edge.Node.IsDraft,
+			Number:  edge.Node.Number,
+			Commits: commits,
+			Url:     edge.Node.Url,
+			Author:  edge.Node.Author.Login,
 		})
 	}
 
 	return results, nil
 }
 
-func toPullRequestState(state string) (PullRequestState, error) {
+func toPullRequestState(state string) (shared.PullRequestState, error) {
 	switch state {
 	case "CLOSED":
-		return Closed, nil
+		return shared.Closed, nil
 	case "MERGED":
-		return Merged, nil
+		return shared.Merged, nil
 	case "OPEN":
-		return Open, nil
+		return shared.Open, nil
 	default:
 		return 0, ErrNotFound
 	}
 }
 
-func DeleteBranches(ctx context.Context, branches []Branch, connection Connection) ([]Branch, error) {
-	branchNames := getBranchNames(branches, Deletable)
+func DeleteBranches(ctx context.Context, branches []shared.Branch, connection Connection) ([]shared.Branch, error) {
+	branchNames := getBranchNames(branches, shared.Deletable)
 	if len(branchNames) == 0 {
 		return branches, nil
 	}
@@ -706,7 +677,7 @@ func DeleteBranches(ctx context.Context, branches []Branch, connection Connectio
 	return checkDeleted(branches, branchesAfter), nil
 }
 
-func getBranchNames(branches []Branch, state BranchState) []string {
+func getBranchNames(branches []shared.Branch, state shared.BranchState) []string {
 	results := []string{}
 	for _, branch := range branches {
 		if branch.State == state {
@@ -716,12 +687,12 @@ func getBranchNames(branches []Branch, state BranchState) []string {
 	return results
 }
 
-func checkDeleted(branchesBefore []Branch, branchesAfter []Branch) []Branch {
-	results := []Branch{}
+func checkDeleted(branchesBefore []shared.Branch, branchesAfter []shared.Branch) []shared.Branch {
+	results := []shared.Branch{}
 	for _, branch := range branchesBefore {
-		if branch.State == Deletable {
+		if branch.State == shared.Deletable {
 			if !branchNameExists(branch.Name, branchesAfter) {
-				branch.State = Deleted
+				branch.State = shared.Deleted
 			}
 		}
 		results = append(results, branch)
@@ -729,7 +700,7 @@ func checkDeleted(branchesBefore []Branch, branchesAfter []Branch) []Branch {
 	return results
 }
 
-func branchNameExists(branchName string, branches []Branch) bool {
+func branchNameExists(branchName string, branches []shared.Branch) bool {
 	for _, branch := range branches {
 		if branch.Name == branchName {
 			return true
@@ -741,10 +712,6 @@ func branchNameExists(branchName string, branches []Branch) bool {
 func splitLines(text string) []string {
 	return strings.FieldsFunc(strings.Replace(text, "\r\n", "\n", -1),
 		func(c rune) bool { return c == '\n' })
-}
-
-func (b Branch) IsDetached() bool {
-	return detachedBranchNameRegex.MatchString(b.Name)
 }
 
 func (uc *UncommittedChange) IsUntracked() bool {

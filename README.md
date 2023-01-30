@@ -28,3 +28,9 @@ gh extension install seachicken/gh-poi
 - `gh poi --debug` Enable debug logs
 - `gh poi protect <branchname>...` Protect local branches from deletion
 - `gh poi unprotect <branchname>...` Unprotect local branches
+
+## FAQ
+
+### Why the name "poi"?
+
+"poi" means "feel free to throw it away" in Japanese.

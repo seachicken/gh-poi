@@ -29,7 +29,6 @@ func main() {
 	var debug bool
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
-	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
 	flag.Parse()
 	args := flag.Args()
 

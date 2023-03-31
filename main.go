@@ -30,6 +30,19 @@ func main() {
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
+	flag.Usage = func() {
+		fmt.Fprintf(color.Output, "%s\n\n", white("Delete the merged local branches."))
+		fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))
+		fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi <command> [flags]"))
+		fmt.Fprintf(color.Output, "%s", whiteBold("COMMANDS"))
+		fmt.Fprintf(color.Output, "%s\n", white(`
+  protect:   Protect local branches from deletion
+  unprotect: Unprotect local branches
+  `))
+		fmt.Fprintf(color.Output, "%s\n", whiteBold("FLAGS"))
+		flag.PrintDefaults()
+		fmt.Println()
+	}
 	flag.Parse()
 	args := flag.Args()
 
@@ -40,11 +53,21 @@ func main() {
 		switch subcmd {
 		case "protect":
 			protectCmd := flag.NewFlagSet("protect", flag.ExitOnError)
+			protectCmd.Usage = func() {
+				fmt.Fprintf(color.Output, "%s\n\n", white("Protect local branches from deletion."))
+				fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))
+				fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi protect <branchname>..."))
+			}
 			protectCmd.Parse(args)
 
 			runProtect(args, debug)
 		case "unprotect":
 			unprotectCmd := flag.NewFlagSet("unprotect", flag.ExitOnError)
+			unprotectCmd.Usage = func() {
+				fmt.Fprintf(color.Output, "%s\n\n", white("Unprotect local branches."))
+				fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))
+				fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi unprotect <branchname>..."))
+			}
 			unprotectCmd.Parse(args)
 
 			runUnprotect(args, debug)

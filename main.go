@@ -29,7 +29,6 @@ func main() {
 	var debug bool
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
-	flag.BoolVar(&dryRun, "check", false, "[Deprecated] Show branches to delete")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", white("Delete the merged local branches."))
 		fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))

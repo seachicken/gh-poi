@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"time"
 
@@ -57,8 +58,6 @@ func (conn *Connection) GetRepoNames(ctx context.Context, hostname string, repoN
 	args := []string{
 		"repo", "view", hostname + "/" + repoName,
 		"--json", "owner,name,parent,defaultBranchRef",
-		// disable colored outputs (https://github.com/seachicken/gh-poi/issues/79)
-		"--jq", ".",
 	}
 	return conn.run(ctx, "gh", args, None)
 }
@@ -114,7 +113,6 @@ func (conn *Connection) GetPullRequests(
 	args := []string{
 		"api", "graphql",
 		"--hostname", hostname,
-		"--jq", ".",
 		"-f", fmt.Sprintf(`query=query {
   search(type: ISSUE, query: "is:pr %s %s %s", last: 100) {
     issueCount
@@ -204,18 +202,22 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	var stdout bytes.Buffer
 	cmd := exec.CommandContext(ctx, cmdPath, args...)
 	cmd.Stdout = &stdout
+	if name == "gh" {
+		cmd.Env = append(os.Environ(), "NO_COLOR=1")
+	}
 
 	start := time.Now()
 	err = cmd.Run()
 	duration := time.Since(start)
 	if err != nil {
-		err = fmt.Errorf("failed to run external command: %s, args: %v\n%w", name, args, err)
+		err = fmt.Errorf("failed to run external command: %s, args: %v\n %w", name, args, err)
+		return "", err
 	}
 
 	if conn.Debug {
 		switch mask {
 		case None:
-			log.Printf("[%v] run %s %v -> %s\n", duration, name, args, stdout.String())
+			log.Printf("[%v] run %s %v -> %q\n", duration, name, args, stdout.String())
 		case Output:
 			log.Printf("[%v] run %s %v -> *****\n", duration, name, args)
 		}

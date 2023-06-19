@@ -203,7 +203,7 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	cmd := exec.CommandContext(ctx, cmdPath, args...)
 	cmd.Stdout = &stdout
 	if name == "gh" {
-		cmd.Env = append(os.Environ(), "NO_COLOR=1")
+		cmd.Env = append(os.Environ(), "CLICOLOR_FORCE=0")
 	}
 
 	start := time.Now()

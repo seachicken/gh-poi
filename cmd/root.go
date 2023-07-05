@@ -150,11 +150,14 @@ func normalizeHostname(host string) string {
 
 func toRemotes(remoteNames []string) []Remote {
 	results := []Remote{}
-	r := regexp.MustCompile(`^(.+?)\s+.+(?:@|//)(.+?)(?::|/)(.+?/.+?)(?:\.git|)\s+.+$`)
+	r := regexp.MustCompile(`^(?:\w+://|\w+@)?([a-zA-Z0-9\.-]+)[:/](.+?/.+?)(?:\.git|)$`)
 	for _, name := range remoteNames {
-		found := r.FindStringSubmatch(name)
-		if len(found) == 4 {
-			results = append(results, Remote{found[1], found[2], found[3]})
+		parts := strings.Fields(name)
+		if len(parts) == 3 {
+			found := r.FindStringSubmatch(parts[1])
+			if len(found) == 3 {
+				results = append(results, Remote{parts[0], found[1], found[2]})
+			}
 		}
 	}
 	return results

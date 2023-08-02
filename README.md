@@ -33,4 +33,5 @@ gh extension install seachicken/gh-poi
 
 ### Why the name "poi"?
 
-"poi" means "feel free to throw it away" in Japanese.
+"poi" means "feel free to throw it away" in Japanese.  
+If you prefer an alias, you can change it with [gh alias set](https://cli.github.com/manual/gh_alias_set). (e.g. `gh alias set clean-branches poi`)

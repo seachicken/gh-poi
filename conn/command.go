@@ -106,7 +106,9 @@ func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (
 	return conn.run(ctx, "git", args, None)
 }
 
-// https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests#search-within-a-users-or-organizations-repositories
+// limitations:
+// - https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests#search-within-a-users-or-organizations-repositories
+// - https://docs.github.com/en/graphql/overview/resource-limitations
 func (conn *Connection) GetPullRequests(
 	ctx context.Context,
 	hostname string, orgs string, repos string, queryHashes string) (string, error) {
@@ -124,7 +126,7 @@ func (conn *Connection) GetPullRequests(
           state
           isDraft
           headRefName
-          commits(last: 10) {
+          commits(last: 100) {
             nodes {
               commit {
                 oid

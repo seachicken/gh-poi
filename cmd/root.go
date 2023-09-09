@@ -14,12 +14,6 @@ import (
 )
 
 type (
-	Remote struct {
-		Name     string
-		Hostname string
-		RepoName string
-	}
-
 	UncommittedChange struct {
 		X    string
 		Y    string
@@ -34,10 +28,10 @@ const (
 
 var ErrNotFound = errors.New("not found")
 
-func GetRemote(ctx context.Context, connection shared.Connection) (Remote, error) {
+func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote, error) {
 	remoteNames, err := connection.GetRemoteNames(ctx)
 	if err != nil {
-		return Remote{}, err
+		return shared.Remote{}, err
 	}
 
 	remotes := toRemotes(SplitLines(remoteNames))
@@ -48,11 +42,11 @@ func GetRemote(ctx context.Context, connection shared.Connection) (Remote, error
 		}
 		return remote, nil
 	} else {
-		return Remote{}, err
+		return shared.Remote{}, err
 	}
 }
 
-func GetBranches(ctx context.Context, remote Remote, connection shared.Connection, dryRun bool) ([]shared.
+func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, dryRun bool) ([]shared.
 	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
@@ -94,7 +88,7 @@ func GetBranches(ctx context.Context, remote Remote, connection shared.Connectio
 	return branches, nil
 }
 
-func loadBranches(ctx context.Context, remote Remote, defaultBranchName string, repoNames []string, connection shared.Connection) ([]shared.Branch, error) {
+func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName string, repoNames []string, connection shared.Connection) ([]shared.Branch, error) {
 	var branches []shared.Branch
 	if names, err := connection.GetBranchNames(ctx); err == nil {
 		branches = ToBranch(SplitLines(names))
@@ -148,24 +142,17 @@ func normalizeHostname(host string) string {
 	return hostname
 }
 
-func toRemotes(remoteNames []string) []Remote {
-	results := []Remote{}
-	r := regexp.MustCompile(`^(?:\w+://|\w+@)?([a-zA-Z0-9\.-]+)[:/](.+?/.+?)(?:\.git|)$`)
-	for _, name := range remoteNames {
-		parts := strings.Fields(name)
-		if len(parts) == 3 {
-			found := r.FindStringSubmatch(parts[1])
-			if len(found) == 3 {
-				results = append(results, Remote{parts[0], found[1], found[2]})
-			}
-		}
+func toRemotes(remoteConfigs []string) []shared.Remote {
+	results := []shared.Remote{}
+	for _, remoteConfig := range remoteConfigs {
+		results = append(results, shared.NewRemote(remoteConfig))
 	}
 	return results
 }
 
-func getPrimaryRemote(remotes []Remote) (Remote, error) {
+func getPrimaryRemote(remotes []shared.Remote) (shared.Remote, error) {
 	if len(remotes) == 0 {
-		return Remote{}, ErrNotFound
+		return shared.Remote{}, ErrNotFound
 	}
 
 	for _, remote := range remotes {
@@ -222,7 +209,7 @@ func applyProtected(ctx context.Context, branches []shared.Branch, connection sh
 	return results, nil
 }
 
-func applyCommits(ctx context.Context, remote Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection) ([]shared.Branch, error) {
+func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection) ([]shared.Branch, error) {
 	results := []shared.Branch{}
 
 	for _, branch := range branches {

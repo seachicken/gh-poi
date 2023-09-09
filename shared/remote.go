@@ -13,7 +13,8 @@ type (
 	}
 )
 
-var regex = regexp.MustCompile(`^(?:\w+://|\w+@)?([a-zA-Z0-9\.-]+)[:/](.+?/.+?)(?:\.git|)$`)
+// https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
+var regex = regexp.MustCompile(`^(?:(?:[a-zA-Z0-9-._~]+)(?:://|@))?([a-zA-Z0-9-._~]+)[:/](.+?/.+?)(?:\.git|)$`)
 
 func NewRemote(remoteConfig string) Remote {
 	splitConfig := strings.Fields(remoteConfig)

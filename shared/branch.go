@@ -24,7 +24,8 @@ const (
 	Deleted
 )
 
+var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
+
 func (b Branch) IsDetached() bool {
-	detachedBranchNameRegex := regexp.MustCompile(`^\(.+\)`)
 	return detachedBranchNameRegex.MatchString(b.Name)
 }

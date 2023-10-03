@@ -17,11 +17,11 @@ import (
 )
 
 var (
-	white     = color.New(color.FgWhite).SprintFunc()
-	whiteBold = color.New(color.FgWhite, color.Bold).SprintFunc()
-	hiBlack   = color.New(color.FgHiBlack).SprintFunc()
-	green     = color.New(color.FgGreen).SprintFunc()
-	red       = color.New(color.FgRed).SprintFunc()
+	white   = color.New(color.FgWhite).SprintFunc()
+	bold    = color.New(color.Bold).SprintFunc()
+	hiBlack = color.New(color.FgHiBlack).SprintFunc()
+	green   = color.New(color.FgGreen).SprintFunc()
+	red     = color.New(color.FgRed).SprintFunc()
 )
 
 func main() {
@@ -31,14 +31,14 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", white("Delete the merged local branches."))
-		fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))
+		fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
 		fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi <command> [flags]"))
-		fmt.Fprintf(color.Output, "%s", whiteBold("COMMANDS"))
+		fmt.Fprintf(color.Output, "%s", bold("COMMANDS"))
 		fmt.Fprintf(color.Output, "%s\n", white(`
   protect:   Protect local branches from deletion
   unprotect: Unprotect local branches
   `))
-		fmt.Fprintf(color.Output, "%s\n", whiteBold("FLAGS"))
+		fmt.Fprintf(color.Output, "%s\n", bold("FLAGS"))
 		flag.PrintDefaults()
 		fmt.Println()
 	}
@@ -54,7 +54,7 @@ func main() {
 			protectCmd := flag.NewFlagSet("protect", flag.ExitOnError)
 			protectCmd.Usage = func() {
 				fmt.Fprintf(color.Output, "%s\n\n", white("Protect local branches from deletion."))
-				fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))
+				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
 				fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi protect <branchname>..."))
 			}
 			protectCmd.Parse(args)
@@ -64,7 +64,7 @@ func main() {
 			unprotectCmd := flag.NewFlagSet("unprotect", flag.ExitOnError)
 			unprotectCmd.Usage = func() {
 				fmt.Fprintf(color.Output, "%s\n\n", white("Unprotect local branches."))
-				fmt.Fprintf(color.Output, "%s\n", whiteBold("USAGE"))
+				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
 				fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi unprotect <branchname>..."))
 			}
 			unprotectCmd.Parse(args)
@@ -81,7 +81,7 @@ func runMain(dryRun bool, debug bool) {
 	defer stop()
 
 	if dryRun {
-		fmt.Fprintf(color.Output, "%s\n", whiteBold("== DRY RUN =="))
+		fmt.Fprintf(color.Output, "%s\n", bold("== DRY RUN =="))
 	}
 
 	connection := &conn.Connection{Debug: debug}
@@ -150,11 +150,11 @@ func runMain(dryRun bool, debug bool) {
 		notDeletedStates = []shared.BranchState{shared.Deletable, shared.NotDeletable}
 	}
 
-	fmt.Fprintf(color.Output, "%s\n", whiteBold("Deleted branches"))
+	fmt.Fprintf(color.Output, "%s\n", bold("Deleted branches"))
 	printBranches(getBranches(branches, deletedStates))
 	fmt.Println()
 
-	fmt.Fprintf(color.Output, "%s\n", whiteBold("Branches not deleted"))
+	fmt.Fprintf(color.Output, "%s\n", bold("Branches not deleted"))
 	printBranches(getBranches(branches, notDeletedStates))
 	fmt.Println()
 }

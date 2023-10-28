@@ -28,6 +28,17 @@ func Test_CreateRemoteWithScpLikeUrlAndCustomUserinfo(t *testing.T) {
 	)
 }
 
+func Test_CreateRemoteWithSshUrl(t *testing.T) {
+	assert.Equal(t,
+		Remote{
+			Name:     "origin",
+			Hostname: "github.com",
+			RepoName: "org/repo",
+		},
+		NewRemote("origin	ssh://git@github.com/org/repo.git (fetch)"),
+	)
+}
+
 func Test_CreateRemoteWithScpLikeUrlWithoutUserinfo(t *testing.T) {
 	assert.Equal(t,
 		Remote{

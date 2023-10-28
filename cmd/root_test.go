@@ -248,7 +248,7 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.T) {
+func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -289,7 +289,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsFalse(t *testing.
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithTheCheckIsTrue(t *testing.T) {
+func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -694,7 +694,7 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeNoCommitHistoryWhenTheFirstCommitOfATopicBranchIsAssociatedWithTheDefaultBranch(t *testing.T) {
+func Test_ShouldBeNoCommitHistoryWhenFirstCommitOfATopicBranchIsAssociatedWithDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -772,7 +772,7 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetRemoteNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -784,7 +784,7 @@ func Test_ReturnsAnErrorWhenGetRemoteNamesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_DoesNotReturnsAnErrorWhenGetSshConfigFails(t *testing.T) {
+func Test_DoesNotReturnsErrorWhenGetSshConfigFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -820,7 +820,7 @@ func Test_DoesNotReturnsAnErrorWhenGetSshConfigFails(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetRepoNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -835,7 +835,7 @@ func Test_ReturnsAnErrorWhenGetRepoNamesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenCheckReposFails(t *testing.T) {
+func Test_ReturnsErrorWhenCheckReposFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -851,7 +851,7 @@ func Test_ReturnsAnErrorWhenCheckReposFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetBranchNamesFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetBranchNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -868,7 +868,7 @@ func Test_ReturnsAnErrorWhenGetBranchNamesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetMergedBranchNames(t *testing.T) {
+func Test_ReturnsErrorWhenGetMergedBranchNames(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -886,7 +886,7 @@ func Test_ReturnsAnErrorWhenGetMergedBranchNames(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -914,7 +914,7 @@ func Test_ReturnsAnErrorWhenGetLogFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -946,7 +946,7 @@ func Test_ReturnsAnErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -979,7 +979,7 @@ func Test_ReturnsAnErrorWhenGetPullRequestsFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
+func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -1015,7 +1015,7 @@ func Test_ReturnsAnErrorWhenGetUncommittedChangesFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_ReturnsAnErrorWhenCheckoutBranchFails(t *testing.T) {
+func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

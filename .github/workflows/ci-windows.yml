@@ -1,9 +1,11 @@
 name: CI for Windows
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches:
+      - '*'
+    tags:
+      - ''
 
 jobs:
 

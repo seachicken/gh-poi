@@ -51,6 +51,11 @@ func onlyCI(t *testing.T) {
 }
 
 func captureOutput(f func()) string {
+	org := os.Stdout
+	defer func() {
+		os.Stdout = org
+	}()
+
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 	color.Output = w

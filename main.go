@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"slices"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -247,18 +248,9 @@ func getIssueNoColor(state shared.PullRequestState, isDraft bool) color.Attribut
 func getBranches(branches []shared.Branch, states []shared.BranchState) []shared.Branch {
 	results := []shared.Branch{}
 	for _, branch := range branches {
-		if contains(branch.State, states) {
+		if slices.Contains(states, branch.State) {
 			results = append(results, branch)
 		}
 	}
 	return results
-}
-
-func contains(state shared.BranchState, states []shared.BranchState) bool {
-	for _, s := range states {
-		if s == state {
-			return true
-		}
-	}
-	return false
 }

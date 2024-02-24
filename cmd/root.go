@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -188,7 +189,7 @@ func extractMergedBranchNames(mergedNames []string) []string {
 func applyMerged(branches []shared.Branch, mergedNames []string) []shared.Branch {
 	results := []shared.Branch{}
 	for _, branch := range branches {
-		branch.IsMerged = nameExists(branch.Name, mergedNames)
+		branch.IsMerged = slices.Contains(mergedNames, branch.Name)
 		results = append(results, branch)
 	}
 	return results
@@ -663,15 +664,6 @@ func checkDeleted(branchesBefore []shared.Branch, branchesAfter []shared.Branch)
 func BranchNameExists(branchName string, branches []shared.Branch) bool {
 	for _, branch := range branches {
 		if branch.Name == branchName {
-			return true
-		}
-	}
-	return false
-}
-
-func nameExists(name string, names []string) bool {
-	for _, n := range names {
-		if n == name {
 			return true
 		}
 	}

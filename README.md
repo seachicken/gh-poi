@@ -3,7 +3,6 @@
 [![CI](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml/badge.svg)](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/seachicken/gh-poi/branch/main/graph/badge.svg?token=tcPxPgst2q)](https://codecov.io/gh/seachicken/gh-poi)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6380/badge)](https://bestpractices.coreinfrastructure.org/projects/6380)
-[![Stake to support us](https://badge.devprotocol.xyz/0x9ca78E1ca8E49a0e9C8BfB59A8Ed58E1E4440615/descriptive)](https://stakes.social/0x9ca78E1ca8E49a0e9C8BfB59A8Ed58E1E4440615)
 
 This [gh](https://github.com/cli/cli) extension determines which local branches have been merged and safely deletes them.
 

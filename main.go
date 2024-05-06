@@ -18,7 +18,6 @@ import (
 )
 
 var (
-	white   = color.New(color.FgWhite).SprintFunc()
 	bold    = color.New(color.Bold).SprintFunc()
 	hiBlack = color.New(color.FgHiBlack).SprintFunc()
 	green   = color.New(color.FgGreen).SprintFunc()
@@ -31,14 +30,14 @@ func main() {
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
-		fmt.Fprintf(color.Output, "%s\n\n", white("Delete the merged local branches."))
+		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")
 		fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-		fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi <command> [flags]"))
+		fmt.Fprintf(color.Output, "  %s\n\n", "gh poi <command> [flags]")
 		fmt.Fprintf(color.Output, "%s", bold("COMMANDS"))
-		fmt.Fprintf(color.Output, "%s\n", white(`
+		fmt.Fprintf(color.Output, "%s\n", `
   protect:   Protect local branches from deletion
   unprotect: Unprotect local branches
-  `))
+  `)
 		fmt.Fprintf(color.Output, "%s\n", bold("FLAGS"))
 		flag.PrintDefaults()
 		fmt.Println()
@@ -54,9 +53,9 @@ func main() {
 		case "protect":
 			protectCmd := flag.NewFlagSet("protect", flag.ExitOnError)
 			protectCmd.Usage = func() {
-				fmt.Fprintf(color.Output, "%s\n\n", white("Protect local branches from deletion."))
+				fmt.Fprintf(color.Output, "%s\n\n", "Protect local branches from deletion.")
 				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-				fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi protect <branchname>..."))
+				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi protect <branchname>...")
 			}
 			protectCmd.Parse(args)
 
@@ -64,9 +63,9 @@ func main() {
 		case "unprotect":
 			unprotectCmd := flag.NewFlagSet("unprotect", flag.ExitOnError)
 			unprotectCmd.Usage = func() {
-				fmt.Fprintf(color.Output, "%s\n\n", white("Unprotect local branches."))
+				fmt.Fprintf(color.Output, "%s\n\n", "Unprotect local branches.")
 				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-				fmt.Fprintf(color.Output, "  %s\n\n", white("gh poi unprotect <branchname>..."))
+				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi unprotect <branchname>...")
 			}
 			unprotectCmd.Parse(args)
 
@@ -196,7 +195,7 @@ func printBranches(branches []shared.Branch) {
 		if branch.Head {
 			fmt.Fprintf(color.Output, "* %s", green(branch.Name))
 		} else {
-			fmt.Fprintf(color.Output, "  %s", white(branch.Name))
+			fmt.Fprintf(color.Output, "  %s", branch.Name)
 		}
 		reason := ""
 		if branch.IsProtected {
@@ -221,7 +220,7 @@ func printBranches(branches []shared.Branch) {
 			fmt.Fprintf(color.Output, "    %s %s  %s %s\n",
 				line,
 				color.New(issueNoColor).SprintFunc()(number),
-				white(pr.Url),
+				pr.Url,
 				hiBlack(pr.Author),
 			)
 		}

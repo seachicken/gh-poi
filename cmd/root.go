@@ -86,6 +86,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 	var branches []shared.Branch
 	if names, err := connection.GetBranchNames(ctx); err == nil {
 		branches = ToBranch(SplitLines(names))
+		branches = applyDefault(branches, defaultBranchName)
 		mergedNames, err := connection.GetMergedBranchNames(ctx, remote.Name, defaultBranchName)
 		if err != nil {
 			return nil, err
@@ -181,6 +182,17 @@ func extractMergedBranchNames(mergedNames []string) []string {
 		}
 	}
 	return result
+}
+
+func applyDefault(branches []shared.Branch, defaultBranchName string) []shared.Branch {
+	results := []shared.Branch{}
+	for _, branch := range branches {
+		if branch.Name == defaultBranchName {
+			branch.IsDefault = true
+		}
+		results = append(results, branch)
+	}
+	return results
 }
 
 func applyMerged(branches []shared.Branch, mergedNames []string) []shared.Branch {

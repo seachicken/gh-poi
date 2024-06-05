@@ -8,6 +8,7 @@ type (
 	Branch struct {
 		Head              bool
 		Name              string
+		IsDefault         bool
 		IsMerged          bool
 		IsProtected       bool
 		HasTrackedChanges bool

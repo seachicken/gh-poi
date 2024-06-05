@@ -201,7 +201,7 @@ func printBranches(branches []shared.Branch) {
 		if branch.IsProtected {
 			reason = "protected"
 		}
-		if branch.HasTrackedChanges {
+		if !branch.IsDefault && len(branch.PullRequests) > 0 && branch.HasTrackedChanges {
 			reason = "uncommitted changes"
 		}
 		if reason == "" {

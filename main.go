@@ -201,6 +201,9 @@ func printBranches(branches []shared.Branch) {
 		if branch.IsProtected {
 			reason = "protected"
 		}
+		if branch.HasTrackedChanges {
+			reason = "uncommitted changes"
+		}
 		if reason == "" {
 			fmt.Fprintln(color.Output, "")
 		} else {

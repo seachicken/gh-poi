@@ -70,14 +70,7 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 		return nil, err
 	}
 
-	var uncommittedChanges []UncommittedChange
-	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
-		uncommittedChanges = toUncommittedChange(SplitLines(changes))
-	} else {
-		return nil, err
-	}
-
-	branches = checkDeletion(branches, uncommittedChanges)
+	branches = checkDeletion(branches)
 
 	branches, err = switchToDefaultBranchIfDeleted(ctx, branches, defaultBranchName, connection, dryRun)
 	if err != nil {
@@ -103,6 +96,10 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 			return nil, err
 		}
 		branches, err = applyCommits(ctx, remote, branches, defaultBranchName, connection)
+		if err != nil {
+			return nil, err
+		}
+		branches, err = applyTrackedChanges(ctx, branches, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -255,6 +252,33 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 	return results, nil
 }
 
+func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
+	var uncommittedChanges []UncommittedChange
+	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
+		uncommittedChanges = toUncommittedChange(SplitLines(changes))
+	} else {
+		return nil, err
+	}
+
+	results := []shared.Branch{}
+	for _, branch := range branches {
+		if branch.Head {
+			hasTrackedChanges := false
+			for _, change := range uncommittedChanges {
+				if !change.IsUntracked() {
+					hasTrackedChanges = true
+					break
+				}
+			}
+			if hasTrackedChanges {
+				branch.HasTrackedChanges = true
+			}
+		}
+		results = append(results, branch)
+	}
+	return results, nil
+}
+
 func trimBranch(ctx context.Context, oids []string, remoteHeadOid string, isMerged bool,
 	branchName string, defaultBranchName string, connection shared.Connection) ([]string, error) {
 	results := []string{}
@@ -399,28 +423,21 @@ func toUncommittedChange(changes []string) []UncommittedChange {
 	return results
 }
 
-func checkDeletion(branches []shared.Branch, uncommittedChanges []UncommittedChange) []shared.Branch {
+func checkDeletion(branches []shared.Branch) []shared.Branch {
 	results := []shared.Branch{}
 	for _, branch := range branches {
-		branch.State = getDeleteStatus(branch, uncommittedChanges)
+		branch.State = getDeleteStatus(branch)
 		results = append(results, branch)
 	}
 	return results
 }
 
-func getDeleteStatus(branch shared.Branch, uncommittedChanges []UncommittedChange) shared.BranchState {
+func getDeleteStatus(branch shared.Branch) shared.BranchState {
 	if branch.IsProtected {
 		return shared.NotDeletable
 	}
 
-	hasTrackedChanges := false
-	for _, change := range uncommittedChanges {
-		if !change.IsUntracked() {
-			hasTrackedChanges = true
-			break
-		}
-	}
-	if branch.Head && hasTrackedChanges {
+	if branch.HasTrackedChanges {
 		return shared.NotDeletable
 	}
 

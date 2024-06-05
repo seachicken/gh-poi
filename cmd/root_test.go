@@ -967,6 +967,7 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", ErrCommand, nil).
+		GetUncommittedChanges("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},

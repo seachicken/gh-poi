@@ -6,14 +6,15 @@ type (
 	BranchState int
 
 	Branch struct {
-		Head          bool
-		Name          string
-		IsMerged      bool
-		IsProtected   bool
-		RemoteHeadOid string
-		Commits       []string
-		PullRequests  []PullRequest
-		State         BranchState
+		Head              bool
+		Name              string
+		IsMerged          bool
+		IsProtected       bool
+		HasTrackedChanges bool
+		RemoteHeadOid     string
+		Commits           []string
+		PullRequests      []PullRequest
+		State             BranchState
 	}
 )
 

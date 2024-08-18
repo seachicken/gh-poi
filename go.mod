@@ -1,8 +1,8 @@
 module github.com/seachicken/gh-poi
 
-go 1.21
+go 1.22
 
-toolchain go1.21.9
+toolchain go1.22.6
 
 require (
 	github.com/briandowns/spinner v1.18.1

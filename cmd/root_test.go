@@ -330,7 +330,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutADefaultBranch(t *testing.T) {
+func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -694,7 +694,7 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeNoCommitHistoryWhenFirstCommitOfATopicBranchIsAssociatedWithDefaultBranch(t *testing.T) {
+func Test_ShouldBeNoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

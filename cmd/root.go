@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 	"sort"
@@ -38,8 +39,13 @@ func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote
 	remotes := toRemotes(SplitLines(remoteNames))
 	if remote, err := getPrimaryRemote(remotes); err == nil {
 		hostname := remote.Hostname
-		if config, err := connection.GetSshConfig(ctx, hostname); err == nil {
-			remote.Hostname = normalizeHostname(findHostname(SplitLines(config), hostname))
+		ghHost := os.Getenv("GH_HOST")
+		if ghHost == "" {
+			if config, err := connection.GetSshConfig(ctx, hostname); err == nil {
+				remote.Hostname = normalizeHostname(findHostname(SplitLines(config), hostname))
+			}
+		} else {
+			remote.Hostname = ghHost
 		}
 		return remote, nil
 	} else {

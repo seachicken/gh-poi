@@ -13,7 +13,7 @@ import (
 
 var ErrCommand = errors.New("failed to run external command")
 
-func Test_ShouldBeDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
+func Test_DeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -49,7 +49,7 @@ func Test_ShouldBeDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
+func Test_DeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -87,7 +87,7 @@ func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
+func Test_DeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -128,7 +128,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
+func Test_DeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -168,7 +168,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
+func Test_DeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -208,7 +208,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
+func Test_DeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -248,7 +248,7 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
+func Test_DeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -289,7 +289,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) 
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
+func Test_DeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -330,7 +330,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
+func Test_DeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -369,7 +369,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
+func Test_NotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -410,7 +410,7 @@ func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
+func Test_DeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -451,7 +451,7 @@ func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldNotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
+func Test_NotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -491,7 +491,7 @@ func Test_ShouldNotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldDeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
+func Test_DeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -531,7 +531,7 @@ func Test_ShouldDeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) {
+func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -571,7 +571,7 @@ func Test_ShouldBeDeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *tes
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) {
+func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -611,7 +611,7 @@ func Test_ShouldBeDeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *tes
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
+func Test_NotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -653,7 +653,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
+func Test_NotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -693,7 +693,7 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldNotDeletableWhenBranchIsProtected(t *testing.T) {
+func Test_NotDeletableWhenBranchIsProtected(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -774,7 +774,7 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeNoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBranch(t *testing.T) {
+func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -814,7 +814,7 @@ func Test_ShouldBeNoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDef
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
+func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

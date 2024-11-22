@@ -24,7 +24,7 @@ gh extension install seachicken/gh-poi
 
 - `gh poi` Delete the merged local branches
 - `gh poi --state (closed|merged)` Specify the PR state to delete (default merged)
-- `gh poi --dry-run` You can check the branch to be deleted without actually deleting it
+- `gh poi --dry-run` Show branches to delete without actually deleting it
 - `gh poi --debug` Enable debug logs
 - `gh poi protect <branchname>...` Protect local branches from deletion
 - `gh poi unprotect <branchname>...` Unprotect local branches

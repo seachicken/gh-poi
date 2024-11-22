@@ -60,7 +60,7 @@ func main() {
 	var dryRun bool
 	var debug bool
 	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
-	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
+	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")

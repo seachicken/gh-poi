@@ -40,7 +40,7 @@ func Test_ShouldBeDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -78,7 +78,7 @@ func Test_ShouldBeDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -119,7 +119,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -159,7 +159,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -199,7 +199,7 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -239,7 +239,7 @@ func Test_ShouldBeDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "fork/main", actual[0].Name)
@@ -280,7 +280,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) 
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 1}))
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -321,7 +321,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 		CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 0}))
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, true)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, true)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -360,7 +360,7 @@ func Test_ShouldBeDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -401,7 +401,7 @@ func Test_ShouldNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -442,7 +442,7 @@ func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -451,7 +451,7 @@ func Test_ShouldBeDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
+func Test_ShouldNotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -482,7 +482,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -491,7 +491,47 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithClosedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs(t *testing.T) {
+func Test_ShouldDeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetMergedBranchNames("@main", nil, nil).
+		GetRemoteHeadOid(nil, ErrCommand, nil).
+		GetLsRemoteHeadOid(nil, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("issue1Closed", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Closed, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, shared.Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_ShouldBeDeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -522,7 +562,47 @@ func Test_ShouldBeDeletableWhenBranchesAssociatedWithSquashAndMergedAndClosedPRs
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, shared.Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_ShouldBeDeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetMergedBranchNames("@main", nil, nil).
+		GetRemoteHeadOid(nil, ErrCommand, nil).
+		GetLsRemoteHeadOid(nil, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
+		}, nil, nil).
+		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
+		}, nil, nil).
+		GetPullRequests("issue1Merged_issue1Closed", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.issue1.remote", Filename: "remote"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Closed, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -564,7 +644,7 @@ func Test_ShouldNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testin
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -604,7 +684,7 @@ func Test_ShouldNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -640,7 +720,7 @@ func Test_ShouldNotDeletableWhenBranchIsProtected(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -684,7 +764,7 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -724,7 +804,7 @@ func Test_ShouldBeNoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDef
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -762,7 +842,7 @@ func Test_ShouldBeNoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, false)
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "(HEAD detached at a97e963)", actual[0].Name)
@@ -815,7 +895,7 @@ func Test_DoesNotReturnsErrorWhenGetSshConfigFails(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.Nil(t, err)
 }
@@ -830,7 +910,7 @@ func Test_ReturnsErrorWhenGetRepoNamesFails(t *testing.T) {
 		GetRepoNames("origin", ErrCommand, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -846,7 +926,7 @@ func Test_ReturnsErrorWhenCheckReposFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -863,7 +943,7 @@ func Test_ReturnsErrorWhenGetBranchNamesFails(t *testing.T) {
 		GetBranchNames("@main_issue1", ErrCommand, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -881,7 +961,7 @@ func Test_ReturnsErrorWhenGetMergedBranchNames(t *testing.T) {
 		GetMergedBranchNames("@main", ErrCommand, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -909,7 +989,7 @@ func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -941,7 +1021,7 @@ func Test_ReturnsErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -975,7 +1055,7 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -1011,7 +1091,7 @@ func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }
@@ -1048,7 +1128,7 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, false)
+	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
 
 	assert.NotNil(t, err)
 }

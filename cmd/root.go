@@ -53,7 +53,7 @@ func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote
 	}
 }
 
-func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, dryRun bool) ([]shared.
+func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, state shared.PullRequestState, dryRun bool) ([]shared.
 	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
@@ -76,7 +76,7 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 		return nil, err
 	}
 
-	branches = checkDeletion(branches)
+	branches = checkDeletion(branches, state)
 
 	branches, err = switchToDefaultBranchIfDeleted(ctx, branches, defaultBranchName, connection, dryRun)
 	if err != nil {
@@ -441,16 +441,16 @@ func toUncommittedChange(changes []string) []UncommittedChange {
 	return results
 }
 
-func checkDeletion(branches []shared.Branch) []shared.Branch {
+func checkDeletion(branches []shared.Branch, state shared.PullRequestState) []shared.Branch {
 	results := []shared.Branch{}
 	for _, branch := range branches {
-		branch.State = getDeleteStatus(branch)
+		branch.State = getDeleteStatus(branch, state)
 		results = append(results, branch)
 	}
 	return results
 }
 
-func getDeleteStatus(branch shared.Branch) shared.BranchState {
+func getDeleteStatus(branch shared.Branch, state shared.PullRequestState) shared.BranchState {
 	if branch.IsProtected {
 		return shared.NotDeletable
 	}
@@ -468,7 +468,7 @@ func getDeleteStatus(branch shared.Branch) shared.BranchState {
 		if pr.State == shared.Open {
 			return shared.NotDeletable
 		}
-		if isFullyMerged(branch, pr) {
+		if isFullyMerged(branch, pr, state) {
 			fullyMergedCnt++
 		}
 	}
@@ -479,8 +479,14 @@ func getDeleteStatus(branch shared.Branch) shared.BranchState {
 	return shared.Deletable
 }
 
-func isFullyMerged(branch shared.Branch, pr shared.PullRequest) bool {
-	if pr.State != shared.Merged || len(branch.Commits) == 0 {
+func isFullyMerged(branch shared.Branch, pr shared.PullRequest, state shared.PullRequestState) bool {
+	if len(branch.Commits) == 0 {
+		return false
+	}
+	if (state == shared.Merged && pr.State != shared.Merged) ||
+		// In the GitHub interface, closed status includes merged status, so we make it behave the same way.
+		// https://github.com/cli/cli/issues/8102
+		(state == shared.Closed && pr.State != shared.Closed && pr.State != shared.Merged) {
 		return false
 	}
 

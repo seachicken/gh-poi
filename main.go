@@ -11,6 +11,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 	"github.com/seachicken/gh-poi/cmd"
 	"github.com/seachicken/gh-poi/cmd/protect"
 	"github.com/seachicken/gh-poi/conn"
@@ -24,9 +25,41 @@ var (
 	red     = color.New(color.FgRed).SprintFunc()
 )
 
+type StateFlag string
+
+const (
+	Closed StateFlag = "closed"
+	Merged StateFlag = "merged"
+)
+
+func (s *StateFlag) String() string {
+	return string(*s)
+}
+
+func (s *StateFlag) Set(value string) error {
+	for _, state := range []StateFlag{Closed, Merged} {
+		if value == string(state) {
+			*s = StateFlag(value)
+			return nil
+		}
+	}
+	return errors.New("invalid state")
+}
+
+func (s StateFlag) toModel() shared.PullRequestState {
+	switch s {
+	case Closed:
+		return shared.Closed
+	default:
+		return shared.Merged
+	}
+}
+
 func main() {
+	state := Merged
 	var dryRun bool
 	var debug bool
+	flag.Var(&state, "state", "Filter by state: {closed|merged}")
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
@@ -46,7 +79,7 @@ func main() {
 	args := flag.Args()
 
 	if len(args) == 0 {
-		runMain(dryRun, debug)
+		runMain(state, dryRun, debug)
 	} else {
 		subcmd, args := args[0], args[1:]
 		switch subcmd {
@@ -76,7 +109,7 @@ func main() {
 	}
 }
 
-func runMain(dryRun bool, debug bool) {
+func runMain(state StateFlag, dryRun bool, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -101,7 +134,7 @@ func runMain(dryRun bool, debug bool) {
 		return
 	}
 
-	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, dryRun)
+	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, state.toModel(), dryRun)
 
 	sp.Stop()
 

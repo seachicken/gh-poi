@@ -14,7 +14,7 @@ import (
 func Test_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
 	onlyCI(t)
 
-	results := captureOutput(func() { runMain(false, false) })
+	results := captureOutput(func() { runMain(Merged, false, false) })
 
 	expected := fmt.Sprintf("%s %s", green("✔"), "Deleting branches...")
 	assert.Contains(t, results, expected)
@@ -23,7 +23,7 @@ func Test_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
 func Test_DoNotDeleteBranchesWhenDryRunOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
-	results := captureOutput(func() { runMain(true, false) })
+	results := captureOutput(func() { runMain(Merged, true, false) })
 
 	expected := fmt.Sprintf("%s %s", hiBlack("-"), "Deleting branches...")
 	assert.Contains(t, results, expected)
@@ -33,12 +33,12 @@ func Test_ProtectAndUnprotect(t *testing.T) {
 	onlyCI(t)
 
 	runProtect([]string{"main"}, false)
-	protectResults := captureOutput(func() { runMain(true, false) })
+	protectResults := captureOutput(func() { runMain(Merged, true, false) })
 	expected := fmt.Sprintf("main %s", hiBlack("[protected]"))
 	assert.Contains(t, protectResults, expected)
 
 	runUnprotect([]string{"main"}, false)
-	unprotectResults := captureOutput(func() { runMain(true, false) })
+	unprotectResults := captureOutput(func() { runMain(Merged, true, false) })
 	assert.NotContains(t, unprotectResults, expected)
 }
 

@@ -18,6 +18,8 @@ import (
 	"github.com/seachicken/gh-poi/shared"
 )
 
+var Version = "dev"
+
 var (
 	bold    = color.New(color.Bold).SprintFunc()
 	hiBlack = color.New(color.FgHiBlack).SprintFunc()
@@ -59,9 +61,11 @@ func main() {
 	state := Merged
 	var dryRun bool
 	var debug bool
+	var showVersion bool
 	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
+	flag.BoolVar(&showVersion, "version", false, "Show the version")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")
 		fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
@@ -76,6 +80,12 @@ func main() {
 		fmt.Println()
 	}
 	flag.Parse()
+
+	if showVersion {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+
 	args := flag.Args()
 
 	if len(args) == 0 {

@@ -9,6 +9,8 @@ builds:
       - freebsd
       - linux
       - windows
+    ldflags:
+      - "-X github.com/seachicken/gh-poi/main.Version={{ .Version }}"
 archives:
   - name_template: "{{ .Os }}-{{ .Arch }}"
     format: binary

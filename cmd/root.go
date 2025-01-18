@@ -258,7 +258,14 @@ func applyProtected(ctx context.Context, branches []shared.Branch, connection sh
 
 func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection) ([]shared.Branch, error) {
 	var wg sync.WaitGroup
-	resultChan := make(chan shared.Branch, len(branches))
+
+	type remoteBranchResult struct {
+		branch shared.Branch
+		err error
+	}
+
+	results := []shared.Branch{}
+	resultChan := make(chan remoteBranchResult, len(branches))
 
 	for _, branch := range branches {
 		wg.Add(1)
@@ -267,7 +274,7 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 
 			if branch.Name == defaultBranchName || branch.IsDetached() {
 				branch.Commits = []string{}
-				resultChan <- branch
+				resultChan <- remoteBranchResult{branch: branch}
 				return
 			}
 
@@ -289,6 +296,7 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 
 			oids, err := connection.GetLog(ctx, branch.Name)
 			if err != nil {
+				resultChan <- remoteBranchResult{err: err}
 				return
 			}
 
@@ -296,11 +304,12 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 				ctx, SplitLines(oids), branch.RemoteHeadOid, branch.IsMerged,
 				branch.Name, defaultBranchName, connection)
 			if err != nil {
+				resultChan <- remoteBranchResult{err: err}
 				return
 			}
 
 			branch.Commits = trimmedOids
-			resultChan <- branch
+			resultChan <- remoteBranchResult{branch: branch}
 		}(branch)
 	}
 
@@ -309,9 +318,11 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 		close(resultChan)
 	}()
 
-	var results []shared.Branch
-	for branch := range resultChan {
-		results = append(results, branch)
+	for result := range resultChan {
+		if result.err != nil {
+			return nil, result.err
+		}
+		results = append(results, result.branch)
 	}
 
 	return results, nil

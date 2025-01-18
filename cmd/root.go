@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/seachicken/gh-poi/shared"
@@ -90,6 +91,7 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 
 func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName string, repoNames []string, connection shared.Connection) ([]shared.Branch, error) {
 	var branches []shared.Branch
+
 	if names, err := connection.GetBranchNames(ctx); err == nil {
 		branches = ToBranch(SplitLines(names))
 		branches = applyDefault(branches, defaultBranchName)
@@ -117,17 +119,46 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 	prs := []shared.PullRequest{}
 	orgs := shared.GetQueryOrgs(repoNames)
 	repos := shared.GetQueryRepos(repoNames)
-	for _, queryHashes := range shared.GetQueryHashes(branches) {
-		json, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, queryHashes)
-		if err != nil {
-			return nil, err
-		}
 
-		pr, err := toPullRequests(json)
-		if err != nil {
-			return nil, err
+	type pullRequestResult struct {
+		prs []shared.PullRequest
+		err error
+	}
+
+	queryHashes := shared.GetQueryHashes(branches)
+	prChan := make(chan pullRequestResult, len(queryHashes))
+	var wg sync.WaitGroup
+
+	for _, queryHash := range queryHashes {
+		wg.Add(1)
+		go func(hash string) {
+			defer wg.Done()
+			json, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, hash)
+			if err != nil {
+				prChan <- pullRequestResult{err: err}
+				return
+			}
+
+			pr, err := toPullRequests(json)
+			if err != nil {
+				prChan <- pullRequestResult{err: err}
+				return
+			}
+
+			prChan <- pullRequestResult{prs: pr}
+		}(queryHash)
+	}
+
+	go func() {
+		wg.Wait()
+		close(prChan)
+	}()
+
+	for result := range prChan {
+		if result.err != nil {
+			return nil, result.err
 		}
-		prs = append(prs, pr...)
+		prs = append(prs, result.prs...)
 	}
 
 	branches = applyPullRequest(ctx, branches, prs, connection)
@@ -226,45 +257,72 @@ func applyProtected(ctx context.Context, branches []shared.Branch, connection sh
 }
 
 func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection) ([]shared.Branch, error) {
+	var wg sync.WaitGroup
+
+	type remoteBranchResult struct {
+		branch shared.Branch
+		err error
+	}
+
 	results := []shared.Branch{}
+	resultChan := make(chan remoteBranchResult, len(branches))
 
 	for _, branch := range branches {
-		if branch.Name == defaultBranchName || branch.IsDetached() {
-			branch.Commits = []string{}
-			results = append(results, branch)
-			continue
-		}
+		wg.Add(1)
+		go func(branch shared.Branch) {
+			defer wg.Done()
 
-		if remoteHeadOid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
-			branch.RemoteHeadOid = SplitLines(remoteHeadOid)[0]
-		} else {
-			result, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.remote", branch.Name))
-			splitResults := SplitLines(result)
-			if len(splitResults) > 0 {
-				remoteUrl := splitResults[0]
-				if result, err := connection.GetLsRemoteHeadOid(ctx, remoteUrl, branch.Name); err == nil {
-					splitResults := strings.Fields(result)
-					if len(splitResults) > 0 {
-						branch.RemoteHeadOid = splitResults[0]
+			if branch.Name == defaultBranchName || branch.IsDetached() {
+				branch.Commits = []string{}
+				resultChan <- remoteBranchResult{branch: branch}
+				return
+			}
+
+			if remoteHeadOid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
+				branch.RemoteHeadOid = SplitLines(remoteHeadOid)[0]
+			} else {
+				result, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.remote", branch.Name))
+				splitResults := SplitLines(result)
+				if len(splitResults) > 0 {
+					remoteUrl := splitResults[0]
+					if result, err := connection.GetLsRemoteHeadOid(ctx, remoteUrl, branch.Name); err == nil {
+						splitResults := strings.Fields(result)
+						if len(splitResults) > 0 {
+							branch.RemoteHeadOid = splitResults[0]
+						}
 					}
 				}
 			}
-		}
 
-		oids, err := connection.GetLog(ctx, branch.Name)
-		if err != nil {
-			return nil, err
-		}
+			oids, err := connection.GetLog(ctx, branch.Name)
+			if err != nil {
+				resultChan <- remoteBranchResult{err: err}
+				return
+			}
 
-		trimmedOids, err := trimBranch(
-			ctx, SplitLines(oids), branch.RemoteHeadOid, branch.IsMerged,
-			branch.Name, defaultBranchName, connection)
-		if err != nil {
-			return nil, err
-		}
+			trimmedOids, err := trimBranch(
+				ctx, SplitLines(oids), branch.RemoteHeadOid, branch.IsMerged,
+				branch.Name, defaultBranchName, connection)
+			if err != nil {
+				resultChan <- remoteBranchResult{err: err}
+				return
+			}
 
-		branch.Commits = trimmedOids
-		results = append(results, branch)
+			branch.Commits = trimmedOids
+			resultChan <- remoteBranchResult{branch: branch}
+		}(branch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	for result := range resultChan {
+		if result.err != nil {
+			return nil, result.err
+		}
+		results = append(results, result.branch)
 	}
 
 	return results, nil

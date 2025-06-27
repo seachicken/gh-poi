@@ -72,7 +72,15 @@ func main() {
   unprotect: Unprotect local branches
   `)
 		fmt.Fprintf(color.Output, "%s\n", bold("FLAGS"))
-		flag.PrintDefaults()
+		maxLen := 0
+		flag.VisitAll(func(f *flag.Flag) {
+			if len(f.Name) > maxLen {
+				maxLen = len(f.Name)
+			}
+		})
+		flag.VisitAll(func(f *flag.Flag) {
+			fmt.Fprintf(color.Output, "  --%-*s %s\n", maxLen, f.Name, f.Usage)
+		})
 		fmt.Println()
 	}
 	flag.Parse()

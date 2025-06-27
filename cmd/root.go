@@ -261,7 +261,7 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 
 	type remoteBranchResult struct {
 		branch shared.Branch
-		err error
+		err    error
 	}
 
 	results := []shared.Branch{}

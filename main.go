@@ -79,7 +79,7 @@ func main() {
 			}
 		})
 		flag.VisitAll(func(f *flag.Flag) {
-			fmt.Fprintf(color.Output, "  --%-*s %s\n", maxLen, f.Name, f.Usage)
+			fmt.Fprintf(color.Output, "  --%-*s %s\n", maxLen+2, f.Name, f.Usage)
 		})
 		fmt.Println()
 	}

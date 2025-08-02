@@ -2,11 +2,11 @@
 
 <img alt="logo" src="https://user-images.githubusercontent.com/5178598/152155497-c06799b7-a95a-44e5-a8a0-a0a9c96ce646.png" />
 
-A GitHub CLI extension to safely clean up local branches you no longer need.
-
 <a href="https://github.com/seachicken/gh-poi/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/seachicken/gh-poi/actions/workflows/ci.yml/badge.svg" /></a>
 <a href="https://codecov.io/gh/seachicken/gh-poi"><img alt="codecov" src="https://codecov.io/gh/seachicken/gh-poi/branch/main/graph/badge.svg?token=tcPxPgst2q" /></a>
 <a href="https://bestpractices.coreinfrastructure.org/projects/6380"><img alt="CII Best Practices" src="https://bestpractices.coreinfrastructure.org/projects/6380/badge" /></a>
+
+A GitHub CLI extension to safely clean up local branches you no longer need.
 
 ## Motivation
 

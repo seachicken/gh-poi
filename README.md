@@ -1,12 +1,12 @@
-![logo_readme](https://user-images.githubusercontent.com/5178598/152155497-c06799b7-a95a-44e5-a8a0-a0a9c96ce646.png)
+# gh poi
 
-[![CI](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml/badge.svg)](https://github.com/seachicken/gh-poi/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/seachicken/gh-poi/branch/main/graph/badge.svg?token=tcPxPgst2q)](https://codecov.io/gh/seachicken/gh-poi)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6380/badge)](https://bestpractices.coreinfrastructure.org/projects/6380)
+<img alt="logo" src="https://user-images.githubusercontent.com/5178598/152155497-c06799b7-a95a-44e5-a8a0-a0a9c96ce646.png" />
 
-This [gh](https://github.com/cli/cli) extension determines which local branches have been merged and safely deletes them.
+<a href="https://github.com/seachicken/gh-poi/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/seachicken/gh-poi/actions/workflows/ci.yml/badge.svg" /></a>
+<a href="https://codecov.io/gh/seachicken/gh-poi"><img alt="codecov" src="https://codecov.io/gh/seachicken/gh-poi/branch/main/graph/badge.svg?token=tcPxPgst2q" /></a>
+<a href="https://bestpractices.coreinfrastructure.org/projects/6380"><img alt="CII Best Practices" src="https://bestpractices.coreinfrastructure.org/projects/6380/badge" /></a>
 
-![demo](https://user-images.githubusercontent.com/5178598/140624593-bf38ded3-388b-4a4b-a5c0-4053f8de51ad.gif)
+A GitHub CLI extension to safely clean up local branches you no longer need.
 
 ## Motivation
 
@@ -28,6 +28,8 @@ gh extension install seachicken/gh-poi
 - `gh poi --debug` Enable debug logs
 - `gh poi protect <branchname>...` Protect local branches from deletion
 - `gh poi unprotect <branchname>...` Unprotect local branches
+
+<img alt="demo" src="https://user-images.githubusercontent.com/5178598/140624593-bf38ded3-388b-4a4b-a5c0-4053f8de51ad.gif" />
 
 ## FAQ
 

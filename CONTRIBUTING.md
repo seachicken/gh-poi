@@ -7,7 +7,7 @@ If you find a security vulnerability, do NOT open an issue. Email stare-blurry0c
 
 ## Prerequisites
 
-- Go 1.23+
+- Go 1.25+
 
 ## Building the project
 

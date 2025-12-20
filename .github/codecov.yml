@@ -6,3 +6,5 @@ coverage:
     patch:
       default:
         informational: true
+ignore:
+  - "mocks"

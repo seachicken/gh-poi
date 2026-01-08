@@ -9,7 +9,6 @@ require (
 	github.com/cli/safeexec v1.0.1
 	github.com/fatih/color v1.13.0
 	github.com/golang/mock v1.6.0
-	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 )
 

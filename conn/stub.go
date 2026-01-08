@@ -266,6 +266,30 @@ func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) GetWorktrees(output string, err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			GetWorktrees(gomock.Any()).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) RemoveWorktree(err error, conf *Conf) *Stub {
+	s.t.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			RemoveWorktree(gomock.Any(), gomock.Any()).
+			Return("", err),
+		conf,
+	)
+	return s
+}
+
 func configure(call *gomock.Call, conf *Conf) {
 	if conf == nil || conf.Times == nil {
 		call.AnyTimes()

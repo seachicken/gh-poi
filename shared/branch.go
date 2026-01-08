@@ -1,6 +1,8 @@
 package shared
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type (
 	BranchState int
@@ -16,6 +18,7 @@ type (
 		Commits           []string
 		PullRequests      []PullRequest
 		State             BranchState
+		Worktree          *Worktree
 	}
 )
 

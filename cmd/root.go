@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -12,7 +13,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/pkg/errors"
 	"github.com/seachicken/gh-poi/shared"
 )
 
@@ -109,6 +109,10 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 			return nil, err
 		}
 		branches, err = applyTrackedChanges(ctx, branches, connection)
+		if err != nil {
+			return nil, err
+		}
+		branches, err = applyWorktrees(ctx, branches, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -352,6 +356,34 @@ func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connecti
 		}
 		results = append(results, branch)
 	}
+	return results, nil
+}
+
+func applyWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
+	worktreeOutput, err := connection.GetWorktrees(ctx)
+	if err != nil {
+		// Worktrees might not be supported or available, continue gracefully
+		return branches, nil
+	}
+
+	worktrees := shared.ParseWorktrees(worktreeOutput)
+
+	// Create a map for quick branch-to-worktree lookup
+	worktreeMap := make(map[string]*shared.Worktree)
+	for i := range worktrees {
+		if worktrees[i].Branch != "" {
+			worktreeMap[worktrees[i].Branch] = &worktrees[i]
+		}
+	}
+
+	results := []shared.Branch{}
+	for _, branch := range branches {
+		if wt, ok := worktreeMap[branch.Name]; ok {
+			branch.Worktree = wt
+		}
+		results = append(results, branch)
+	}
+
 	return results, nil
 }
 
@@ -735,6 +767,33 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection sh
 	branchesAfter := ToBranch(SplitLines(branchNamesAfter))
 
 	return checkDeleted(branches, branchesAfter), nil
+}
+
+func DeleteWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) (map[string]bool, error) {
+	deleted := make(map[string]bool)
+	var errs []error
+	for _, branch := range branches {
+		if branch.State != shared.Deletable {
+			continue
+		}
+
+		if branch.Worktree == nil {
+			continue
+		}
+
+		// Cannot remove main worktree
+		if branch.Worktree.IsMain {
+			continue
+		}
+
+		_, err := connection.RemoveWorktree(ctx, branch.Worktree.Path)
+		if err != nil {
+			errs = append(errs, err)
+		} else {
+			deleted[branch.Name] = true
+		}
+	}
+	return deleted, errors.Join(errs...)
 }
 
 func getBranchNames(branches []shared.Branch, state shared.BranchState) []string {

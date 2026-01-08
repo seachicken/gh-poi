@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
-	"github.com/pkg/errors"
 	"github.com/seachicken/gh-poi/cmd"
 	"github.com/seachicken/gh-poi/cmd/protect"
 	"github.com/seachicken/gh-poi/conn"
@@ -155,7 +155,7 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	}
 
 	deletingMsg := " Deleting branches..."
-	var deletingErr error
+	var deletedWorktrees map[string]bool
 
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
@@ -165,16 +165,24 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 			sp.Restart()
 		}
 
-		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
+		var branchErr error
+		var worktreeErr error
+		deletedWorktrees, worktreeErr = cmd.DeleteWorktrees(ctx, branches, connection)
+		branches, branchErr = cmd.DeleteBranches(ctx, branches, connection)
 		connection.PruneRemoteBranches(ctx, remote.Name)
 
 		sp.Stop()
 
-		if deletingErr == nil {
+		if branchErr == nil && worktreeErr == nil {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
-			fmt.Fprintln(os.Stderr, deletingErr)
+			if worktreeErr != nil {
+				fmt.Fprintln(os.Stderr, worktreeErr)
+			}
+			if branchErr != nil {
+				fmt.Fprintln(os.Stderr, branchErr)
+			}
 			return
 		}
 	}
@@ -192,11 +200,11 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	}
 
 	fmt.Fprintf(color.Output, "%s\n", bold("Deleted branches"))
-	printBranches(getBranches(branches, deletedStates))
+	printBranches(getBranches(branches, deletedStates), deletedWorktrees)
 	fmt.Println()
 
 	fmt.Fprintf(color.Output, "%s\n", bold("Branches not deleted"))
-	printBranches(getBranches(branches, notDeletedStates))
+	printBranches(getBranches(branches, notDeletedStates), nil)
 	fmt.Println()
 }
 
@@ -226,7 +234,7 @@ func runUnprotect(branchNames []string, debug bool) {
 	}
 }
 
-func printBranches(branches []shared.Branch) {
+func printBranches(branches []shared.Branch, deletedWorktrees map[string]bool) {
 	if len(branches) == 0 {
 		fmt.Fprintf(color.Output, "%s\n",
 			hiBlack("  There are no branches in the current directory"))
@@ -238,6 +246,12 @@ func printBranches(branches []shared.Branch) {
 		} else {
 			fmt.Fprintf(color.Output, "  %s", branch.Name)
 		}
+
+		// Check if worktree was deleted for this branch
+		if branch.Worktree != nil && deletedWorktrees[branch.Name] {
+			fmt.Fprintf(color.Output, " %s", hiBlack("(worktree: "+branch.Worktree.Path+")"))
+		}
+
 		reason := ""
 		if branch.IsProtected {
 			reason = "protected"

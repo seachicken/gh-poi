@@ -100,7 +100,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 			return nil, err
 		}
 		branches = applyMerged(branches, extractMergedBranchNames(SplitLines(mergedNames)))
-		branches, err = applyProtected(ctx, branches, connection)
+		branches, err = applyLocked(ctx, branches, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -241,15 +241,23 @@ func applyMerged(branches []shared.Branch, mergedNames []string) []shared.Branch
 	return results
 }
 
-func applyProtected(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
+func applyLocked(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
 	results := []shared.Branch{}
 
 	for _, branch := range branches {
-		config, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", branch.Name))
+		config, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-locked", branch.Name))
 		splitConfig := SplitLines(config)
 		if len(splitConfig) > 0 && splitConfig[0] == "true" {
-			branch.IsProtected = true
+			branch.IsLocked = true
 		}
+
+		// TODO: Remove after deprecated commands are removed
+		configDeprecated, _ := connection.GetConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", branch.Name))
+		splitConfigDeprecated := SplitLines(configDeprecated)
+		if len(splitConfigDeprecated) > 0 && splitConfigDeprecated[0] == "true" {
+			branch.IsLocked = true
+		}
+
 		results = append(results, branch)
 	}
 
@@ -500,7 +508,7 @@ func checkDeletion(branches []shared.Branch, state shared.PullRequestState) []sh
 }
 
 func getDeleteStatus(branch shared.Branch, state shared.PullRequestState) shared.BranchState {
-	if branch.IsProtected {
+	if branch.IsLocked {
 		return shared.NotDeletable
 	}
 

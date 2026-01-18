@@ -13,7 +13,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/seachicken/gh-poi/cmd"
-	"github.com/seachicken/gh-poi/cmd/protect"
+	"github.com/seachicken/gh-poi/cmd/lock"
 	"github.com/seachicken/gh-poi/conn"
 	"github.com/seachicken/gh-poi/shared"
 )
@@ -68,8 +68,10 @@ func main() {
 		fmt.Fprintf(color.Output, "  %s\n\n", "gh poi <command> [flags]")
 		fmt.Fprintf(color.Output, "%s", bold("COMMANDS"))
 		fmt.Fprintf(color.Output, "%s\n", `
-  protect:   Protect local branches from deletion
-  unprotect: Unprotect local branches
+  lock:      Lock branches to prevent them from being deleted
+  unlock:    Unlock branches to allow them to be deleted
+  protect:   (Deprecated) use 'lock' instead
+  unprotect: (Deprecated) use 'unlock' instead
   `)
 		fmt.Fprintf(color.Output, "%s\n", bold("FLAGS"))
 		maxLen := 0
@@ -91,26 +93,34 @@ func main() {
 	} else {
 		subcmd, args := args[0], args[1:]
 		switch subcmd {
-		case "protect":
-			protectCmd := flag.NewFlagSet("protect", flag.ExitOnError)
-			protectCmd.Usage = func() {
-				fmt.Fprintf(color.Output, "%s\n\n", "Protect local branches from deletion.")
+		case "lock", "protect":
+			lockCmd := flag.NewFlagSet("lock", flag.ExitOnError)
+			lockCmd.Usage = func() {
+				fmt.Fprintf(color.Output, "%s\n\n", "Lock branches to prevent them from being deleted")
 				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi protect <branchname>...")
+				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi lock <branchname>...")
 			}
-			protectCmd.Parse(args)
+			lockCmd.Parse(args)
 
-			runProtect(args, debug)
-		case "unprotect":
-			unprotectCmd := flag.NewFlagSet("unprotect", flag.ExitOnError)
-			unprotectCmd.Usage = func() {
-				fmt.Fprintf(color.Output, "%s\n\n", "Unprotect local branches.")
+			// TODO: Remove after deprecated commands are removed
+			if subcmd == "protect" {
+				fmt.Fprintln(os.Stderr, "warning: 'protect' is deprecated, please use 'lock' instead")
+			}
+			runLock(args, debug)
+		case "unlock", "unprotect":
+			unlockCmd := flag.NewFlagSet("unlock", flag.ExitOnError)
+			unlockCmd.Usage = func() {
+				fmt.Fprintf(color.Output, "%s\n\n", "Unlock branches to allow them to be deleted")
 				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi unprotect <branchname>...")
+				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi unlock <branchname>...")
 			}
-			unprotectCmd.Parse(args)
+			unlockCmd.Parse(args)
 
-			runUnprotect(args, debug)
+			// TODO: Remove after deprecated commands are removed
+			if subcmd == "unprotect" {
+				fmt.Fprintln(os.Stderr, "warning: 'unprotect' is deprecated, please use 'unlock' instead")
+			}
+			runUnlock(args, debug)
 		default:
 			fmt.Fprintf(os.Stderr, "unknown command %q for poi\n", subcmd)
 		}
@@ -200,26 +210,26 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	fmt.Println()
 }
 
-func runProtect(branchNames []string, debug bool) {
+func runLock(branchNames []string, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	connection := &conn.Connection{Debug: debug}
 
-	err := protect.ProtectBranches(ctx, branchNames, connection)
+	err := lock.LockBranches(ctx, branchNames, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 }
 
-func runUnprotect(branchNames []string, debug bool) {
+func runUnlock(branchNames []string, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	connection := &conn.Connection{Debug: debug}
 
-	err := protect.UnprotectBranches(ctx, branchNames, connection)
+	err := lock.UnlockBranches(ctx, branchNames, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -239,8 +249,8 @@ func printBranches(branches []shared.Branch) {
 			fmt.Fprintf(color.Output, "  %s", branch.Name)
 		}
 		reason := ""
-		if branch.IsProtected {
-			reason = "protected"
+		if branch.IsLocked {
+			reason = "locked"
 		}
 		if !branch.IsDefault && len(branch.PullRequests) > 0 && branch.HasTrackedChanges {
 			reason = "uncommitted changes"

@@ -87,19 +87,19 @@ func Test_RepoBasic(t *testing.T) {
 	})
 
 	t.Run("AddConfig", func(t *testing.T) {
-		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-protected", "true")
-		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-protected")
+		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-locked", "true")
+		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-locked")
 		assert.Equal(t,
-			stub.readFile("git", "config", "protected"),
+			stub.readFile("git", "config", "locked"),
 			actual,
 		)
-		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-protected")
+		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-locked")
 	})
 
 	t.Run("AddAndRemoveConfig", func(t *testing.T) {
-		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-protected", "true")
-		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-protected")
-		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-protected")
+		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-locked", "true")
+		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-locked")
+		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-locked")
 		assert.Equal(t,
 			stub.readFile("git", "config", "empty"),
 			actual,

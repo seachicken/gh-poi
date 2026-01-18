@@ -3,6 +3,7 @@ package lock
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/seachicken/gh-poi/cmd"
 	"github.com/seachicken/gh-poi/shared"
@@ -24,6 +25,8 @@ func LockBranches(ctx context.Context, targetBranchNames []string, connection sh
 			if err != nil {
 				return err
 			}
+		} else {
+			fmt.Fprintf(os.Stderr, "warning: '%s' is not a valid branch name\n", targetName)
 		}
 	}
 
@@ -42,6 +45,8 @@ func UnlockBranches(ctx context.Context, targetBranchNames []string, connection 
 			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-locked", targetName))
 			// TODO: Remove after deprecated commands are removed
 			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", targetName))
+		} else {
+			fmt.Fprintf(os.Stderr, "warning: '%s' is not a valid branch name\n", targetName)
 		}
 	}
 

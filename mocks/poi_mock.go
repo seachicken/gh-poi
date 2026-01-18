@@ -273,6 +273,21 @@ func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), ctx)
 }
 
+// GetWorktrees mocks base method.
+func (m *MockConnection) GetWorktrees(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorktrees", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorktrees indicates an expected call of GetWorktrees.
+func (mr *MockConnectionMockRecorder) GetWorktrees(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorktrees", reflect.TypeOf((*MockConnection)(nil).GetWorktrees), ctx)
+}
+
 // RemoveConfig mocks base method.
 func (m *MockConnection) RemoveConfig(ctx context.Context, key string) (string, error) {
 	m.ctrl.T.Helper()
@@ -286,4 +301,19 @@ func (m *MockConnection) RemoveConfig(ctx context.Context, key string) (string, 
 func (mr *MockConnectionMockRecorder) RemoveConfig(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveConfig", reflect.TypeOf((*MockConnection)(nil).RemoveConfig), ctx, key)
+}
+
+// RemoveWorktree mocks base method.
+func (m *MockConnection) RemoveWorktree(ctx context.Context, path string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveWorktree", ctx, path)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveWorktree indicates an expected call of RemoveWorktree.
+func (mr *MockConnectionMockRecorder) RemoveWorktree(ctx, path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveWorktree", reflect.TypeOf((*MockConnection)(nil).RemoveWorktree), ctx, path)
 }

@@ -32,6 +32,7 @@ func Test_DeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -69,6 +70,7 @@ func Test_DeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -110,6 +112,7 @@ func Test_DeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -150,6 +153,7 @@ func Test_DeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -190,6 +194,7 @@ func Test_DeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testin
 		}, nil, nil).
 		GetPullRequests("issue1UpMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -230,6 +235,7 @@ func Test_DeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR
 		}, nil, nil).
 		GetPullRequests("forkMainUpMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -270,6 +276,7 @@ func Test_DeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -311,6 +318,7 @@ func Test_DeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -352,6 +360,7 @@ func Test_DeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
@@ -391,6 +400,7 @@ func Test_NotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges(" M README.md", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -432,6 +442,7 @@ func Test_DeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("?? new.txt", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -473,6 +484,7 @@ func Test_NotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Closed", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -513,6 +525,7 @@ func Test_DeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Closed", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -553,6 +566,7 @@ func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) 
 		}, nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -593,6 +607,7 @@ func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) 
 		}, nil, nil).
 		GetPullRequests("issue1Merged_issue1Closed", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -635,6 +650,7 @@ func Test_NotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -675,6 +691,7 @@ func Test_NotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("mainMerged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -712,6 +729,7 @@ func Test_NotDeletableWhenBranchIsProtected(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -755,6 +773,7 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -795,6 +814,7 @@ func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBran
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -835,6 +855,7 @@ func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -886,6 +907,7 @@ func Test_DoesNotReturnsErrorWhenGetSshConfigFails(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
@@ -1048,6 +1070,7 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", ErrCommand, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.remote", Filename: "remote"},
@@ -1118,6 +1141,7 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		CheckoutBranch(ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
@@ -1174,4 +1198,57 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_DeletableWithWorktree(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	worktreeOutput := `worktree /path/to/main
+HEAD abc123
+branch refs/heads/main
+
+worktree /path/to/issue1-wt
+HEAD def456
+branch refs/heads/issue1
+`
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetMergedBranchNames("@main_issue1", nil, nil).
+		GetRemoteHeadOid([]conn.RemoteHeadStub{
+			{BranchName: "issue1", Filename: "issue1"},
+		}, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
+		}, nil, nil).
+		GetPullRequests("issue1Merged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetWorktrees(worktreeOutput, nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "issue1", actual[0].Name)
+	assert.Equal(t, shared.Deletable, actual[0].State)
+	assert.NotNil(t, actual[0].Worktree)
+	assert.Equal(t, "/path/to/issue1-wt", actual[0].Worktree.Path)
+	assert.Equal(t, "issue1", actual[0].Worktree.Branch)
+	assert.Equal(t, false, actual[0].Worktree.IsMain)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
+	assert.NotNil(t, actual[1].Worktree)
+	assert.Equal(t, "/path/to/main", actual[1].Worktree.Path)
+	assert.Equal(t, true, actual[1].Worktree.IsMain)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
-	"github.com/pkg/errors"
 	"github.com/seachicken/gh-poi/cmd"
 	"github.com/seachicken/gh-poi/cmd/protect"
 	"github.com/seachicken/gh-poi/conn"
@@ -155,7 +155,6 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	}
 
 	deletingMsg := " Deleting branches..."
-	var deletingErr error
 
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
@@ -165,16 +164,24 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 			sp.Restart()
 		}
 
-		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
+		var branchErr error
+		var worktreeErr error
+		_, worktreeErr = cmd.DeleteWorktrees(ctx, branches, connection)
+		branches, branchErr = cmd.DeleteBranches(ctx, branches, connection)
 		connection.PruneRemoteBranches(ctx, remote.Name)
 
 		sp.Stop()
 
-		if deletingErr == nil {
+		if branchErr == nil && worktreeErr == nil {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
-			fmt.Fprintln(os.Stderr, deletingErr)
+			if worktreeErr != nil {
+				fmt.Fprintln(os.Stderr, worktreeErr)
+			}
+			if branchErr != nil {
+				fmt.Fprintln(os.Stderr, branchErr)
+			}
 			return
 		}
 	}
@@ -238,6 +245,12 @@ func printBranches(branches []shared.Branch) {
 		} else {
 			fmt.Fprintf(color.Output, "  %s", branch.Name)
 		}
+
+		// Show worktree info for any branch with an associated worktree
+		if branch.Worktree != nil && !branch.Worktree.IsMain {
+			fmt.Fprintf(color.Output, " %s", hiBlack("(worktree: "+branch.Worktree.Path+")"))
+		}
+
 		reason := ""
 		if branch.IsProtected {
 			reason = "protected"

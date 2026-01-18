@@ -804,6 +804,7 @@ func Test_NotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},

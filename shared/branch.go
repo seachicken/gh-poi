@@ -12,7 +12,7 @@ type (
 		Name              string
 		IsDefault         bool
 		IsMerged          bool
-		IsProtected       bool
+		IsLocked          bool
 		HasTrackedChanges bool
 		RemoteHeadOid     string
 		Commits           []string

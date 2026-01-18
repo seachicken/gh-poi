@@ -1,4 +1,4 @@
-package protect
+package lock
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/seachicken/gh-poi/shared"
 )
 
-func ProtectBranches(ctx context.Context, targetBranchNames []string, connection shared.Connection) error {
+func LockBranches(ctx context.Context, targetBranchNames []string, connection shared.Connection) error {
 	branchNameResults, err := connection.GetBranchNames(ctx)
 	if err != nil {
 		return err
@@ -18,8 +18,10 @@ func ProtectBranches(ctx context.Context, targetBranchNames []string, connection
 
 	for _, targetName := range targetBranchNames {
 		if cmd.BranchNameExists(targetName, branches) {
+			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-locked", targetName))
+			// TODO: Remove after deprecated commands are removed
 			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", targetName))
-			_, err = connection.AddConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", targetName), "true")
+			_, err = connection.AddConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-locked", targetName), "true")
 			if err != nil {
 				return err
 			}
@@ -31,7 +33,7 @@ func ProtectBranches(ctx context.Context, targetBranchNames []string, connection
 	return nil
 }
 
-func UnprotectBranches(ctx context.Context, targetBranchNames []string, connection shared.Connection) error {
+func UnlockBranches(ctx context.Context, targetBranchNames []string, connection shared.Connection) error {
 	branchNameResults, err := connection.GetBranchNames(ctx)
 	if err != nil {
 		return err
@@ -40,6 +42,8 @@ func UnprotectBranches(ctx context.Context, targetBranchNames []string, connecti
 
 	for _, targetName := range targetBranchNames {
 		if cmd.BranchNameExists(targetName, branches) {
+			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-locked", targetName))
+			// TODO: Remove after deprecated commands are removed
 			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", targetName))
 		} else {
 			fmt.Fprintf(os.Stderr, "warning: '%s' is not a valid branch name\n", targetName)

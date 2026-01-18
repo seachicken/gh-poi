@@ -29,17 +29,17 @@ func Test_DoNotDeleteBranchesWhenDryRunOptionIsTrue(t *testing.T) {
 	assert.Contains(t, results, expected)
 }
 
-func Test_ProtectAndUnprotect(t *testing.T) {
+func Test_LockAndUnlock(t *testing.T) {
 	onlyCI(t)
 
-	runProtect([]string{"main"}, false)
-	protectResults := captureOutput(func() { runMain(Merged, true, false) })
-	expected := fmt.Sprintf("main %s", hiBlack("[protected]"))
-	assert.Contains(t, protectResults, expected)
+	runLock([]string{"main"}, false)
+	lockResults := captureOutput(func() { runMain(Merged, true, false) })
+	expected := fmt.Sprintf("main %s", hiBlack("[locked]"))
+	assert.Contains(t, lockResults, expected)
 
-	runUnprotect([]string{"main"}, false)
-	unprotectResults := captureOutput(func() { runMain(Merged, true, false) })
-	assert.NotContains(t, unprotectResults, expected)
+	runUnlock([]string{"main"}, false)
+	unlockResults := captureOutput(func() { runMain(Merged, true, false) })
+	assert.NotContains(t, unlockResults, expected)
 }
 
 func onlyCI(t *testing.T) {

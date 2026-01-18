@@ -383,17 +383,8 @@ func trimBranch(ctx context.Context, oids []string, remoteHeadOid string, isMerg
 			}
 		}
 
-		isChild := func(name string) bool {
-			for _, childName := range childNames {
-				if name == childName {
-					return true
-				}
-			}
-			return false
-		}
-
 		for _, name := range names {
-			if name != branchName && !isChild(name) {
+			if name != branchName && !slices.Contains(childNames, name) {
 				return results, nil
 			}
 		}
@@ -549,10 +540,8 @@ func isFullyMerged(branch shared.Branch, pr shared.PullRequest, state shared.Pul
 	}
 
 	localHeadOid := branch.Commits[0]
-	for _, oid := range pr.Commits {
-		if oid == localHeadOid {
-			return true
-		}
+	if slices.Contains(pr.Commits, localHeadOid) {
+		return true
 	}
 
 	return false
@@ -770,7 +759,7 @@ func BranchNameExists(branchName string, branches []shared.Branch) bool {
 }
 
 func SplitLines(text string) []string {
-	return strings.FieldsFunc(strings.Replace(text, "\r\n", "\n", -1),
+	return strings.FieldsFunc(strings.ReplaceAll(text, "\r\n", "\n"),
 		func(c rune) bool { return c == '\n' })
 }
 

@@ -8,7 +8,7 @@ import (
 func GetQueryOrgs(repoNames []string) string {
 	var repos strings.Builder
 	for _, name := range repoNames {
-		repos.WriteString(fmt.Sprintf("org:%s ", strings.Split(name, "/")[0]))
+		fmt.Fprintf(&repos, "org:%s ", strings.Split(name, "/")[0])
 	}
 	return strings.TrimSpace(repos.String())
 }
@@ -16,7 +16,7 @@ func GetQueryOrgs(repoNames []string) string {
 func GetQueryRepos(repoNames []string) string {
 	var repos strings.Builder
 	for _, name := range repoNames {
-		repos.WriteString(fmt.Sprintf("repo:%s ", name))
+		fmt.Fprintf(&repos, "repo:%s ", name)
 	}
 	return strings.TrimSpace(repos.String())
 }

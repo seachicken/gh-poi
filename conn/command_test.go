@@ -13,6 +13,8 @@ import (
 // * a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0 (issue1) 1-1
 // * 6ebe3d30d23531af56bd23b5a098d3ccae2a534a (HEAD -> main) Initial commit
 func Test_RepoBasic(t *testing.T) {
+	onlyCI(t)
+
 	setGitDir("repo_basic", t)
 	conn := &Connection{}
 	stub := &Stub{nil, t}
@@ -116,4 +118,10 @@ func setGitDir(repoName string, t *testing.T) {
 		os.Setenv("GIT_DIR", gitDirOrg)
 		os.Setenv("GIT_WORK_TREE", gitWorkTreeOrg)
 	})
+}
+
+func onlyCI(t *testing.T) {
+	if os.Getenv("CI") == "" {
+		t.Skip("skipping test in local")
+	}
 }

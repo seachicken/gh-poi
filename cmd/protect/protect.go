@@ -3,6 +3,7 @@ package protect
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/seachicken/gh-poi/cmd"
 	"github.com/seachicken/gh-poi/shared"
@@ -22,6 +23,8 @@ func ProtectBranches(ctx context.Context, targetBranchNames []string, connection
 			if err != nil {
 				return err
 			}
+		} else {
+			fmt.Fprintf(os.Stderr, "warning: '%s' is not a valid branch name\n", targetName)
 		}
 	}
 
@@ -38,6 +41,8 @@ func UnprotectBranches(ctx context.Context, targetBranchNames []string, connecti
 	for _, targetName := range targetBranchNames {
 		if cmd.BranchNameExists(targetName, branches) {
 			connection.RemoveConfig(ctx, fmt.Sprintf("branch.%s.gh-poi-protected", targetName))
+		} else {
+			fmt.Fprintf(os.Stderr, "warning: '%s' is not a valid branch name\n", targetName)
 		}
 	}
 

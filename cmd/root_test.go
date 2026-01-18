@@ -767,7 +767,7 @@ func Test_NotDeletableWhenBranchIsLocked(t *testing.T) {
 }
 
 // TODO: Remove after deprecated commands are removed
-func Test_NotDeletableWhenBranchIsLockedForMigration(t *testing.T) {
+func Test_NotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

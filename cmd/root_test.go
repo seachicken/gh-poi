@@ -1325,8 +1325,10 @@ branch refs/heads/issue1
 		GetWorktrees(worktreeOutput, nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
 			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
 			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)

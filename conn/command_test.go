@@ -22,7 +22,7 @@ func Test_RepoBasic(t *testing.T) {
 	t.Run("GetRemoteNames", func(t *testing.T) {
 		actual, _ := conn.GetRemoteNames(context.Background())
 		assert.Equal(t,
-			stub.readFile("git", "remote", "origin"),
+			stub.ReadFile("git", "remote", "origin"),
 			actual,
 		)
 	})
@@ -30,7 +30,7 @@ func Test_RepoBasic(t *testing.T) {
 	t.Run("GetBranchNames", func(t *testing.T) {
 		actual, _ := conn.GetBranchNames(context.Background())
 		assert.Equal(t,
-			stub.readFile("git", "branch", "@main_issue1"),
+			stub.ReadFile("git", "branch", "@main_issue1"),
 			actual,
 		)
 	})
@@ -40,7 +40,7 @@ func Test_RepoBasic(t *testing.T) {
 		t.Run("main", func(t *testing.T) {
 			actual, _ := conn.GetLog(context.Background(), "main")
 			assert.Equal(t,
-				stub.readFile("git", "log", "main"),
+				stub.ReadFile("git", "log", "main"),
 				actual,
 			)
 		})
@@ -48,7 +48,7 @@ func Test_RepoBasic(t *testing.T) {
 		t.Run("issue1", func(t *testing.T) {
 			actual, _ := conn.GetLog(context.Background(), "issue1")
 			assert.Equal(t,
-				stub.readFile("git", "log", "issue1"),
+				stub.ReadFile("git", "log", "issue1"),
 				actual,
 			)
 		})
@@ -59,7 +59,7 @@ func Test_RepoBasic(t *testing.T) {
 		t.Run("issue1", func(t *testing.T) {
 			actual, _ := conn.GetAssociatedRefNames(context.Background(), "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0")
 			assert.Equal(t,
-				stub.readFile("git", "abranch", "issue1"),
+				stub.ReadFile("git", "abranch", "issue1"),
 				actual,
 			)
 		})
@@ -67,7 +67,7 @@ func Test_RepoBasic(t *testing.T) {
 		t.Run("main_issue1", func(t *testing.T) {
 			actual, _ := conn.GetAssociatedRefNames(context.Background(), "6ebe3d30d23531af56bd23b5a098d3ccae2a534a")
 			assert.Equal(t,
-				stub.readFile("git", "abranch", "main_issue1"),
+				stub.ReadFile("git", "abranch", "main_issue1"),
 				actual,
 			)
 		})
@@ -81,7 +81,7 @@ func Test_RepoBasic(t *testing.T) {
 	t.Run("GetConfig", func(t *testing.T) {
 		actual, _ := conn.GetConfig(context.Background(), "branch.main.merge")
 		assert.Equal(t,
-			stub.readFile("git", "config", "mergeMain"),
+			stub.ReadFile("git", "config", "mergeMain"),
 			actual,
 		)
 	})
@@ -90,7 +90,7 @@ func Test_RepoBasic(t *testing.T) {
 		conn.AddConfig(context.Background(), "branch.issue2.gh-poi-locked", "true")
 		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-locked")
 		assert.Equal(t,
-			stub.readFile("git", "config", "locked"),
+			stub.ReadFile("git", "config", "locked"),
 			actual,
 		)
 		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-locked")
@@ -101,7 +101,23 @@ func Test_RepoBasic(t *testing.T) {
 		conn.RemoveConfig(context.Background(), "branch.issue2.gh-poi-locked")
 		actual, _ := conn.GetConfig(context.Background(), "branch.issue2.gh-poi-locked")
 		assert.Equal(t,
-			stub.readFile("git", "config", "empty"),
+			stub.ReadFile("git", "config", "empty"),
+			actual,
+		)
+	})
+}
+
+func Test_RepoWorkspace(t *testing.T) {
+	onlyCI(t)
+
+	setGitDir("repo_worktree_main", t)
+	conn := &Connection{}
+	stub := &Stub{nil, t}
+
+	t.Run("GetWorktrees", func(t *testing.T) {
+		actual, _ := conn.GetWorktrees(context.Background())
+		assert.Equal(t,
+			stub.ReadFile("git", "worktree", "linked"),
 			actual,
 		)
 	})

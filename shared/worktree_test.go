@@ -3,39 +3,38 @@ package shared
 import (
 	"testing"
 
+	"github.com/seachicken/gh-poi/conn"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ParseWorktreesBasic(t *testing.T) {
+func Test_ParseWorktreesWithLinkedWorktree(t *testing.T) {
+	stub := (&conn.Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "linked")
 	assert.Equal(t,
 		[]Worktree{
-			{Path: "/home/user/project", Branch: "main", IsMain: true},
-			{Path: "/home/user/project-feature", Branch: "feature-branch", IsMain: false},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Branch: "main", IsMain: true},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Branch: "linkedIssue1", IsMain: false},
 		},
-		ParseWorktrees(`worktree /home/user/project
-HEAD abc123
-branch refs/heads/main
-
-worktree /home/user/project-feature
-HEAD def456
-branch refs/heads/feature-branch`),
+		ParseWorktrees(stub),
 	)
 }
 
-func Test_ParseWorktreesEmpty(t *testing.T) {
+func Test_ParseWorktreesWithoutLinkedWorktree(t *testing.T) {
+	stub := (&conn.Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "none")
 	assert.Equal(t,
-		[]Worktree{},
-		ParseWorktrees(""),
+		[]Worktree{
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_basic", Branch: "main", IsMain: true},
+		},
+		ParseWorktrees(stub),
 	)
 }
 
 func Test_ParseWorktreesDetachedHead(t *testing.T) {
+	stub := (&conn.Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "detached")
 	assert.Equal(t,
 		[]Worktree{
-			{Path: "/home/user/project", Branch: "", IsMain: true},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Branch: "main", IsMain: true},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Branch: "", IsMain: false},
 		},
-		ParseWorktrees(`worktree /home/user/project
-HEAD abc123
-detached`),
+		ParseWorktrees(stub),
 	)
 }

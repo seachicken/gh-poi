@@ -12,7 +12,7 @@ import (
 type (
 	Stub struct {
 		Conn *mocks.MockConnection
-		t    gomock.TestHelper
+		T    gomock.TestHelper
 	}
 
 	Times struct {
@@ -65,7 +65,7 @@ func NewConf(times *Times) *Conf {
 }
 
 func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
@@ -77,65 +77,65 @@ func (s *Stub) CheckRepos(err error, conf *Conf) *Stub {
 }
 
 func (s *Stub) GetRemoteNames(filename string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetRemoteNames(gomock.Any()).
-			Return(s.readFile("git", "remote", filename), err),
+			Return(s.ReadFile("git", "remote", filename), err),
 		conf,
 	)
 	return s
 }
 
 func (s *Stub) GetSshConfig(filename string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetSshConfig(gomock.Any(), gomock.Any()).
-			Return(s.readFile("ssh", "config", filename), err),
+			Return(s.ReadFile("ssh", "config", filename), err),
 		conf,
 	)
 	return s
 }
 
 func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetRepoNames(gomock.Any(), gomock.Any(), gomock.Any()).
-			Return(s.readFile("gh", "repo", filename), err),
+			Return(s.ReadFile("gh", "repo", filename), err),
 		conf,
 	)
 	return s
 }
 
 func (s *Stub) GetBranchNames(filename string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.EXPECT().
 			GetBranchNames(gomock.Any()).
-			Return(s.readFile("git", "branch", filename), err),
+			Return(s.ReadFile("git", "branch", filename), err),
 		conf,
 	)
 	return s
 }
 
 func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.EXPECT().
 			GetMergedBranchNames(gomock.Any(), "origin", "main").
-			Return(s.readFile("git", "branchMerged", filename), err),
+			Return(s.ReadFile("git", "branchMerged", filename), err),
 		conf,
 	)
 	return s
 }
 
 func (s *Stub) GetRemoteHeadOid(stubs []RemoteHeadStub, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	if stubs == nil {
 		configure(
 			s.Conn.EXPECT().
@@ -148,7 +148,7 @@ func (s *Stub) GetRemoteHeadOid(stubs []RemoteHeadStub, err error, conf *Conf) *
 			configure(
 				s.Conn.EXPECT().
 					GetRemoteHeadOid(gomock.Any(), gomock.Any(), stub.BranchName).
-					Return(s.readFile("git", "remoteHead", stub.Filename), err),
+					Return(s.ReadFile("git", "remoteHead", stub.Filename), err),
 				conf,
 			)
 		}
@@ -157,7 +157,7 @@ func (s *Stub) GetRemoteHeadOid(stubs []RemoteHeadStub, err error, conf *Conf) *
 }
 
 func (s *Stub) GetLsRemoteHeadOid(stubs []LsRemoteHeadStub, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	if stubs == nil {
 		configure(
 			s.Conn.EXPECT().
@@ -170,7 +170,7 @@ func (s *Stub) GetLsRemoteHeadOid(stubs []LsRemoteHeadStub, err error, conf *Con
 			configure(
 				s.Conn.EXPECT().
 					GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), stub.BranchName).
-					Return(s.readFile("git", "lsRemoteHead", stub.Filename), err),
+					Return(s.ReadFile("git", "lsRemoteHead", stub.Filename), err),
 				conf,
 			)
 		}
@@ -179,12 +179,12 @@ func (s *Stub) GetLsRemoteHeadOid(stubs []LsRemoteHeadStub, err error, conf *Con
 }
 
 func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
 				GetAssociatedRefNames(gomock.Any(), stub.Oid).
-				Return(s.readFile("git", "abranch", stub.Filename), err),
+				Return(s.ReadFile("git", "abranch", stub.Filename), err),
 			conf,
 		)
 	}
@@ -192,12 +192,12 @@ func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err erro
 }
 
 func (s *Stub) GetLog(stubs []LogStub, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
 				GetLog(gomock.Any(), stub.BranchName).
-				Return(s.readFile("git", "log", stub.Filename), err),
+				Return(s.ReadFile("git", "log", stub.Filename), err),
 			conf,
 		)
 	}
@@ -205,19 +205,19 @@ func (s *Stub) GetLog(stubs []LogStub, err error, conf *Conf) *Stub {
 }
 
 func (s *Stub) GetPullRequests(filename string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetPullRequests(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-			Return(s.readFile("gh", "pr", filename), err),
+			Return(s.ReadFile("gh", "pr", filename), err),
 		conf,
 	)
 	return s
 }
 
 func (s *Stub) GetUncommittedChanges(uncommittedChanges string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
@@ -229,13 +229,13 @@ func (s *Stub) GetUncommittedChanges(uncommittedChanges string, err error, conf 
 }
 
 func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	for _, stub := range stubs {
 		configure(
 			s.Conn.
 				EXPECT().
 				GetConfig(gomock.Any(), stub.BranchName).
-				Return(s.readFile("git", "config", stub.Filename), err),
+				Return(s.ReadFile("git", "config", stub.Filename), err),
 			conf,
 		)
 	}
@@ -243,7 +243,7 @@ func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
 }
 
 func (s *Stub) CheckoutBranch(err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
@@ -255,7 +255,7 @@ func (s *Stub) CheckoutBranch(err error, conf *Conf) *Stub {
 }
 
 func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
@@ -267,7 +267,7 @@ func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
 }
 
 func (s *Stub) GetWorktrees(output string, err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
@@ -279,7 +279,7 @@ func (s *Stub) GetWorktrees(output string, err error, conf *Conf) *Stub {
 }
 
 func (s *Stub) RemoveWorktree(err error, conf *Conf) *Stub {
-	s.t.Helper()
+	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
@@ -298,7 +298,7 @@ func configure(call *gomock.Call, conf *Conf) {
 	}
 }
 
-func (s *Stub) readFile(command string, category string, name string) string {
+func (s *Stub) ReadFile(command string, category string, name string) string {
 	_, filename, _, _ := runtime.Caller(0)
 
 	ext := ".txt"
@@ -307,7 +307,7 @@ func (s *Stub) readFile(command string, category string, name string) string {
 	}
 	b, err := os.ReadFile(filepath.Join(filename, "..", fixturePath, command, category+"_"+name+ext))
 	if err != nil {
-		s.t.Fatalf("%v", err)
+		s.T.Fatalf("%v", err)
 	}
 	return string(b)
 }

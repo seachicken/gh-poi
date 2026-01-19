@@ -28,7 +28,7 @@ func Test_ParseWorktreesWithoutLinkedWorktree(t *testing.T) {
 	)
 }
 
-func Test_ParseWorktreesDetachedHead(t *testing.T) {
+func Test_ParseWorktreesWithDetached(t *testing.T) {
 	stub := (&conn.Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "detached")
 	assert.Equal(t,
 		[]Worktree{

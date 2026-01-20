@@ -43,6 +43,10 @@ type (
 		Filename   string
 	}
 
+	WorktreeStub struct {
+		Filename string
+	}
+
 	ConfigStub struct {
 		BranchName string
 		Filename   string
@@ -266,13 +270,13 @@ func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
 	return s
 }
 
-func (s *Stub) GetWorktrees(output string, err error, conf *Conf) *Stub {
+func (s *Stub) GetWorktrees(filename string, err error, conf *Conf) *Stub {
 	s.T.Helper()
 	configure(
 		s.Conn.
 			EXPECT().
 			GetWorktrees(gomock.Any()).
-			Return(output, err),
+			Return(s.ReadFile("git", "worktree", filename), err),
 		conf,
 	)
 	return s

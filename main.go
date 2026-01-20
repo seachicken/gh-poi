@@ -265,6 +265,9 @@ func printBranches(branches []shared.Branch) {
 		if branch.IsLocked {
 			reason = "locked"
 		}
+		if branch.Worktree != nil && branch.Worktree.IsLocked {
+			reason = "worktree locked"
+		}
 		if !branch.IsDefault && len(branch.PullRequests) > 0 && branch.HasTrackedChanges {
 			reason = "uncommitted changes"
 		}

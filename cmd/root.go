@@ -544,6 +544,10 @@ func getDeleteStatus(branch shared.Branch, state shared.PullRequestState) shared
 		return shared.NotDeletable
 	}
 
+	if branch.Worktree != nil && branch.Worktree.IsLocked {
+		return shared.NotDeletable
+	}
+
 	if branch.HasTrackedChanges {
 		return shared.NotDeletable
 	}

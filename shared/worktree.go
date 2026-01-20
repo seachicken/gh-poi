@@ -3,9 +3,10 @@ package shared
 import "strings"
 
 type Worktree struct {
-	Path   string
-	Branch string
-	IsMain bool
+	Path     string
+	Branch   string
+	IsMain   bool
+	IsLocked bool
 }
 
 // ParseWorktrees parses the output of `git worktree list --porcelain`
@@ -23,14 +24,17 @@ func ParseWorktrees(output string) []Worktree {
 				worktrees = append(worktrees, *current)
 			}
 			current = &Worktree{
-				Path:   after,
-				IsMain: isFirst,
+				Path:     after,
+				IsMain:   isFirst,
+				IsLocked: false,
 			}
 			isFirst = false
 		} else if after, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
 			if current != nil {
 				current.Branch = after
 			}
+		} else if line == "locked" {
+			current.IsLocked = true
 		}
 	}
 

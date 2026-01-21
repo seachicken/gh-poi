@@ -19,19 +19,19 @@ func ParseWorktrees(output string) []Worktree {
 	isFirst := true
 
 	for _, line := range lines {
-		if after, ok := strings.CutPrefix(line, "worktree "); ok {
+		if path, ok := strings.CutPrefix(line, "worktree "); ok {
 			if current != nil {
 				worktrees = append(worktrees, *current)
 			}
 			current = &Worktree{
-				Path:     after,
+				Path:     path,
 				IsMain:   isFirst,
 				IsLocked: false,
 			}
 			isFirst = false
-		} else if after, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
+		} else if branch, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
 			if current != nil {
-				current.Branch = after
+				current.Branch = branch
 			}
 		} else if line == "locked" {
 			current.IsLocked = true

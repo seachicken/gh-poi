@@ -13,7 +13,7 @@ import (
 
 var ErrCommand = errors.New("failed to run external command")
 
-func Test_DeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
+func Test_BranchIsDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -52,7 +52,7 @@ func Test_DeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
+func Test_BranchIsDeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -93,7 +93,7 @@ func Test_DeletableWhenLsRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -137,7 +137,7 @@ func Test_DeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -180,7 +180,7 @@ func Test_DeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -223,7 +223,7 @@ func Test_DeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testin
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
+func Test_BranchIsDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -266,7 +266,7 @@ func Test_DeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAndMergedPR
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -310,7 +310,7 @@ func Test_DeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -354,7 +354,7 @@ func Test_DeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -395,7 +395,7 @@ func Test_DeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_NotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
+func Test_BranchIsNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -439,7 +439,7 @@ func Test_NotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
+func Test_BranchIsDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -483,7 +483,7 @@ func Test_DeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_NotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
+func Test_BranchIsNotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -526,7 +526,7 @@ func Test_NotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
+func Test_BranchIsDeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -569,7 +569,7 @@ func Test_DeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) {
+func Test_BranchIsDeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -612,7 +612,7 @@ func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *testing.T) 
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) {
+func Test_BranchIsDeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -655,7 +655,7 @@ func Test_DeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *testing.T) 
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_NotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
+func Test_BranchIsNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -700,7 +700,7 @@ func Test_NotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_NotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
+func Test_BranchIsNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -743,7 +743,7 @@ func Test_NotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_NotDeletableWhenBranchIsLocked(t *testing.T) {
+func Test_BranchIsNotDeletableWhenBranchIsLocked(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -785,7 +785,7 @@ func Test_NotDeletableWhenBranchIsLocked(t *testing.T) {
 }
 
 // TODO: Remove after deprecated commands are removed
-func Test_NotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
+func Test_BranchIsNotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -823,6 +823,84 @@ func Test_NotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, false, actual[1].IsLocked)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_BranchIsDeletableWithWorktree(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_linkedIssue1", nil, nil).
+		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
+		GetRemoteHeadOid([]conn.RemoteHeadStub{
+			{BranchName: "linkedIssue1", Filename: "issue1"},
+		}, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
+		}, nil, nil).
+		GetPullRequests("linkedIssue1Merged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("linked", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "linkedIssue1", actual[0].Name)
+	assert.Equal(t, shared.Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_BranchIsNotDeletableWithLockedWorktree(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("@main_linkedIssue1", nil, nil).
+		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
+		GetRemoteHeadOid([]conn.RemoteHeadStub{
+			{BranchName: "linkedIssue1", Filename: "issue1"},
+		}, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
+		}, nil, nil).
+		GetPullRequests("linkedIssue1Merged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("locked", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "linkedIssue1", actual[0].Name)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
@@ -1290,84 +1368,6 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, shared.NotDeletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
-}
-
-func Test_DeletableWithWorktree(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	s := conn.Setup(ctrl).
-		CheckRepos(nil, nil).
-		GetRemoteNames("origin", nil, nil).
-		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_linkedIssue1", nil, nil).
-		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "linkedIssue1", Filename: "issue1"},
-		}, nil, nil).
-		GetLog([]conn.LogStub{
-			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
-		}, nil, nil).
-		GetPullRequests("linkedIssue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("linked", nil, nil).
-		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
-
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
-
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "linkedIssue1", actual[0].Name)
-	assert.Equal(t, shared.Deletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
-}
-
-func Test_NotDeletableWithLockedWorktree(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	s := conn.Setup(ctrl).
-		CheckRepos(nil, nil).
-		GetRemoteNames("origin", nil, nil).
-		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_linkedIssue1", nil, nil).
-		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "linkedIssue1", Filename: "issue1"},
-		}, nil, nil).
-		GetLog([]conn.LogStub{
-			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
-		}, nil, nil).
-		GetPullRequests("linkedIssue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("locked", nil, nil).
-		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
-
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
-
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "linkedIssue1", actual[0].Name)
 	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, shared.NotDeletable, actual[1].State)

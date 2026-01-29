@@ -774,6 +774,16 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection sh
 	return checkDeleted(branches, branchesAfter), nil
 }
 
+func getBranchNames(branches []shared.Branch, state shared.BranchState) []string {
+	results := []string{}
+	for _, branch := range branches {
+		if branch.State == state {
+			results = append(results, branch.Name)
+		}
+	}
+	return results
+}
+
 func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) (map[string]bool, error) {
 	deleted := make(map[string]bool)
 	var errs []error
@@ -799,16 +809,6 @@ func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection s
 		}
 	}
 	return deleted, errors.Join(errs...)
-}
-
-func getBranchNames(branches []shared.Branch, state shared.BranchState) []string {
-	results := []string{}
-	for _, branch := range branches {
-		if branch.State == state {
-			results = append(results, branch.Name)
-		}
-	}
-	return results
 }
 
 func checkDeleted(branchesBefore []shared.Branch, branchesAfter []shared.Branch) []shared.Branch {

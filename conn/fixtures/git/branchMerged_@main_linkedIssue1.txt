@@ -1,2 +1,2 @@
-  linkedIssue1
++ linkedIssue1
 * main

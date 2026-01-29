@@ -826,7 +826,7 @@ func Test_BranchIsNotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_BranchIsDeletableWithWorktree(t *testing.T) {
+func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -861,6 +861,45 @@ func Test_BranchIsDeletableWithWorktree(t *testing.T) {
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "linkedIssue1", actual[0].Name)
 	assert.Equal(t, shared.Deletable, actual[0].State)
+	assert.Equal(t, "main", actual[1].Name)
+	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_BranchIsNotDeletableWithLinkedWorktreeCheckedOut(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		CheckRepos(nil, nil).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames("origin", nil, nil).
+		GetBranchNames("main_@linkedIssue1", nil, nil).
+		GetMergedBranchNames("main_@linkedIssue1", nil, nil).
+		GetRemoteHeadOid([]conn.RemoteHeadStub{
+			{BranchName: "linkedIssue1", Filename: "issue1"},
+		}, nil, nil).
+		GetLog([]conn.LogStub{
+			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
+		}, nil, nil).
+		GetPullRequests("linkedIssue1Merged", nil, nil).
+		GetUncommittedChanges("", nil, nil).
+		GetWorktrees("linked", nil, nil).
+		GetConfig([]conn.ConfigStub{
+			{BranchName: "branch.main.merge", Filename: "mergeMain"},
+			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+		}, nil, nil)
+	remote, _ := GetRemote(context.Background(), s.Conn)
+
+	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, "linkedIssue1", actual[0].Name)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }

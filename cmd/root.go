@@ -759,6 +759,10 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection sh
 		return branches, nil
 	}
 
+	_, err := deleteWorktrees(ctx, branches, connection)
+	if err != nil {
+		return nil, err
+	}
 	connection.DeleteBranches(ctx, branchNames)
 
 	branchNamesAfter, err := connection.GetBranchNames(ctx)
@@ -770,7 +774,7 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection sh
 	return checkDeleted(branches, branchesAfter), nil
 }
 
-func DeleteWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) (map[string]bool, error) {
+func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) (map[string]bool, error) {
 	deleted := make(map[string]bool)
 	var errs []error
 	for _, branch := range branches {

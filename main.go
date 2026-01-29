@@ -174,24 +174,16 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 			sp.Restart()
 		}
 
-		var branchErr error
-		var worktreeErr error
-		_, worktreeErr = cmd.DeleteWorktrees(ctx, branches, connection)
-		branches, branchErr = cmd.DeleteBranches(ctx, branches, connection)
+		var deletingErr error
+		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
 		connection.PruneRemoteBranches(ctx, remote.Name)
 
 		sp.Stop()
 
-		if branchErr == nil && worktreeErr == nil {
+		if deletingErr == nil {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
-			if worktreeErr != nil {
-				fmt.Fprintln(os.Stderr, worktreeErr)
-			}
-			if branchErr != nil {
-				fmt.Fprintln(os.Stderr, branchErr)
-			}
 			return
 		}
 	}

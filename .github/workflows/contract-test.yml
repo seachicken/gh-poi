@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  test:
+  contract-test:
     strategy:
       fail-fast: false
     runs-on: ubuntu-latest

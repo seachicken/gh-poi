@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  build:
+  e2e-test:
     runs-on: windows-latest
 
     steps:
@@ -40,5 +40,5 @@ jobs:
           git branch --track $(echo $branch | Select-String -Pattern '.+/(.+$)' | %{$_.matches.groups[1].Value}) "$branch".trim()
         }
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-        go test -C .. -tags=e2e -v ./...
+        go test -C .. -run=E2E -tags=e2e -v ./...
 

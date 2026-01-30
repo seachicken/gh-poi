@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  build:
+  unit-test:
     strategy:
       fail-fast: false
       matrix:
@@ -27,6 +27,30 @@ jobs:
     - name: Build
       run: go build -v ./...
 
+    - name: Test
+      run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        flags: unit
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  e2e-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
+
     - name: Checkout dummy repo
       uses: actions/checkout@v4
       with:
@@ -42,10 +66,10 @@ jobs:
           git branch --track "${branch##*/}" "$branch"
         done
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-        go test -C .. -tags=e2e -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        go test -C .. -run=E2E -tags=e2e -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        flags: e2e,unit
+        flags: e2e
         token: ${{ secrets.CODECOV_TOKEN }}

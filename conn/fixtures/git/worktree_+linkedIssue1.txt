@@ -1,0 +1,4 @@
+worktree /home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1
+HEAD 24f9a9b5ea0f4ade510aec4caa34fa713c4b62e6
+branch refs/heads/linkedIssue1
+

@@ -835,8 +835,8 @@ func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_linkedIssue1", nil, nil).
-		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
+		GetBranchNames("main_@linkedIssue1", nil, nil).
+		GetMergedBranchNames("main_@linkedIssue1", nil, nil).
 		GetRemoteHeadOid([]conn.RemoteHeadStub{
 			{BranchName: "linkedIssue1", Filename: "issue1"},
 		}, nil, nil).
@@ -845,7 +845,7 @@ func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("linkedIssue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("linked", nil, nil).
+		GetWorktrees("+linkedIssue1", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
@@ -853,7 +853,8 @@ func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
 			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
 			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
 			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil)
+		}, nil, nil).
+		CheckoutBranch(nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, false)

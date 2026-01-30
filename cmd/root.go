@@ -545,7 +545,7 @@ func getDeleteStatus(branch shared.Branch, state shared.PullRequestState) shared
 	}
 
 	if branch.Worktree != nil {
-		if branch.Worktree.IsLocked || branch.Head {
+		if branch.Worktree.IsLocked || (!branch.Worktree.IsMain && branch.Head) {
 			return shared.NotDeletable
 		}
 	}

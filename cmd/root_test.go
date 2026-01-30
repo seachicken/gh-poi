@@ -845,7 +845,7 @@ func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("linkedIssue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("+linkedIssue1", nil, nil).
+		GetWorktrees("@linkedIssue1", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
@@ -885,7 +885,7 @@ func Test_BranchIsNotDeletableWithLinkedWorktreeCheckedOut(t *testing.T) {
 		}, nil, nil).
 		GetPullRequests("linkedIssue1Merged", nil, nil).
 		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("linked", nil, nil).
+		GetWorktrees("@main_+linkedIssue1", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{BranchName: "branch.main.merge", Filename: "mergeMain"},
 			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},

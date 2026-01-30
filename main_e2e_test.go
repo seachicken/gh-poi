@@ -1,3 +1,5 @@
+//go:build e2e
+
 package main
 
 import (
@@ -11,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
+func TestE2E_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
 	onlyCI(t)
 
 	results := captureOutput(func() { runMain(Merged, false, false) })
@@ -20,7 +22,7 @@ func Test_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
 	assert.Contains(t, results, expected)
 }
 
-func Test_DoNotDeleteBranchesWhenDryRunOptionIsTrue(t *testing.T) {
+func TestE2E_DoNotDeleteBranchesWhenDryRunOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
 	results := captureOutput(func() { runMain(Merged, true, false) })
@@ -29,7 +31,7 @@ func Test_DoNotDeleteBranchesWhenDryRunOptionIsTrue(t *testing.T) {
 	assert.Contains(t, results, expected)
 }
 
-func Test_LockAndUnlock(t *testing.T) {
+func TestE2E_LockAndUnlock(t *testing.T) {
 	onlyCI(t)
 
 	runLock([]string{"main"}, false)

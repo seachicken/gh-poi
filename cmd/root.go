@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/seachicken/gh-poi/conn"
 	"github.com/seachicken/gh-poi/shared"
 )
 
@@ -185,7 +186,7 @@ func normalizeHostname(host string) string {
 func toRemotes(remoteConfigs []string) []shared.Remote {
 	results := []shared.Remote{}
 	for _, remoteConfig := range remoteConfigs {
-		results = append(results, shared.NewRemote(remoteConfig))
+		results = append(results, conn.ParseRemote(remoteConfig))
 	}
 	return results
 }
@@ -374,7 +375,7 @@ func applyWorktrees(ctx context.Context, branches []shared.Branch, connection sh
 		return branches, nil
 	}
 
-	worktrees := shared.ParseWorktrees(worktreeOutput)
+	worktrees := conn.ParseWorktrees(worktreeOutput)
 
 	// Create a map for quick branch-to-worktree lookup
 	worktreeMap := make(map[string]*shared.Worktree)

@@ -5,11 +5,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/cli/safeexec"
+	"github.com/seachicken/gh-poi/shared"
 )
 
 type (
@@ -23,6 +27,11 @@ type (
 const (
 	None DebugMask = iota
 	Output
+)
+
+var (
+	hasSchemePattern  = regexp.MustCompile("^[^:]+://")
+	scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):(/?.+)$")
 )
 
 func (conn *Connection) CheckRepos(ctx context.Context, hostname string, repoNames []string) error {
@@ -45,6 +54,51 @@ func (conn *Connection) GetRemoteNames(ctx context.Context) (string, error) {
 		"remote", "-v",
 	}
 	return conn.run(ctx, "git", args, None)
+}
+
+// acceptable url formats:
+//
+//	ssh://[user@]host.xz[:port]/path/to/repo.git/
+//	git://host.xz[:port]/path/to/repo.git/
+//	http[s]://host.xz[:port]/path/to/repo.git/
+//	ftp[s]://host.xz[:port]/path/to/repo.git/
+//
+// An alternative scp-like syntax may also be used with the ssh protocol:
+//
+//	[user@]host.xz:path/to/repo.git/
+//
+// ref. http://git-scm.com/docs/git-fetch#_git_urls
+// the code is heavily inspired by https://github.com/x-motemen/ghq/blob/7163e61e2309a039241ad40b4a25bea35671ea6f/url.go
+func ParseRemote(output string) shared.Remote {
+	splitConfig := strings.Fields(output)
+	if len(splitConfig) != 3 {
+		return shared.Remote{}
+	}
+
+	ref := splitConfig[1]
+	if !hasSchemePattern.MatchString(ref) {
+		if scpLikeURLPattern.MatchString(ref) {
+			matched := scpLikeURLPattern.FindStringSubmatch(ref)
+			user := matched[1]
+			host := matched[2]
+			path := matched[3]
+			ref = fmt.Sprintf("ssh://%s%s/%s", user, host, strings.TrimPrefix(path, "/"))
+		}
+	}
+	u, err := url.Parse(ref)
+	if err != nil {
+		return shared.Remote{}
+	}
+
+	repo := u.Path
+	repo = strings.TrimPrefix(repo, "/")
+	repo = strings.TrimSuffix(repo, ".git")
+
+	return shared.Remote{
+		Name:     splitConfig[0],
+		Hostname: u.Host,
+		RepoName: repo,
+	}
 }
 
 func (conn *Connection) GetSshConfig(ctx context.Context, name string) (string, error) {
@@ -200,6 +254,41 @@ func (conn *Connection) GetWorktrees(ctx context.Context) (string, error) {
 		"worktree", "list", "--porcelain",
 	}
 	return conn.run(ctx, "git", args, None)
+}
+
+func ParseWorktrees(output string) []shared.Worktree {
+	worktrees := []shared.Worktree{}
+	lines := strings.FieldsFunc(strings.ReplaceAll(output, "\r\n", "\n"),
+		func(c rune) bool { return c == '\n' })
+
+	var current *shared.Worktree
+	isFirst := true
+
+	for _, line := range lines {
+		if path, ok := strings.CutPrefix(line, "worktree "); ok {
+			if current != nil {
+				worktrees = append(worktrees, *current)
+			}
+			current = &shared.Worktree{
+				Path:     path,
+				IsMain:   isFirst,
+				IsLocked: false,
+			}
+			isFirst = false
+		} else if branch, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
+			if current != nil {
+				current.Branch = branch
+			}
+		} else if line == "locked" {
+			current.IsLocked = true
+		}
+	}
+
+	if current != nil {
+		worktrees = append(worktrees, *current)
+	}
+
+	return worktrees
 }
 
 func (conn *Connection) RemoveWorktree(ctx context.Context, path string) (string, error) {

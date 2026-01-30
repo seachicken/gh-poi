@@ -9,3 +9,6 @@ coverage:
 ignore:
   - "conn/stub.go"
   - "mocks"
+flag_management:
+  default_rules:
+    carryforward: true

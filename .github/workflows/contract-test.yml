@@ -28,5 +28,11 @@ jobs:
         unzip conn/fixtures/repo_basic.zip -d conn/fixtures
         unzip conn/fixtures/repo_worktree_main.zip -d conn/fixtures
         unzip conn/fixtures/repo_worktree_linkedIssue1.zip -d conn/fixtures
-        go test -run=Contract -tags=contract -v ./...
+        go test -run=Contract -tags=contract -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        flags: contract
+        token: ${{ secrets.CODECOV_TOKEN }}
 

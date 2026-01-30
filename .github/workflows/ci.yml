@@ -42,10 +42,10 @@ jobs:
           git branch --track "${branch##*/}" "$branch"
         done
         echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-        go test -C .. -tags=e2e -v -race -coverprofile=ci-test/coverage.out -covermode=atomic ./...
+        go test -C .. -tags=e2e -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
-        directory: ./ci-test/
+        flags: e2e,unit
         token: ${{ secrets.CODECOV_TOKEN }}

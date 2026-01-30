@@ -115,7 +115,7 @@ func TestContract_RepoWorkspace(t *testing.T) {
 	t.Run("GetWorktrees", func(t *testing.T) {
 		actual, _ := conn.GetWorktrees(context.Background())
 		assert.Equal(t,
-			stub.ReadFile("git", "worktree", "linked"),
+			stub.ReadFile("git", "worktree", "@main_+linkedIssue1"),
 			actual,
 		)
 	})

@@ -45,7 +45,7 @@ jobs:
         go test -C .. -tags=e2e -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         flags: e2e,unit
         token: ${{ secrets.CODECOV_TOKEN }}

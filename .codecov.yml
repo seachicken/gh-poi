@@ -7,4 +7,5 @@ coverage:
       default:
         informational: true
 ignore:
+  - "conn/stub.go"
   - "mocks"

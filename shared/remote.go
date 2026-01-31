@@ -1,9 +1,7 @@
 package shared
 
-type (
-	Remote struct {
-		Name     string
-		Hostname string
-		RepoName string
-	}
-)
+type Remote struct {
+	Name     string
+	Hostname string
+	RepoName string
+}

@@ -49,6 +49,14 @@ func (conn *Connection) CheckRepos(ctx context.Context, hostname string, repoNam
 	return nil
 }
 
+func GetRemoteNames(ctx context.Context, conn shared.Connection) ([]shared.Remote, error) {
+	output, err := conn.GetRemoteNames(ctx)
+	if err != nil {
+		return []shared.Remote{}, err
+	}
+	return parseRemotes(output), nil
+}
+
 func (conn *Connection) GetRemoteNames(ctx context.Context) (string, error) {
 	args := []string{
 		"remote", "-v",
@@ -69,36 +77,42 @@ func (conn *Connection) GetRemoteNames(ctx context.Context) (string, error) {
 //
 // ref. http://git-scm.com/docs/git-fetch#_git_urls
 // the code is heavily inspired by https://github.com/x-motemen/ghq/blob/7163e61e2309a039241ad40b4a25bea35671ea6f/url.go
-func ParseRemote(output string) shared.Remote {
-	splitConfig := strings.Fields(output)
-	if len(splitConfig) != 3 {
-		return shared.Remote{}
-	}
+func parseRemotes(output string) []shared.Remote {
+	results := []shared.Remote{}
 
-	ref := splitConfig[1]
-	if !hasSchemePattern.MatchString(ref) {
-		if scpLikeURLPattern.MatchString(ref) {
-			matched := scpLikeURLPattern.FindStringSubmatch(ref)
-			user := matched[1]
-			host := matched[2]
-			path := matched[3]
-			ref = fmt.Sprintf("ssh://%s%s/%s", user, host, strings.TrimPrefix(path, "/"))
+	for _, remoteConfig := range splitLines(output) {
+		splitConfig := strings.Fields(remoteConfig)
+		if len(splitConfig) != 3 {
+			return []shared.Remote{}
 		}
-	}
-	u, err := url.Parse(ref)
-	if err != nil {
-		return shared.Remote{}
+
+		ref := splitConfig[1]
+		if !hasSchemePattern.MatchString(ref) {
+			if scpLikeURLPattern.MatchString(ref) {
+				matched := scpLikeURLPattern.FindStringSubmatch(ref)
+				user := matched[1]
+				host := matched[2]
+				path := matched[3]
+				ref = fmt.Sprintf("ssh://%s%s/%s", user, host, strings.TrimPrefix(path, "/"))
+			}
+		}
+		u, err := url.Parse(ref)
+		if err != nil {
+			return []shared.Remote{}
+		}
+
+		repo := u.Path
+		repo = strings.TrimPrefix(repo, "/")
+		repo = strings.TrimSuffix(repo, ".git")
+
+		results = append(results, shared.Remote{
+			Name:     splitConfig[0],
+			Hostname: u.Host,
+			RepoName: repo,
+		})
 	}
 
-	repo := u.Path
-	repo = strings.TrimPrefix(repo, "/")
-	repo = strings.TrimSuffix(repo, ".git")
-
-	return shared.Remote{
-		Name:     splitConfig[0],
-		Hostname: u.Host,
-		RepoName: repo,
-	}
+	return results
 }
 
 func (conn *Connection) GetSshConfig(ctx context.Context, name string) (string, error) {
@@ -249,6 +263,14 @@ func (conn *Connection) PruneRemoteBranches(ctx context.Context, remoteName stri
 	return conn.run(ctx, "git", args, None)
 }
 
+func GetWorktrees(ctx context.Context, conn shared.Connection) ([]shared.Worktree, error) {
+	output, err := conn.GetWorktrees(ctx)
+	if err != nil {
+		return []shared.Worktree{}, err
+	}
+	return parseWorktrees(output), nil
+}
+
 func (conn *Connection) GetWorktrees(ctx context.Context) (string, error) {
 	args := []string{
 		"worktree", "list", "--porcelain",
@@ -256,18 +278,15 @@ func (conn *Connection) GetWorktrees(ctx context.Context) (string, error) {
 	return conn.run(ctx, "git", args, None)
 }
 
-func ParseWorktrees(output string) []shared.Worktree {
-	worktrees := []shared.Worktree{}
-	lines := strings.FieldsFunc(strings.ReplaceAll(output, "\r\n", "\n"),
-		func(c rune) bool { return c == '\n' })
-
+func parseWorktrees(output string) []shared.Worktree {
+	results := []shared.Worktree{}
 	var current *shared.Worktree
 	isFirst := true
 
-	for _, line := range lines {
+	for _, line := range splitLines(output) {
 		if path, ok := strings.CutPrefix(line, "worktree "); ok {
 			if current != nil {
-				worktrees = append(worktrees, *current)
+				results = append(results, *current)
 			}
 			current = &shared.Worktree{
 				Path:     path,
@@ -285,10 +304,10 @@ func ParseWorktrees(output string) []shared.Worktree {
 	}
 
 	if current != nil {
-		worktrees = append(worktrees, *current)
+		results = append(results, *current)
 	}
 
-	return worktrees
+	return results
 }
 
 func (conn *Connection) RemoveWorktree(ctx context.Context, path string) (string, error) {
@@ -329,4 +348,9 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	}
 
 	return stdout.String(), err
+}
+
+func splitLines(text string) []string {
+	return strings.FieldsFunc(strings.ReplaceAll(text, "\r\n", "\n"),
+		func(c rune) bool { return c == '\n' })
 }

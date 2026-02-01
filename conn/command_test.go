@@ -9,68 +9,80 @@ import (
 
 func Test_CreateRemoteWithScpLikeUrl(t *testing.T) {
 	assert.Equal(t,
-		shared.Remote{
-			Name:     "origin",
-			Hostname: "github.com",
-			RepoName: "org/repo",
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
 		},
-		ParseRemote("origin	git@github.com:org/repo (fetch)"),
+		parseRemotes("origin	git@github.com:org/repo (fetch)"),
 	)
 }
 
 func Test_CreateRemoteWithScpLikeUrlAndCustomUserinfo(t *testing.T) {
 	assert.Equal(t,
-		shared.Remote{
-			Name:     "origin",
-			Hostname: "github.com",
-			RepoName: "org/repo",
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
 		},
-		ParseRemote("origin	git0-._~@github.com:org/repo (fetch)"),
+		parseRemotes("origin	git0-._~@github.com:org/repo (fetch)"),
 	)
 }
 
 func Test_CreateRemoteWithSshUrl(t *testing.T) {
 	assert.Equal(t,
-		shared.Remote{
-			Name:     "origin",
-			Hostname: "github.com",
-			RepoName: "org/repo",
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
 		},
-		ParseRemote("origin	ssh://git@github.com/org/repo.git (fetch)"),
+		parseRemotes("origin	ssh://git@github.com/org/repo.git (fetch)"),
 	)
 }
 
 func Test_CreateRemoteWithScpLikeUrlWithoutUserinfo(t *testing.T) {
 	assert.Equal(t,
-		shared.Remote{
-			Name:     "origin",
-			Hostname: "github.com",
-			RepoName: "org/repo",
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
 		},
-		ParseRemote("origin	github.com:org/repo.git (fetch)"),
+		parseRemotes("origin	github.com:org/repo.git (fetch)"),
 	)
 }
 
 func Test_CreateRemoteWithHttps(t *testing.T) {
 	assert.Equal(t,
-		shared.Remote{
-			Name:     "origin",
-			Hostname: "github.com",
-			RepoName: "org/repo",
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
 		},
-		ParseRemote("origin	https://github.com/org/repo.git (fetch)"),
+		parseRemotes("origin	https://github.com/org/repo.git (fetch)"),
 	)
 }
 
 // https://github.com/seachicken/gh-poi/issues/39
 func Test_CreateRemoteWithCustomHostname(t *testing.T) {
 	assert.Equal(t,
-		shared.Remote{
-			Name:     "origin",
-			Hostname: "github.com-work",
-			RepoName: "org/repo",
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com-work",
+				RepoName: "org/repo",
+			},
 		},
-		ParseRemote("origin	git@github.com-work:org/repo.git (fetch)"),
+		parseRemotes("origin	git@github.com-work:org/repo.git (fetch)"),
 	)
 }
 
@@ -81,7 +93,7 @@ func Test_ParseWorktreesWithLinkedWorktree(t *testing.T) {
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Branch: "main", IsMain: true, IsLocked: false},
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Branch: "linkedIssue1", IsMain: false, IsLocked: false},
 		},
-		ParseWorktrees(stub),
+		parseWorktrees(stub),
 	)
 }
 
@@ -91,7 +103,7 @@ func Test_ParseWorktreesWithoutLinkedWorktree(t *testing.T) {
 		[]shared.Worktree{
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_basic", Branch: "main", IsMain: true, IsLocked: false},
 		},
-		ParseWorktrees(stub),
+		parseWorktrees(stub),
 	)
 }
 
@@ -102,7 +114,7 @@ func Test_ParseWorktreesWithDetached(t *testing.T) {
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Branch: "main", IsMain: true, IsLocked: false},
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Branch: "", IsMain: false, IsLocked: false},
 		},
-		ParseWorktrees(stub),
+		parseWorktrees(stub),
 	)
 }
 
@@ -113,6 +125,6 @@ func Test_ParseWorktreesWithLocked(t *testing.T) {
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Branch: "main", IsMain: true, IsLocked: false},
 			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Branch: "linkedIssue1", IsMain: false, IsLocked: true},
 		},
-		ParseWorktrees(stub),
+		parseWorktrees(stub),
 	)
 }

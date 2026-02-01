@@ -33,12 +33,11 @@ const (
 var ErrNotFound = errors.New("not found")
 
 func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote, error) {
-	remoteNames, err := connection.GetRemoteNames(ctx)
+	remotes, err := conn.GetRemoteNames(ctx, connection)
 	if err != nil {
 		return shared.Remote{}, err
 	}
 
-	remotes := toRemotes(SplitLines(remoteNames))
 	if remote, err := getPrimaryRemote(remotes); err == nil {
 		hostname := remote.Hostname
 		ghHost := os.Getenv("GH_HOST")
@@ -181,14 +180,6 @@ func normalizeHostname(host string) string {
 		return localhost
 	}
 	return hostname
-}
-
-func toRemotes(remoteConfigs []string) []shared.Remote {
-	results := []shared.Remote{}
-	for _, remoteConfig := range remoteConfigs {
-		results = append(results, conn.ParseRemote(remoteConfig))
-	}
-	return results
 }
 
 func getPrimaryRemote(remotes []shared.Remote) (shared.Remote, error) {
@@ -369,13 +360,11 @@ func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connecti
 }
 
 func applyWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
-	worktreeOutput, err := connection.GetWorktrees(ctx)
+	worktrees, err := conn.GetWorktrees(ctx, connection)
 	if err != nil {
 		// Worktrees might not be supported or available, continue gracefully
 		return branches, nil
 	}
-
-	worktrees := conn.ParseWorktrees(worktreeOutput)
 
 	// Create a map for quick branch-to-worktree lookup
 	worktreeMap := make(map[string]*shared.Worktree)

@@ -3,6 +3,7 @@ package conn
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -22,6 +23,13 @@ type (
 	}
 
 	DebugMask int
+)
+
+var (
+	// ErrNotAGitRepository is returned when a git command is executed outside of a
+	// repository ("fatal: not a git repository" error).  By centralizing detection
+	// here callers can produce nicer messages for end users.
+	ErrNotAGitRepository = errors.New("not a git repository")
 )
 
 const (
@@ -324,8 +332,10 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	}
 
 	var stdout bytes.Buffer
+	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, cmdPath, args...)
 	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 	if name == "gh" {
 		cmd.Env = append(os.Environ(), "CLICOLOR_FORCE=0")
 	}
@@ -334,6 +344,12 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	err = cmd.Run()
 	duration := time.Since(start)
 	if err != nil {
+		// check stderr as well for the known message; `git` prints the error to
+		// stderr and the exec error text itself is just "exit status 128" so we
+		// cannot rely on err.Error() alone.
+		if isNotGitRepo(err) || strings.Contains(stderr.String(), "not a git repository") {
+			return "", ErrNotAGitRepository
+		}
 		err = fmt.Errorf("failed to run external command: %s, args: %v\n %w", name, args, err)
 		return "", err
 	}
@@ -353,4 +369,12 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 func splitLines(text string) []string {
 	return strings.FieldsFunc(strings.ReplaceAll(text, "\r\n", "\n"),
 		func(c rune) bool { return c == '\n' })
+}
+
+// isNotGitRepo reports whether the provided error string matches the common
+// "not a git repository" message returned by git when executed outside of a
+// repository. We keep the detection simple rather than attempt to parse exit
+// codes since the output text is stable and portable.
+func isNotGitRepo(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "not a git repository")
 }

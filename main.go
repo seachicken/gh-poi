@@ -148,7 +148,12 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 
 	remote, err := cmd.GetRemote(ctx, connection)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		if errors.Is(err, conn.ErrNotAGitRepository) {
+			// user-friendly stand-alone message, avoid repeating the wrapped error
+			fmt.Fprintln(os.Stderr, "no git repository found (run `git init` or cd into an existing repo)")
+		} else {
+			fmt.Fprintln(os.Stderr, err)
+		}
 		return
 	}
 

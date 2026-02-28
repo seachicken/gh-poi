@@ -103,6 +103,7 @@ func parseRemotes(output string) []shared.Remote {
 
 		repo := u.Path
 		repo = strings.TrimPrefix(repo, "/")
+		repo = strings.TrimSuffix(repo, "/")
 		repo = strings.TrimSuffix(repo, ".git")
 
 		results = append(results, shared.Remote{

@@ -87,6 +87,20 @@ func Test_CreateRemoteWithHttpsTrailingSlash(t *testing.T) {
 }
 
 // https://github.com/seachicken/gh-poi/issues/152
+func Test_CreateRemoteWithHttpsTrailingSlashWithoutDotGit(t *testing.T) {
+	assert.Equal(t,
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
+		},
+		parseRemotes("origin	https://github.com/org/repo/ (fetch)"),
+	)
+}
+
+// https://github.com/seachicken/gh-poi/issues/152
 func Test_CreateRemoteWithSshUrlTrailingSlash(t *testing.T) {
 	assert.Equal(t,
 		[]shared.Remote{
@@ -97,6 +111,20 @@ func Test_CreateRemoteWithSshUrlTrailingSlash(t *testing.T) {
 			},
 		},
 		parseRemotes("origin	ssh://git@github.com/org/repo.git/ (fetch)"),
+	)
+}
+
+// https://github.com/seachicken/gh-poi/issues/152
+func Test_CreateRemoteWithScpLikeUrlTrailingSlash(t *testing.T) {
+	assert.Equal(t,
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
+		},
+		parseRemotes("origin	git@github.com:org/repo.git/ (fetch)"),
 	)
 }
 

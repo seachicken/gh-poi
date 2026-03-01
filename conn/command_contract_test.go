@@ -119,6 +119,12 @@ func TestContract_RepoWorkspace(t *testing.T) {
 			actual,
 		)
 	})
+
+	t.Run("IsLocalRepo", func(t *testing.T) {
+		ok, err := conn.IsLocalRepo(context.Background())
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
 }
 
 func setGitDir(repoName string, t *testing.T) {

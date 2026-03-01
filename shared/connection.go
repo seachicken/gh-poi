@@ -23,4 +23,8 @@ type Connection interface {
 	DeleteBranches(ctx context.Context, branchNames []string) (string, error)
 	GetWorktrees(ctx context.Context) (string, error)
 	RemoveWorktree(ctx context.Context, path string) (string, error)
+	// IsLocalRepo returns true if the current working directory is inside a git
+	// repository.  The concrete implementation should run a lightweight git check
+	// such as `git rev-parse --is-inside-work-tree`.
+	IsLocalRepo(ctx context.Context) (bool, error)
 }

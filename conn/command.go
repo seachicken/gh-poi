@@ -3,6 +3,7 @@ package conn
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -22,6 +23,10 @@ type (
 	}
 
 	DebugMask int
+)
+
+var (
+	ErrNotAGitRepository = errors.New("not a git repository")
 )
 
 const (
@@ -279,6 +284,38 @@ func (conn *Connection) GetWorktrees(ctx context.Context) (string, error) {
 	return conn.run(ctx, "git", args, None)
 }
 
+// IsLocalRepo checks whether the current working directory is part of a git
+// repository.  This is done by invoking `git rev-parse --is-inside-work-tree`.
+// If git itself reports that the directory is not a repository we translate
+// that into a simple false result rather than an error, so callers can handle
+// it gracefully.
+func (conn *Connection) IsLocalRepo(ctx context.Context) (bool, error) {
+	// Run git directly so we can inspect the process exit code rather than
+	// relying on stderr text. Git returns exit code 128 for "not a git
+	// repository" in this context.
+	gitPath, err := safeexec.LookPath("git")
+	if err != nil {
+		return false, err
+	}
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, gitPath, "rev-parse", "--is-inside-work-tree")
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if exitErr.ExitCode() == 128 {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("git rev-parse failed: stderr: %s: %w", stderr.String(), err)
+	}
+
+	return strings.TrimSpace(stdout.String()) == "true", nil
+}
+
 func parseWorktrees(output string) []shared.Worktree {
 	results := []shared.Worktree{}
 	var current *shared.Worktree
@@ -325,8 +362,10 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	}
 
 	var stdout bytes.Buffer
+	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, cmdPath, args...)
 	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 	if name == "gh" {
 		cmd.Env = append(os.Environ(), "CLICOLOR_FORCE=0")
 	}
@@ -335,7 +374,10 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	err = cmd.Run()
 	duration := time.Since(start)
 	if err != nil {
-		err = fmt.Errorf("failed to run external command: %s, args: %v\n %w", name, args, err)
+		// Include stderr in the returned error so callers can detect
+		// repository-specific messages (for example "not a git repository")
+		// without inspecting the stderr buffer directly.
+		err = fmt.Errorf("failed to run external command: %s, args: %v\nstderr: %s\n%w", name, args, stderr.String(), err)
 		return "", err
 	}
 
@@ -355,3 +397,8 @@ func splitLines(text string) []string {
 	return strings.FieldsFunc(strings.ReplaceAll(text, "\r\n", "\n"),
 		func(c rune) bool { return c == '\n' })
 }
+
+// isNotGitRepo reports whether the provided error string matches the common
+// "not a git repository" message returned by git when executed outside of a
+// repository. We keep the detection simple rather than attempt to parse exit
+// codes since the output text is stable and portable.

@@ -35,10 +35,6 @@ var ErrNotFound = errors.New("not found")
 func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote, error) {
 	remotes, err := conn.GetRemoteNames(ctx, connection)
 	if err != nil {
-		// translate repository‑missing error into something a user can act on
-		if errors.Is(err, conn.ErrNotAGitRepository) {
-			return shared.Remote{}, fmt.Errorf("no git repository found (run `git init` or cd into an existing repo): %w", err)
-		}
 		return shared.Remote{}, err
 	}
 

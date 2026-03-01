@@ -57,9 +57,22 @@ var (
 	fixturePath = "fixtures"
 )
 
-func Setup(ctrl *gomock.Controller) *Stub {
+func SetupWithLocal(ctrl *gomock.Controller, isLocal bool) *Stub {
 	conn := mocks.NewMockConnection(ctrl)
-	return &Stub{conn, ctrl.T}
+	s := &Stub{conn, ctrl.T}
+	// default expectation for repository presence
+	if isLocal {
+		s.IsLocalRepo(true, nil, nil)
+	} else {
+		s.IsLocalRepo(false, nil, nil)
+	}
+	return s
+}
+
+// Setup returns a stubbed connection assuming we are inside a local repository.
+// Tests that need a different behaviour should call SetupWithLocal directly.
+func Setup(ctrl *gomock.Controller) *Stub {
+	return SetupWithLocal(ctrl, true)
 }
 
 func NewConf(times *Times) *Conf {
@@ -111,6 +124,17 @@ func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
 			EXPECT().
 			GetRepoNames(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(s.ReadFile("gh", "repo", filename), err),
+		conf,
+	)
+	return s
+}
+func (s *Stub) IsLocalRepo(isLocal bool, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			IsLocalRepo(gomock.Any()).
+			Return(isLocal, err),
 		conf,
 	)
 	return s

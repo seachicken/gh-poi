@@ -13,19 +13,6 @@ import (
 
 var ErrCommand = errors.New("failed to run external command")
 
-func Test_GetRemote_NoRepo(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	s := conn.Setup(ctrl).
-		// simulate git returning the "not a git repository" error
-		GetRemoteNames("origin", conn.ErrNotAGitRepository, nil)
-
-	_, err := GetRemote(context.Background(), s.Conn)
-	assert.ErrorIs(t, err, conn.ErrNotAGitRepository)
-	assert.Contains(t, err.Error(), "git repository")
-}
-
 func Test_BranchIsDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

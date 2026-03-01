@@ -26,9 +26,6 @@ type (
 )
 
 var (
-	// ErrNotAGitRepository is returned when a git command is executed outside of a
-	// repository ("fatal: not a git repository" error).  By centralizing detection
-	// here callers can produce nicer messages for end users.
 	ErrNotAGitRepository = errors.New("not a git repository")
 )
 
@@ -286,6 +283,25 @@ func (conn *Connection) GetWorktrees(ctx context.Context) (string, error) {
 	return conn.run(ctx, "git", args, None)
 }
 
+// IsLocalRepo checks whether the current working directory is part of a git
+// repository.  This is done by invoking `git rev-parse --is-inside-work-tree`.
+// If git itself reports that the directory is not a repository we translate
+// that into a simple false result rather than an error, so callers can handle
+// it gracefully.
+func (conn *Connection) IsLocalRepo(ctx context.Context) (bool, error) {
+	args := []string{"rev-parse", "--is-inside-work-tree"}
+	out, err := conn.run(ctx, "git", args, None)
+	if err != nil {
+		// if the failure is due to not being in a repository return false
+		if isNotGitRepo(err) {
+			return false, nil
+		}
+		// other errors are propagated
+		return false, err
+	}
+	return strings.TrimSpace(out) == "true", nil
+}
+
 func parseWorktrees(output string) []shared.Worktree {
 	results := []shared.Worktree{}
 	var current *shared.Worktree
@@ -347,6 +363,7 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 		// check stderr as well for the known message; `git` prints the error to
 		// stderr and the exec error text itself is just "exit status 128" so we
 		// cannot rely on err.Error() alone.
+
 		if isNotGitRepo(err) || strings.Contains(stderr.String(), "not a git repository") {
 			return "", ErrNotAGitRepository
 		}

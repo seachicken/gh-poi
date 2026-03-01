@@ -288,6 +288,21 @@ func (mr *MockConnectionMockRecorder) GetWorktrees(ctx interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorktrees", reflect.TypeOf((*MockConnection)(nil).GetWorktrees), ctx)
 }
 
+// IsLocalRepo mocks base method.
+func (m *MockConnection) IsLocalRepo(ctx context.Context) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsLocalRepo", ctx)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsLocalRepo indicates an expected call of IsLocalRepo.
+func (mr *MockConnectionMockRecorder) IsLocalRepo(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLocalRepo", reflect.TypeOf((*MockConnection)(nil).IsLocalRepo), ctx)
+}
+
 // RemoveConfig mocks base method.
 func (m *MockConnection) RemoveConfig(ctx context.Context, key string) (string, error) {
 	m.ctrl.T.Helper()

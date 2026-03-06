@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -59,9 +60,11 @@ func main() {
 	state := Merged
 	var dryRun bool
 	var debug bool
+	var remover string
 	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
+	flag.StringVar(&remover, "remover", "", "Custom command to remove worktrees (e.g. trash)")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")
 		fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
@@ -89,7 +92,7 @@ func main() {
 	args := flag.Args()
 
 	if len(args) == 0 {
-		runMain(state, dryRun, debug)
+		runMain(state, dryRun, debug, remover)
 	} else {
 		subcmd, args := args[0], args[1:]
 		switch subcmd {
@@ -127,7 +130,7 @@ func main() {
 	}
 }
 
-func runMain(state StateFlag, dryRun bool, debug bool) {
+func runMain(state StateFlag, dryRun bool, debug bool, remover string) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -136,6 +139,12 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	}
 
 	connection := &conn.Connection{Debug: debug}
+
+	if remover == "" {
+		if configRemover, err := connection.GetConfig(ctx, "poi.worktree-remover"); err == nil {
+			remover = strings.TrimSpace(configRemover)
+		}
+	}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 	defer sp.Stop()
 
@@ -175,7 +184,7 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 		}
 
 		var deletingErr error
-		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
+		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection, remover)
 		connection.PruneRemoteBranches(ctx, remote.Name)
 
 		sp.Stop()

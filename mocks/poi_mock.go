@@ -317,3 +317,33 @@ func (mr *MockConnectionMockRecorder) RemoveWorktree(ctx, path interface{}) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveWorktree", reflect.TypeOf((*MockConnection)(nil).RemoveWorktree), ctx, path)
 }
+
+// PruneWorktrees mocks base method.
+func (m *MockConnection) PruneWorktrees(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PruneWorktrees", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PruneWorktrees indicates an expected call of PruneWorktrees.
+func (mr *MockConnectionMockRecorder) PruneWorktrees(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PruneWorktrees", reflect.TypeOf((*MockConnection)(nil).PruneWorktrees), ctx)
+}
+
+// RunShellCommand mocks base method.
+func (m *MockConnection) RunShellCommand(ctx context.Context, command, arg string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunShellCommand", ctx, command, arg)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RunShellCommand indicates an expected call of RunShellCommand.
+func (mr *MockConnectionMockRecorder) RunShellCommand(ctx, command, arg interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunShellCommand", reflect.TypeOf((*MockConnection)(nil).RunShellCommand), ctx, command, arg)
+}

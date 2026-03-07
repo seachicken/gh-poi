@@ -49,20 +49,6 @@ func (mr *MockConnectionMockRecorder) AddConfig(ctx, key, value interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddConfig", reflect.TypeOf((*MockConnection)(nil).AddConfig), ctx, key, value)
 }
 
-// CheckRepos mocks base method.
-func (m *MockConnection) CheckRepos(ctx context.Context, hostname string, repoNames []string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckRepos", ctx, hostname, repoNames)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CheckRepos indicates an expected call of CheckRepos.
-func (mr *MockConnectionMockRecorder) CheckRepos(ctx, hostname, repoNames interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRepos", reflect.TypeOf((*MockConnection)(nil).CheckRepos), ctx, hostname, repoNames)
-}
-
 // CheckoutBranch mocks base method.
 func (m *MockConnection) CheckoutBranch(ctx context.Context, branchName string) (string, error) {
 	m.ctrl.T.Helper()
@@ -91,21 +77,6 @@ func (m *MockConnection) DeleteBranches(ctx context.Context, branchNames []strin
 func (mr *MockConnectionMockRecorder) DeleteBranches(ctx, branchNames interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), ctx, branchNames)
-}
-
-// GetAssociatedRefNames mocks base method.
-func (m *MockConnection) GetAssociatedRefNames(ctx context.Context, oid string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAssociatedRefNames", ctx, oid)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAssociatedRefNames indicates an expected call of GetAssociatedRefNames.
-func (mr *MockConnectionMockRecorder) GetAssociatedRefNames(ctx, oid interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssociatedRefNames", reflect.TypeOf((*MockConnection)(nil).GetAssociatedRefNames), ctx, oid)
 }
 
 // GetBranchNames mocks base method.
@@ -271,6 +242,21 @@ func (m *MockConnection) GetUncommittedChanges(ctx context.Context) (string, err
 func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), ctx)
+}
+
+// GetUpstreamOid mocks base method.
+func (m *MockConnection) GetUpstreamOid(ctx context.Context, branchName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUpstreamOid", ctx, branchName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUpstreamOid indicates an expected call of GetUpstreamOid.
+func (mr *MockConnectionMockRecorder) GetUpstreamOid(ctx, branchName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpstreamOid", reflect.TypeOf((*MockConnection)(nil).GetUpstreamOid), ctx, branchName)
 }
 
 // GetWorktrees mocks base method.

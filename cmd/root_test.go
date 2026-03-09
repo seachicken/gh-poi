@@ -1412,3 +1412,176 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
+
+func Test_DeleteRemoteBranches(t *testing.T) {
+	tests := []struct {
+		name        string
+		branches    []shared.Branch
+		setupMock   func(s *conn.Stub)
+		expected    []string
+		expectedErr error
+	}{
+		{
+			name:     "does nothing with empty branches",
+			branches: []shared.Branch{},
+			expected: nil,
+		},
+		{
+			name: "deletes remote branch for deleted branch with remote",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deleted},
+			},
+			expected: []string{"issue1"},
+		},
+		{
+			name: "does not delete remote branch without RemoteHeadOid",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "", State: shared.Deleted},
+			},
+			expected: nil,
+		},
+		{
+			name: "does not delete remote branch for deletable branch",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deletable},
+			},
+			expected: nil,
+		},
+		{
+			name: "does not delete remote branch for not-deletable branch",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.NotDeletable},
+			},
+			expected: nil,
+		},
+		{
+			name: "deletes multiple remote branches",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deleted},
+				{Name: "issue2", RemoteHeadOid: "def456", State: shared.Deleted},
+			},
+			expected: []string{"issue1", "issue2"},
+		},
+		{
+			name: "only deletes eligible branches from mixed set",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deleted},
+				{Name: "issue2", RemoteHeadOid: "", State: shared.Deleted},
+				{Name: "issue3", RemoteHeadOid: "ghi789", State: shared.NotDeletable},
+			},
+			expected: []string{"issue1"},
+		},
+		{
+			name: "continues deleting when one branch fails",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deleted},
+				{Name: "issue2", RemoteHeadOid: "def456", State: shared.Deleted},
+			},
+			setupMock: func(s *conn.Stub) {
+				first := s.Conn.EXPECT().
+					DeleteRemoteBranch(gomock.Any(), "origin", "issue1").
+					Return("", ErrCommand)
+				s.Conn.EXPECT().
+					DeleteRemoteBranch(gomock.Any(), "origin", "issue2").
+					Return("", nil).
+					After(first)
+			},
+			expected:    []string{"issue2"},
+			expectedErr: ErrCommand,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			s := conn.Setup(ctrl)
+			if tt.setupMock != nil {
+				tt.setupMock(s)
+			} else {
+				s.DeleteRemoteBranch(nil, conn.NewConf(&conn.Times{N: len(tt.expected)}))
+			}
+
+			deleted, err := DeleteRemoteBranches(context.Background(), tt.branches, "origin", s.Conn)
+
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, err, tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.expected, deleted)
+		})
+	}
+}
+
+func Test_GetDeletableRemoteBranches(t *testing.T) {
+	tests := []struct {
+		name          string
+		branches      []shared.Branch
+		expectedNames []string
+	}{
+		{
+			name:          "returns nothing with empty branches",
+			branches:      []shared.Branch{},
+			expectedNames: nil,
+		},
+		{
+			name: "includes deletable branch with remote",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deletable},
+			},
+			expectedNames: []string{"issue1"},
+		},
+		{
+			name: "excludes deletable branch without remote",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "", State: shared.Deletable},
+			},
+			expectedNames: nil,
+		},
+		{
+			name: "excludes not-deletable branch with remote",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.NotDeletable},
+			},
+			expectedNames: nil,
+		},
+		{
+			name: "excludes deleted branch with remote",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deleted},
+			},
+			expectedNames: nil,
+		},
+		{
+			name: "returns multiple deletable branches with remote",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deletable},
+				{Name: "issue2", RemoteHeadOid: "def456", State: shared.Deletable},
+			},
+			expectedNames: []string{"issue1", "issue2"},
+		},
+		{
+			name: "filters only eligible branches from mixed set",
+			branches: []shared.Branch{
+				{Name: "issue1", RemoteHeadOid: "abc123", State: shared.Deletable},
+				{Name: "issue2", RemoteHeadOid: "", State: shared.Deletable},
+				{Name: "issue3", RemoteHeadOid: "ghi789", State: shared.NotDeletable},
+			},
+			expectedNames: []string{"issue1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := GetDeletableRemoteBranches(tt.branches)
+
+			var actualNames []string
+			for _, b := range actual {
+				actualNames = append(actualNames, b.Name)
+			}
+			assert.Equal(t, tt.expectedNames, actualNames)
+		})
+	}
+}

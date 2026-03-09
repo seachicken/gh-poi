@@ -270,6 +270,18 @@ func (s *Stub) DeleteBranches(err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) DeleteRemoteBranch(err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			DeleteRemoteBranch(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return("", err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) GetWorktrees(filename string, err error, conf *Conf) *Stub {
 	s.T.Helper()
 	configure(

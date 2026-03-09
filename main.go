@@ -58,9 +58,11 @@ func (s StateFlag) toModel() shared.PullRequestState {
 func main() {
 	state := Merged
 	var dryRun bool
+	var deleteRemote bool
 	var debug bool
 	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
+	flag.BoolVar(&deleteRemote, "delete-remote", false, "Delete branches on the remote (e.g. origin) in addition to local branches")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")
@@ -89,7 +91,7 @@ func main() {
 	args := flag.Args()
 
 	if len(args) == 0 {
-		runMain(state, dryRun, debug)
+		runMain(state, dryRun, deleteRemote, debug)
 	} else {
 		subcmd, args := args[0], args[1:]
 		switch subcmd {
@@ -127,7 +129,7 @@ func main() {
 	}
 }
 
-func runMain(state StateFlag, dryRun bool, debug bool) {
+func runMain(state StateFlag, dryRun bool, deleteRemote bool, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -165,9 +167,14 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	}
 
 	deletingMsg := " Deleting branches..."
+	deletingRemoteMsg := " Deleting remote branches..."
+	var deletedRemoteBranches []string
 
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingMsg)
+		if deleteRemote {
+			fmt.Fprintf(color.Output, "%s%s\n", hiBlack("-"), deletingRemoteMsg)
+		}
 	} else {
 		sp.Suffix = deletingMsg
 		if !debug {
@@ -185,6 +192,24 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
 			return
+		}
+
+		if deleteRemote {
+			sp.Suffix = deletingRemoteMsg
+			if !debug {
+				sp.Restart()
+			}
+
+			deletedRemoteBranches, err = cmd.DeleteRemoteBranches(ctx, branches, remote.Name, connection)
+
+			sp.Stop()
+
+			if err == nil {
+				fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingRemoteMsg)
+			} else {
+				fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingRemoteMsg)
+				fmt.Fprintln(os.Stderr, err)
+			}
 		}
 	}
 
@@ -207,6 +232,39 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	fmt.Fprintf(color.Output, "%s\n", bold("Branches not deleted"))
 	printBranches(getBranches(branches, notDeletedStates))
 	fmt.Println()
+
+	if deleteRemote {
+		fmt.Fprintf(color.Output, "%s\n", bold("Deleted remote branches"))
+		if dryRun {
+			remoteBranches := cmd.GetDeletableRemoteBranches(branches)
+			printBranches(remoteBranches)
+		} else if len(deletedRemoteBranches) == 0 {
+			fmt.Fprintf(color.Output, "%s\n",
+				hiBlack("  There are no remote branches to delete"))
+		} else {
+			for _, name := range deletedRemoteBranches {
+				fmt.Fprintf(color.Output, "  %s\n", name)
+			}
+		}
+		fmt.Println()
+
+		if !dryRun {
+			var failedRemoteBranches []string
+			for _, branch := range branches {
+				if branch.State == shared.Deleted && branch.RemoteHeadOid != "" &&
+					!slices.Contains(deletedRemoteBranches, branch.Name) {
+					failedRemoteBranches = append(failedRemoteBranches, branch.Name)
+				}
+			}
+			if len(failedRemoteBranches) > 0 {
+				fmt.Fprintf(color.Output, "%s\n", bold("Remote branches not deleted"))
+				for _, name := range failedRemoteBranches {
+					fmt.Fprintf(color.Output, "  %s\n", name)
+				}
+				fmt.Println()
+			}
+		}
+	}
 }
 
 func runLock(branchNames []string, debug bool) {

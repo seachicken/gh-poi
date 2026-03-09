@@ -257,6 +257,13 @@ func (conn *Connection) DeleteBranches(ctx context.Context, branchNames []string
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) DeleteRemoteBranch(ctx context.Context, remoteName string, branchName string) (string, error) {
+	args := []string{
+		"push", remoteName, "--delete", branchName,
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
 func (conn *Connection) PruneRemoteBranches(ctx context.Context, remoteName string) (string, error) {
 	args := []string{
 		"remote", "prune", remoteName,

@@ -766,6 +766,33 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection sh
 	return checkDeleted(branches, branchesAfter), nil
 }
 
+func DeleteRemoteBranches(ctx context.Context, branches []shared.Branch, remoteName string, connection shared.Connection) ([]string, error) {
+	var deleted []string
+	var errs []error
+	for _, branch := range branches {
+		if branch.State != shared.Deleted || branch.RemoteHeadOid == "" {
+			continue
+		}
+		_, err := connection.DeleteRemoteBranch(ctx, remoteName, branch.Name)
+		if err != nil {
+			errs = append(errs, err)
+		} else {
+			deleted = append(deleted, branch.Name)
+		}
+	}
+	return deleted, errors.Join(errs...)
+}
+
+func GetDeletableRemoteBranches(branches []shared.Branch) []shared.Branch {
+	var results []shared.Branch
+	for _, branch := range branches {
+		if branch.State == shared.Deletable && branch.RemoteHeadOid != "" {
+			results = append(results, branch)
+		}
+	}
+	return results
+}
+
 func getBranchNames(branches []shared.Branch, state shared.BranchState) []string {
 	results := []string{}
 	for _, branch := range branches {

@@ -34,21 +34,6 @@ var (
 	scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):(/?.+)$")
 )
 
-func (conn *Connection) CheckRepos(ctx context.Context, hostname string, repoNames []string) error {
-	for _, name := range repoNames {
-		args := []string{
-			"api",
-			"--hostname", hostname,
-			"repos/" + name,
-			"--silent",
-		}
-		if _, err := conn.run(ctx, "gh", args, None); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func GetRemoteNames(ctx context.Context, conn shared.Connection) ([]shared.Remote, error) {
 	output, err := conn.GetRemoteNames(ctx)
 	if err != nil {
@@ -153,6 +138,13 @@ func (conn *Connection) GetRemoteHeadOid(ctx context.Context, remoteName string,
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) GetUpstreamOid(ctx context.Context, branchName string) (string, error) {
+	args := []string{
+		"rev-parse", fmt.Sprintf("%s@{upstream}", branchName),
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
 func (conn *Connection) GetLsRemoteHeadOid(ctx context.Context, url string, branchName string) (string, error) {
 	args := []string{
 		"ls-remote", url, branchName,
@@ -162,15 +154,7 @@ func (conn *Connection) GetLsRemoteHeadOid(ctx context.Context, url string, bran
 
 func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
 	args := []string{
-		"log", "--first-parent", "--max-count=30", "--format=%H", branchName, "--",
-	}
-	return conn.run(ctx, "git", args, None)
-}
-
-func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (string, error) {
-	args := []string{
-		"branch", "--all", "--format=%(refname)",
-		"--contains", oid,
+		"log", "--max-count=1", "--format=%H", branchName, "--",
 	}
 	return conn.run(ctx, "git", args, None)
 }

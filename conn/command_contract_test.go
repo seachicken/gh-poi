@@ -54,25 +54,6 @@ func TestContract_RepoBasic(t *testing.T) {
 		})
 	})
 
-	t.Run("GetAssociatedRefNames", func(t *testing.T) {
-
-		t.Run("issue1", func(t *testing.T) {
-			actual, _ := conn.GetAssociatedRefNames(context.Background(), "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0")
-			assert.Equal(t,
-				stub.ReadFile("git", "abranch", "issue1"),
-				actual,
-			)
-		})
-
-		t.Run("main_issue1", func(t *testing.T) {
-			actual, _ := conn.GetAssociatedRefNames(context.Background(), "6ebe3d30d23531af56bd23b5a098d3ccae2a534a")
-			assert.Equal(t,
-				stub.ReadFile("git", "abranch", "main_issue1"),
-				actual,
-			)
-		})
-	})
-
 	t.Run("GetUncommittedChanges", func(t *testing.T) {
 		actual, _ := conn.GetUncommittedChanges(context.Background())
 		assert.Equal(t, "A  README.md\n", actual)

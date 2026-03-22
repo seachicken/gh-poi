@@ -1383,7 +1383,7 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 		{Head: true, Name: "main", IsMerged: true, IsLocked: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
 	}
 
-	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
+	actual, _ := DeleteBranches(context.Background(), branches, s.Conn, "")
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -1404,11 +1404,74 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 		{Head: true, Name: "main", IsMerged: true, IsLocked: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
 	}
 
-	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
+	actual, _ := DeleteBranches(context.Background(), branches, s.Conn, "")
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
 	assert.Equal(t, shared.NotDeletable, actual[0].State)
 	assert.Equal(t, "main", actual[1].Name)
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
+}
+
+func Test_CustomRemoverUsedWhenWorktreeExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	worktree := &shared.Worktree{Path: "/path/to/worktree", IsMain: false}
+	s := conn.Setup(ctrl).
+		GetBranchNames("@main", nil, nil).
+		RunShellCommand(nil, conn.NewConf(&conn.Times{N: 1})).
+		PruneWorktrees(nil, conn.NewConf(&conn.Times{N: 1})).
+		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 1}))
+
+	branches := []shared.Branch{
+		{Head: false, Name: "issue1", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.Deletable, Worktree: worktree},
+		{Head: true, Name: "main", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+	}
+
+	actual, _ := DeleteBranches(context.Background(), branches, s.Conn, "trash")
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, shared.Deleted, actual[0].State)
+}
+
+func Test_DefaultRemoverUsedWhenNoRemoverSet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	worktree := &shared.Worktree{Path: "/path/to/worktree", IsMain: false}
+	s := conn.Setup(ctrl).
+		GetBranchNames("@main", nil, nil).
+		RemoveWorktree(nil, conn.NewConf(&conn.Times{N: 1})).
+		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 1}))
+
+	branches := []shared.Branch{
+		{Head: false, Name: "issue1", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.Deletable, Worktree: worktree},
+		{Head: true, Name: "main", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+	}
+
+	actual, _ := DeleteBranches(context.Background(), branches, s.Conn, "")
+
+	assert.Equal(t, 2, len(actual))
+	assert.Equal(t, shared.Deleted, actual[0].State)
+}
+
+func Test_PruneWorktreesNotCalledWhenCustomRemoverFails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	worktree := &shared.Worktree{Path: "/path/to/worktree", IsMain: false}
+	s := conn.Setup(ctrl).
+		RunShellCommand(ErrCommand, conn.NewConf(&conn.Times{N: 1})).
+		PruneWorktrees(nil, conn.NewConf(&conn.Times{N: 0})).
+		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 0}))
+
+	branches := []shared.Branch{
+		{Head: false, Name: "issue1", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.Deletable, Worktree: worktree},
+		{Head: true, Name: "main", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+	}
+
+	_, err := DeleteBranches(context.Background(), branches, s.Conn, "trash")
+
+	assert.NotNil(t, err)
 }

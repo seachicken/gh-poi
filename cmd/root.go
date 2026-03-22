@@ -745,13 +745,13 @@ func toPullRequestState(state string) (shared.PullRequestState, error) {
 	}
 }
 
-func DeleteBranches(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
+func DeleteBranches(ctx context.Context, branches []shared.Branch, connection shared.Connection, remover string) ([]shared.Branch, error) {
 	branchNames := getBranchNames(branches, shared.Deletable)
 	if len(branchNames) == 0 {
 		return branches, nil
 	}
 
-	_, err := deleteWorktrees(ctx, branches, connection)
+	_, err := deleteWorktrees(ctx, branches, connection, remover)
 	if err != nil {
 		return nil, err
 	}
@@ -776,7 +776,7 @@ func getBranchNames(branches []shared.Branch, state shared.BranchState) []string
 	return results
 }
 
-func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection) (map[string]bool, error) {
+func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection shared.Connection, remover string) (map[string]bool, error) {
 	deleted := make(map[string]bool)
 	var errs []error
 	for _, branch := range branches {
@@ -793,12 +793,20 @@ func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection s
 			continue
 		}
 
-		_, err := connection.RemoveWorktree(ctx, branch.Worktree.Path)
+		var err error
+		if remover == "" {
+			_, err = connection.RemoveWorktree(ctx, branch.Worktree.Path)
+		} else {
+			_, err = connection.RunShellCommand(ctx, remover, branch.Worktree.Path)
+		}
 		if err != nil {
 			errs = append(errs, err)
 		} else {
 			deleted[branch.Name] = true
 		}
+	}
+	if remover != "" && len(deleted) > 0 {
+		connection.PruneWorktrees(ctx)
 	}
 	return deleted, errors.Join(errs...)
 }

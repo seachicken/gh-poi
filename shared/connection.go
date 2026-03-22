@@ -23,4 +23,6 @@ type Connection interface {
 	DeleteBranches(ctx context.Context, branchNames []string) (string, error)
 	GetWorktrees(ctx context.Context) (string, error)
 	RemoveWorktree(ctx context.Context, path string) (string, error)
+	PruneWorktrees(ctx context.Context) (string, error)
+	RunShellCommand(ctx context.Context, command string, arg string) (string, error)
 }

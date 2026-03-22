@@ -318,6 +318,16 @@ func (conn *Connection) RemoveWorktree(ctx context.Context, path string) (string
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) PruneWorktrees(ctx context.Context) (string, error) {
+	args := []string{"worktree", "prune"}
+	return conn.run(ctx, "git", args, None)
+}
+
+func (conn *Connection) RunShellCommand(ctx context.Context, command string, arg string) (string, error) {
+	args := []string{"-c", command + ` "$1"`, "--", arg}
+	return conn.run(ctx, "sh", args, None)
+}
+
 func (conn *Connection) run(ctx context.Context, name string, args []string, mask DebugMask) (string, error) {
 	cmdPath, err := safeexec.LookPath(name)
 	if err != nil {

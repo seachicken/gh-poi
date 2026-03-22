@@ -333,7 +333,7 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 
 	start := time.Now()
 	err = cmd.Run()
-	duration := time.Since(start)
+	duration := time.Since(start).Milliseconds()
 	if err != nil {
 		err = fmt.Errorf("failed to run external command: %s, args: %v\n %w", name, args, err)
 		return "", err
@@ -342,9 +342,9 @@ func (conn *Connection) run(ctx context.Context, name string, args []string, mas
 	if conn.Debug {
 		switch mask {
 		case None:
-			log.Printf("[%v] run %s %v -> %q\n", duration, name, args, stdout.String())
+			log.Printf("[%7.0dms] run %s %v -> %q\n", duration, name, args, stdout.String())
 		case Output:
-			log.Printf("[%v] run %s %v -> *****\n", duration, name, args)
+			log.Printf("[%7.0dms] run %s %v -> *****\n", duration, name, args)
 		}
 	}
 

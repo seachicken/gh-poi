@@ -104,7 +104,7 @@ func main() {
 
 			// TODO: Remove after deprecated commands are removed
 			if subcmd == "protect" {
-				fmt.Fprintln(os.Stderr, "warning: 'protect' is deprecated, please use 'lock' instead")
+				fmt.Fprintln(os.Stderr, shared.ProtectDeprecationMsg)
 			}
 			runLock(args, debug)
 		case "unlock", "unprotect":
@@ -118,7 +118,7 @@ func main() {
 
 			// TODO: Remove after deprecated commands are removed
 			if subcmd == "unprotect" {
-				fmt.Fprintln(os.Stderr, "warning: 'unprotect' is deprecated, please use 'unlock' instead")
+				fmt.Fprintln(os.Stderr, shared.UnprotectDeprecationMsg)
 			}
 			runUnlock(args, debug)
 		default:
@@ -127,29 +127,41 @@ func main() {
 	}
 }
 
-func runMain(state StateFlag, dryRun bool, debug bool) {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+func runWithRepoCheck(ctx context.Context, debug bool, fn func(context.Context, shared.Connection) error) {
+	connection := &conn.Connection{Debug: debug}
+
+	// Check repository presence upfront before touching git
+	if isLocal, err := connection.IsLocalRepo(ctx); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	} else if !isLocal {
+		cmd.HandleRepoError(conn.ErrNotAGitRepository)
+		return
+	}
+
+	// Execute the command
+	if err := fn(ctx, connection); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+}
+
+func runMainLogic(ctx context.Context, connection *conn.Connection, state StateFlag, dryRun bool, debug bool) error {
+	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
+	defer sp.Stop()
 
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s\n", bold("== DRY RUN =="))
 	}
-
-	connection := &conn.Connection{Debug: debug}
-	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
-	defer sp.Stop()
 
 	fetchingMsg := " Fetching pull requests..."
 	sp.Suffix = fetchingMsg
 	if !debug {
 		sp.Start()
 	}
-	var fetchingErr error
 
 	remote, err := cmd.GetRemote(ctx, connection)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
 
 	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, state.toModel(), dryRun)
@@ -160,8 +172,7 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 		fmt.Fprintf(color.Output, "%s%s\n", green("✔"), fetchingMsg)
 	} else {
 		fmt.Fprintf(color.Output, "%s%s\n", red("✕"), fetchingMsg)
-		fmt.Fprintln(os.Stderr, fetchingErr)
-		return
+		return fetchingErr
 	}
 
 	deletingMsg := " Deleting branches..."
@@ -183,8 +194,7 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 		if deletingErr == nil {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {
-			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
-			return
+			return deletingErr
 		}
 	}
 
@@ -207,32 +217,32 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 	fmt.Fprintf(color.Output, "%s\n", bold("Branches not deleted"))
 	printBranches(getBranches(branches, notDeletedStates))
 	fmt.Println()
+
+	return nil
+}
+
+func runMain(state StateFlag, dryRun bool, debug bool) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	runWithRepoCheck(ctx, debug, func(ctx context.Context, c shared.Connection) error {
+		return runMainLogic(ctx, c.(*conn.Connection), state, dryRun, debug)
+	})
 }
 
 func runLock(branchNames []string, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-
-	connection := &conn.Connection{Debug: debug}
-
-	err := lock.LockBranches(ctx, branchNames, connection)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
+	runWithRepoCheck(ctx, debug, func(ctx context.Context, conn shared.Connection) error {
+		return lock.LockBranches(ctx, branchNames, conn)
+	})
 }
 
 func runUnlock(branchNames []string, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-
-	connection := &conn.Connection{Debug: debug}
-
-	err := lock.UnlockBranches(ctx, branchNames, connection)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
+	runWithRepoCheck(ctx, debug, func(ctx context.Context, conn shared.Connection) error {
+		return lock.UnlockBranches(ctx, branchNames, conn)
+	})
 }
 
 func printBranches(branches []shared.Branch) {

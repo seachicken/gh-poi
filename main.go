@@ -184,6 +184,7 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 			fmt.Fprintf(color.Output, "%s%s\n", green("✔"), deletingMsg)
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
+			fmt.Fprintln(os.Stderr, deletingErr)
 			return
 		}
 	}

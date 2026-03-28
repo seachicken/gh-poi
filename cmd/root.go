@@ -55,7 +55,7 @@ func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote
 }
 
 func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, state shared.PullRequestState, dryRun bool) ([]shared.
-Branch, error) {
+	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
 	if repos, err := connection.GetRepoNames(ctx, remote.Hostname, remote.RepoName); err == nil {
@@ -719,12 +719,9 @@ func deleteWorktrees(ctx context.Context, branches []shared.Branch, connection s
 		if branch.State != shared.Deletable {
 			continue
 		}
-
 		if branch.Worktree == nil {
 			continue
 		}
-
-		// Cannot remove main worktree
 		if branch.Worktree.IsMain {
 			continue
 		}

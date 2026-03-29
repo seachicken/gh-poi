@@ -131,50 +131,6 @@ func (s *Stub) GetMergedBranchNames(filename string, err error, conf *Conf) *Stu
 	return s
 }
 
-func (s *Stub) GetRemoteHeadOid(stubs []RemoteHeadStub, err error, conf *Conf) *Stub {
-	s.T.Helper()
-	if stubs == nil {
-		configure(
-			s.Conn.EXPECT().
-				GetRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return("", err),
-			conf,
-		)
-	} else {
-		for _, stub := range stubs {
-			configure(
-				s.Conn.EXPECT().
-					GetRemoteHeadOid(gomock.Any(), gomock.Any(), stub.BranchName).
-					Return(s.ReadFile("git", "remoteHead", stub.Filename), err),
-				conf,
-			)
-		}
-	}
-	return s
-}
-
-func (s *Stub) GetUpstreamOid(stubs []UpstreamOidStub, err error, conf *Conf) *Stub {
-	s.T.Helper()
-	if stubs == nil {
-		configure(
-			s.Conn.EXPECT().
-				GetUpstreamOid(gomock.Any(), gomock.Any()).
-				Return("", err),
-			conf,
-		)
-	} else {
-		for _, stub := range stubs {
-			configure(
-				s.Conn.EXPECT().
-					GetUpstreamOid(gomock.Any(), stub.BranchName).
-					Return(s.ReadFile("git", "remoteHead", stub.Filename), err),
-				conf,
-			)
-		}
-	}
-	return s
-}
-
 func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
 	s.T.Helper()
 	for _, stub := range stubs {

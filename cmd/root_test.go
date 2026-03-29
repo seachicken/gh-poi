@@ -23,9 +23,6 @@ func Test_BranchIsDeletableWhenRemoteBranchesAssociatedWithMergedPR(t *testing.T
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "issue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -61,10 +58,6 @@ func Test_BranchIsDeletableWhenUpstreamTrackingRefMatchesMergedPR(t *testing.T) 
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid([]conn.UpstreamOidStub{
-			{BranchName: "issue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -91,43 +84,6 @@ func Test_BranchIsDeletableWhenUpstreamTrackingRefMatchesMergedPR(t *testing.T) 
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
-func Test_BranchIsDeletableWhenBranchNotOnRemoteButAssociatedWithMergedPR(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	s := conn.Setup(ctrl).
-		GetRemoteNames("origin", nil, nil).
-		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_issue1", nil, nil).
-		GetMergedBranchNames("@main_issue1", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
-		GetLog([]conn.LogStub{
-			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
-		}, nil, nil).
-		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("none", nil, nil).
-		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
-
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
-
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, shared.Deletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
-}
-
 func Test_BranchIsDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -138,8 +94,6 @@ func Test_BranchIsDeletableWhenBranchesAssociatedWithMergedPR(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -181,8 +135,6 @@ func Test_BranchIsDeletableWhenBranchesAssociatedWithSquashAndMergedPR(t *testin
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -223,8 +175,6 @@ func Test_BranchIsDeletableWhenBranchesAssociatedWithUpstreamSquashAndMergedPR(t
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -265,8 +215,6 @@ func Test_BranchIsDeletableWhenPRCheckoutBranchesAssociatedWithUpstreamSquashAnd
 		GetRepoNames("origin_upstream", nil, nil).
 		GetBranchNames("@main_forkMain", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "fork/main", Filename: "issue1"},
 		}, nil, nil).
@@ -307,8 +255,6 @@ func Test_BranchIsDeletableWhenBranchIsCheckedOutWithCheckIsFalse(t *testing.T) 
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -350,8 +296,6 @@ func Test_BranchIsDeletableWhenBranchIsCheckedOutWithCheckIsTrue(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -393,8 +337,6 @@ func Test_BranchIsDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@issue1", nil, nil).
 		GetMergedBranchNames("empty", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -433,8 +375,6 @@ func Test_BranchIsNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -476,8 +416,6 @@ func Test_BranchIsDeletableWhenBranchHasUntrackedUncommittedChanges(t *testing.T
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -519,8 +457,6 @@ func Test_BranchIsNotDeletableWhenPRIsClosedAndStateOptionIsMerged(t *testing.T)
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -561,8 +497,6 @@ func Test_BranchIsDeletableWhenPRIsClosedAndStateOptionIsClosed(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -603,8 +537,6 @@ func Test_BranchIsDeletableWhenPRHasMergedAndClosedAndStateOptionIsMerged(t *tes
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -645,8 +577,6 @@ func Test_BranchIsDeletableWhenPRHasMergedAndClosedAndStateOptionIsClosed(t *tes
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -687,8 +617,6 @@ func Test_BranchIsNotDeletableWhenBranchesAssociatedWithNotFullyMergedPR(t *test
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1SquashAndMerged"}, {BranchName: "issue1", Filename: "issue1CommitAfterMerge"},
 		}, nil, nil).
@@ -731,8 +659,6 @@ func Test_BranchIsNotDeletableWhenDefaultBranchAssociatedWithMergedPR(t *testing
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -773,9 +699,6 @@ func Test_BranchIsNotDeletableWhenBranchIsLocked(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "issue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -814,9 +737,6 @@ func Test_BranchIsNotDeletableWhenBranchIsLockedForCompatibility(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main_issue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "issue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -854,9 +774,6 @@ func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@linkedIssue1", nil, nil).
 		GetMergedBranchNames("main_@linkedIssue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "linkedIssue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -893,9 +810,6 @@ func Test_BranchIsNotDeletableWithLinkedWorktreeCheckedOut(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@linkedIssue1", nil, nil).
 		GetMergedBranchNames("main_@linkedIssue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "linkedIssue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -931,9 +845,6 @@ func Test_BranchIsNotDeletableWithLockedWorktree(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_linkedIssue1", nil, nil).
 		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
-		GetRemoteHeadOid([]conn.RemoteHeadStub{
-			{BranchName: "linkedIssue1", Filename: "issue1"},
-		}, nil, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
 		}, nil, nil).
@@ -1011,8 +922,6 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"},
 			{BranchName: "issue1", Filename: "issue1ManyCommits"}, // return with '--max-count=3'
@@ -1056,8 +965,6 @@ func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBran
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "main"},
 		}, nil, nil).
@@ -1098,8 +1005,6 @@ func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@detached", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"},
 		}, nil, nil).
@@ -1150,8 +1055,6 @@ func Test_DoesNotReturnsErrorWhenGetSshConfigFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -1236,8 +1139,6 @@ func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, ErrCommand, nil).
@@ -1265,8 +1166,6 @@ func Test_ReturnsErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -1298,8 +1197,6 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -1334,8 +1231,6 @@ func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).
@@ -1371,8 +1266,6 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, nil, nil).

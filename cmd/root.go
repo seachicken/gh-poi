@@ -370,22 +370,11 @@ func applyWorktrees(ctx context.Context, branches []shared.Branch, connection sh
 }
 
 func trimBranch(ctx context.Context, oids []string, branch shared.Branch, remote shared.Remote, defaultBranchName string, connection shared.Connection) ([]string, error) {
-	// Try the selected remote first, then fall back to the
-	// branch's upstream tracking ref. The upstream ref captures
-	// the commit that was actually pushed (and PR'd), even when
-	// the branch tracks a different remote than the one selected.
-	var remoteHeadOid string
-	if oid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
-		remoteHeadOid = SplitLines(oid)[0]
-	} else if oid, err := connection.GetUpstreamOid(ctx, branch.Name); err == nil {
-		remoteHeadOid = SplitLines(oid)[0]
-	}
-
 	results := []string{}
 	childNames := []string{}
 
 	for i, oid := range oids {
-		if len(remoteHeadOid) > 0 || branch.IsMerged {
+		if branch.IsMerged {
 			results = append(results, oid)
 			break
 		}

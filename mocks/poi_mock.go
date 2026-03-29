@@ -169,21 +169,6 @@ func (mr *MockConnectionMockRecorder) GetPullRequests(ctx, hostname, orgs, repos
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequests", reflect.TypeOf((*MockConnection)(nil).GetPullRequests), ctx, hostname, orgs, repos, queryHashes)
 }
 
-// GetRemoteHeadOid mocks base method.
-func (m *MockConnection) GetRemoteHeadOid(ctx context.Context, remoteName, branchName string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRemoteHeadOid", ctx, remoteName, branchName)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetRemoteHeadOid indicates an expected call of GetRemoteHeadOid.
-func (mr *MockConnectionMockRecorder) GetRemoteHeadOid(ctx, remoteName, branchName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteHeadOid", reflect.TypeOf((*MockConnection)(nil).GetRemoteHeadOid), ctx, remoteName, branchName)
-}
-
 // GetRemoteNames mocks base method.
 func (m *MockConnection) GetRemoteNames(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
@@ -242,21 +227,6 @@ func (m *MockConnection) GetUncommittedChanges(ctx context.Context) (string, err
 func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), ctx)
-}
-
-// GetUpstreamOid mocks base method.
-func (m *MockConnection) GetUpstreamOid(ctx context.Context, branchName string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUpstreamOid", ctx, branchName)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUpstreamOid indicates an expected call of GetUpstreamOid.
-func (mr *MockConnectionMockRecorder) GetUpstreamOid(ctx, branchName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpstreamOid", reflect.TypeOf((*MockConnection)(nil).GetUpstreamOid), ctx, branchName)
 }
 
 // GetWorktrees mocks base method.

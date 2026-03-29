@@ -9,8 +9,6 @@ type Connection interface {
 	GetRepoNames(ctx context.Context, hostname string, repoName string) (string, error)
 	GetBranchNames(ctx context.Context) (string, error)
 	GetMergedBranchNames(ctx context.Context, remoteName string, branchName string) (string, error)
-	GetRemoteHeadOid(ctx context.Context, remoteName string, branchName string) (string, error)
-	GetUpstreamOid(ctx context.Context, branchName string) (string, error)
 	GetLog(ctx context.Context, branchName string) (string, error)
 	GetAssociatedRefNames(ctx context.Context, oid string) (string, error)
 	GetPullRequests(ctx context.Context, hostname string, orgs string, repos string, queryHashes string) (string, error)

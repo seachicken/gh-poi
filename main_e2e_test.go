@@ -16,7 +16,7 @@ import (
 func TestE2E_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
 	onlyCI(t)
 
-	results := captureOutput(func() { runMain(Merged, false, false) })
+	results := captureOutput(func() { runMain(Merged, Quick, false, false) })
 
 	expected := fmt.Sprintf("%s %s", green("✔"), "Deleting branches...")
 	assert.Contains(t, results, expected)
@@ -25,7 +25,7 @@ func TestE2E_DeletingBranchesWhenDryRunOptionIsFalse(t *testing.T) {
 func TestE2E_DoNotDeleteBranchesWhenDryRunOptionIsTrue(t *testing.T) {
 	onlyCI(t)
 
-	results := captureOutput(func() { runMain(Merged, true, false) })
+	results := captureOutput(func() { runMain(Merged, Quick, true, false) })
 
 	expected := fmt.Sprintf("%s %s", hiBlack("-"), "Deleting branches...")
 	assert.Contains(t, results, expected)
@@ -35,12 +35,12 @@ func TestE2E_LockAndUnlock(t *testing.T) {
 	onlyCI(t)
 
 	runLock([]string{"main"}, false)
-	lockResults := captureOutput(func() { runMain(Merged, true, false) })
+	lockResults := captureOutput(func() { runMain(Merged, Quick, true, false) })
 	expected := fmt.Sprintf("main %s", hiBlack("[locked]"))
 	assert.Contains(t, lockResults, expected)
 
 	runUnlock([]string{"main"}, false)
-	unlockResults := captureOutput(func() { runMain(Merged, true, false) })
+	unlockResults := captureOutput(func() { runMain(Merged, Quick, true, false) })
 	assert.NotContains(t, unlockResults, expected)
 }
 

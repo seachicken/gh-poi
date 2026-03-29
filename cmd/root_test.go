@@ -975,8 +975,6 @@ func Test_BranchIsNotDeletableWhenFirstCommitOfTopicBranchIsAssociatedWithDefaul
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
-		GetRemoteHeadOid(nil, ErrCommand, nil).
-		GetUpstreamOid(nil, ErrCommand, nil).
 		GetLog([]conn.LogStub{
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "main"},
 		}, nil, nil).
@@ -1411,8 +1409,8 @@ func Test_DeletingDeletableBranches(t *testing.T) {
 		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 1}))
 
 	branches := []shared.Branch{
-		{Head: false, Name: "issue1", IsMerged: false, IsLocked: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.Deletable},
-		{Head: true, Name: "main", IsMerged: true, IsLocked: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+		{Head: false, Name: "issue1", IsMerged: false, IsLocked: false, Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.Deletable},
+		{Head: true, Name: "main", IsMerged: true, IsLocked: false, Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)
@@ -1432,8 +1430,8 @@ func Test_DoNotDeleteNotDeletableBranches(t *testing.T) {
 		DeleteBranches(nil, conn.NewConf(&conn.Times{N: 0}))
 
 	branches := []shared.Branch{
-		{Head: false, Name: "issue1", IsMerged: false, IsLocked: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
-		{Head: true, Name: "main", IsMerged: true, IsLocked: false, RemoteHeadOid: "", Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+		{Head: false, Name: "issue1", IsMerged: false, IsLocked: false, Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
+		{Head: true, Name: "main", IsMerged: true, IsLocked: false, Commits: []string{}, PullRequests: []shared.PullRequest{}, State: shared.NotDeletable},
 	}
 
 	actual, _ := DeleteBranches(context.Background(), branches, s.Conn)

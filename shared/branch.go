@@ -14,7 +14,6 @@ type (
 		IsMerged          bool
 		IsLocked          bool
 		HasTrackedChanges bool
-		RemoteHeadOid     string
 		Commits           []string
 		PullRequests      []PullRequest
 		State             BranchState

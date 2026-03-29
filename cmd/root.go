@@ -277,16 +277,6 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 				return
 			}
 
-			// Try the selected remote first, then fall back to the
-			// branch's upstream tracking ref. The upstream ref captures
-			// the commit that was actually pushed (and PR'd), even when
-			// the branch tracks a different remote than the one selected.
-			if remoteHeadOid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
-				branch.RemoteHeadOid = SplitLines(remoteHeadOid)[0]
-			} else if upstreamOid, err := connection.GetUpstreamOid(ctx, branch.Name); err == nil {
-				branch.RemoteHeadOid = SplitLines(upstreamOid)[0]
-			}
-
 			oids, err := connection.GetLog(ctx, branch.Name)
 			if err != nil {
 				resultChan <- remoteBranchResult{err: err}
@@ -297,7 +287,7 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 				if scan == shared.Quick {
 					branch.Commits = []string{logOids[0]}
 				} else {
-					trimmedOids, err := trimBranch(ctx, logOids, branch.IsMerged, branch.Name, defaultBranchName, connection)
+					trimmedOids, err := trimBranch(ctx, logOids, branch, remote, defaultBranchName, connection)
 					if err != nil {
 						resultChan <- remoteBranchResult{err: err}
 						return
@@ -379,13 +369,23 @@ func applyWorktrees(ctx context.Context, branches []shared.Branch, connection sh
 	return results, nil
 }
 
-func trimBranch(ctx context.Context, oids []string, isMerged bool,
-	branchName string, defaultBranchName string, connection shared.Connection) ([]string, error) {
+func trimBranch(ctx context.Context, oids []string, branch shared.Branch, remote shared.Remote, defaultBranchName string, connection shared.Connection) ([]string, error) {
+	// Try the selected remote first, then fall back to the
+	// branch's upstream tracking ref. The upstream ref captures
+	// the commit that was actually pushed (and PR'd), even when
+	// the branch tracks a different remote than the one selected.
+	var remoteHeadOid string
+	if oid, err := connection.GetRemoteHeadOid(ctx, remote.Name, branch.Name); err == nil {
+		remoteHeadOid = SplitLines(oid)[0]
+	} else if oid, err := connection.GetUpstreamOid(ctx, branch.Name); err == nil {
+		remoteHeadOid = SplitLines(oid)[0]
+	}
+
 	results := []string{}
 	childNames := []string{}
 
 	for i, oid := range oids {
-		if isMerged {
+		if len(remoteHeadOid) > 0 || branch.IsMerged {
 			results = append(results, oid)
 			break
 		}
@@ -401,14 +401,14 @@ func trimBranch(ctx context.Context, oids []string, isMerged bool,
 				if name == defaultBranchName {
 					return []string{}, nil
 				}
-				if name != branchName {
+				if name != branch.Name {
 					childNames = append(childNames, name)
 				}
 			}
 		}
 
 		for _, name := range names {
-			if name != branchName && !slices.Contains(childNames, name) {
+			if name != branch.Name && !slices.Contains(childNames, name) {
 				return results, nil
 			}
 		}

@@ -54,7 +54,7 @@ func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote
 	return shared.Remote{}, err
 }
 
-func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, state shared.PullRequestState, dryRun bool) ([]shared.
+func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, state shared.PullRequestState, scan shared.ScanMode, dryRun bool) ([]shared.
 	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
@@ -67,7 +67,7 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 		return nil, err
 	}
 
-	branches, err := loadBranches(ctx, remote, defaultBranchName, repoNames, connection)
+	branches, err := loadBranches(ctx, remote, defaultBranchName, repoNames, connection, scan)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 	return branches, nil
 }
 
-func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName string, repoNames []string, connection shared.Connection) ([]shared.Branch, error) {
+func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName string, repoNames []string, connection shared.Connection, scan shared.ScanMode) ([]shared.Branch, error) {
 	var branches []shared.Branch
 
 	if names, err := connection.GetBranchNames(ctx); err == nil {
@@ -99,7 +99,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 		if err != nil {
 			return nil, err
 		}
-		branches, err = applyCommits(ctx, remote, branches, defaultBranchName, connection)
+		branches, err = applyCommits(ctx, remote, branches, defaultBranchName, connection, scan)
 		if err != nil {
 			return nil, err
 		}
@@ -255,7 +255,7 @@ func applyLocked(ctx context.Context, branches []shared.Branch, connection share
 	return results, nil
 }
 
-func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection) ([]shared.Branch, error) {
+func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection, scan shared.ScanMode) ([]shared.Branch, error) {
 	var wg sync.WaitGroup
 
 	type remoteBranchResult struct {
@@ -294,7 +294,16 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 			}
 
 			if logOids := SplitLines(oids); len(logOids) > 0 {
-				branch.Commits = []string{logOids[0]}
+				if scan == shared.Quick {
+					branch.Commits = []string{logOids[0]}
+				} else {
+					trimmedOids, err := trimBranch(ctx, logOids, branch.IsMerged, branch.Name, defaultBranchName, connection)
+					if err != nil {
+						resultChan <- remoteBranchResult{err: err}
+						return
+					}
+					branch.Commits = trimmedOids
+				}
 			} else {
 				branch.Commits = []string{}
 			}
@@ -368,6 +377,55 @@ func applyWorktrees(ctx context.Context, branches []shared.Branch, connection sh
 	}
 
 	return results, nil
+}
+
+func trimBranch(ctx context.Context, oids []string, isMerged bool,
+	branchName string, defaultBranchName string, connection shared.Connection) ([]string, error) {
+	results := []string{}
+	childNames := []string{}
+
+	for i, oid := range oids {
+		if isMerged {
+			results = append(results, oid)
+			break
+		}
+
+		refNames, err := connection.GetAssociatedRefNames(ctx, oid)
+		if err != nil {
+			return nil, err
+		}
+		names := extractBranchNames(SplitLines(refNames))
+
+		if i == 0 {
+			for _, name := range names {
+				if name == defaultBranchName {
+					return []string{}, nil
+				}
+				if name != branchName {
+					childNames = append(childNames, name)
+				}
+			}
+		}
+
+		for _, name := range names {
+			if name != branchName && !slices.Contains(childNames, name) {
+				return results, nil
+			}
+		}
+
+		results = append(results, oid)
+	}
+
+	return results, nil
+}
+
+func extractBranchNames(refNames []string) []string {
+	result := []string{}
+	r := regexp.MustCompile(`^refs/(?:heads|remotes/.+?)/`)
+	for _, name := range refNames {
+		result = append(result, r.ReplaceAllString(name, ""))
+	}
+	return result
 }
 
 func applyPullRequest(ctx context.Context, branches []shared.Branch, prs []shared.PullRequest, connection shared.Connection) []shared.Branch {

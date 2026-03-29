@@ -79,6 +79,21 @@ func (mr *MockConnectionMockRecorder) DeleteBranches(ctx, branchNames interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), ctx, branchNames)
 }
 
+// GetAssociatedRefNames mocks base method.
+func (m *MockConnection) GetAssociatedRefNames(ctx context.Context, oid string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAssociatedRefNames", ctx, oid)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAssociatedRefNames indicates an expected call of GetAssociatedRefNames.
+func (mr *MockConnectionMockRecorder) GetAssociatedRefNames(ctx, oid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssociatedRefNames", reflect.TypeOf((*MockConnection)(nil).GetAssociatedRefNames), ctx, oid)
+}
+
 // GetBranchNames mocks base method.
 func (m *MockConnection) GetBranchNames(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
@@ -122,21 +137,6 @@ func (m *MockConnection) GetLog(ctx context.Context, branchName string) (string,
 func (mr *MockConnectionMockRecorder) GetLog(ctx, branchName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLog", reflect.TypeOf((*MockConnection)(nil).GetLog), ctx, branchName)
-}
-
-// GetLsRemoteHeadOid mocks base method.
-func (m *MockConnection) GetLsRemoteHeadOid(ctx context.Context, url, branchName string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLsRemoteHeadOid", ctx, url, branchName)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetLsRemoteHeadOid indicates an expected call of GetLsRemoteHeadOid.
-func (mr *MockConnectionMockRecorder) GetLsRemoteHeadOid(ctx, url, branchName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLsRemoteHeadOid", reflect.TypeOf((*MockConnection)(nil).GetLsRemoteHeadOid), ctx, url, branchName)
 }
 
 // GetMergedBranchNames mocks base method.

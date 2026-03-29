@@ -55,11 +55,43 @@ func (s StateFlag) toModel() shared.PullRequestState {
 	}
 }
 
+type ScanFlag string
+
+const (
+	Quick ScanFlag = "quick"
+	Deep  ScanFlag = "deep"
+)
+
+func (s *ScanFlag) String() string {
+	return string(*s)
+}
+
+func (s *ScanFlag) Set(value string) error {
+	for _, mode := range []ScanFlag{Quick, Deep} {
+		if value == string(mode) {
+			*s = ScanFlag(value)
+			return nil
+		}
+	}
+	return errors.New("invalid scan mode")
+}
+
+func (s ScanFlag) toModel() shared.ScanMode {
+	switch s {
+	case Deep:
+		return shared.Deep
+	default:
+		return shared.Quick
+	}
+}
+
 func main() {
 	state := Merged
+	scan := Quick
 	var dryRun bool
 	var debug bool
 	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
+	flag.Var(&scan, "scan", "Specify the scan mode by {quick|deep}")
 	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
@@ -89,7 +121,7 @@ func main() {
 	args := flag.Args()
 
 	if len(args) == 0 {
-		runMain(state, dryRun, debug)
+		runMain(state, scan, dryRun, debug)
 	} else {
 		subcmd, args := args[0], args[1:]
 		switch subcmd {
@@ -127,7 +159,7 @@ func main() {
 	}
 }
 
-func runMain(state StateFlag, dryRun bool, debug bool) {
+func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -152,7 +184,7 @@ func runMain(state StateFlag, dryRun bool, debug bool) {
 		return
 	}
 
-	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, state.toModel(), dryRun)
+	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, state.toModel(), scan.toModel(), dryRun)
 
 	sp.Stop()
 

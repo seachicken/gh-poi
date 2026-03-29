@@ -145,16 +145,17 @@ func (conn *Connection) GetUpstreamOid(ctx context.Context, branchName string) (
 	return conn.run(ctx, "git", args, None)
 }
 
-func (conn *Connection) GetLsRemoteHeadOid(ctx context.Context, url string, branchName string) (string, error) {
+func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
 	args := []string{
-		"ls-remote", url, branchName,
+		"log", "--max-count=30", "--format=%H", branchName, "--",
 	}
 	return conn.run(ctx, "git", args, None)
 }
 
-func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
+func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (string, error) {
 	args := []string{
-		"log", "--max-count=1", "--format=%H", branchName, "--",
+		"branch", "--all", "--format=%(refname)",
+		"--contains", oid,
 	}
 	return conn.run(ctx, "git", args, None)
 }

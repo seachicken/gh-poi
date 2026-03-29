@@ -38,6 +38,11 @@ type (
 		Filename   string
 	}
 
+	AssociatedBranchNamesStub struct {
+		Oid      string
+		Filename string
+	}
+
 	LogStub struct {
 		BranchName string
 		Filename   string
@@ -170,24 +175,15 @@ func (s *Stub) GetUpstreamOid(stubs []UpstreamOidStub, err error, conf *Conf) *S
 	return s
 }
 
-func (s *Stub) GetLsRemoteHeadOid(stubs []LsRemoteHeadStub, err error, conf *Conf) *Stub {
+func (s *Stub) GetAssociatedRefNames(stubs []AssociatedBranchNamesStub, err error, conf *Conf) *Stub {
 	s.T.Helper()
-	if stubs == nil {
+	for _, stub := range stubs {
 		configure(
 			s.Conn.EXPECT().
-				GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return("", err),
+				GetAssociatedRefNames(gomock.Any(), stub.Oid).
+				Return(s.ReadFile("git", "abranch", stub.Filename), err),
 			conf,
 		)
-	} else {
-		for _, stub := range stubs {
-			configure(
-				s.Conn.EXPECT().
-					GetLsRemoteHeadOid(gomock.Any(), gomock.Any(), stub.BranchName).
-					Return(s.ReadFile("git", "lsRemoteHead", stub.Filename), err),
-				conf,
-			)
-		}
 	}
 	return s
 }

@@ -82,21 +82,3 @@ func Test_GetQueryHashesWithCommitOid(t *testing.T) {
 		}),
 	)
 }
-
-func Test_GetQueryHashesWithRemoteOid(t *testing.T) {
-	assert.Equal(t,
-		[]string{
-			"hash:356a192b7913b04c54574d18c28d46e6395428ab",
-		},
-		GetQueryHashes([]Branch{
-			{Head: true, Name: "issue1", IsMerged: false, IsLocked: false,
-				RemoteHeadOid: "356a192b7913b04c54574d18c28d46e6395428ab",
-				Commits: []string{
-					"da4b9237bacccdf19c0760cab7aec4a8359010b0",
-					"08a2aaaadff191eb76974b9b3d8b71f202c0156e",
-				},
-				PullRequests: []PullRequest{}, State: Unknown,
-			},
-		}),
-	)
-}

@@ -99,7 +99,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 		if err != nil {
 			return nil, err
 		}
-		branches, err = applyCommits(ctx, remote, branches, defaultBranchName, connection, scan)
+		branches, err = applyCommits(ctx, branches, defaultBranchName, connection, scan)
 		if err != nil {
 			return nil, err
 		}
@@ -255,7 +255,7 @@ func applyLocked(ctx context.Context, branches []shared.Branch, connection share
 	return results, nil
 }
 
-func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection, scan shared.ScanMode) ([]shared.Branch, error) {
+func applyCommits(ctx context.Context, branches []shared.Branch, defaultBranchName string, connection shared.Connection, scan shared.ScanMode) ([]shared.Branch, error) {
 	var wg sync.WaitGroup
 
 	type remoteBranchResult struct {
@@ -287,7 +287,7 @@ func applyCommits(ctx context.Context, remote shared.Remote, branches []shared.B
 				if scan == shared.Quick {
 					branch.Commits = []string{logOids[0]}
 				} else {
-					trimmedOids, err := trimBranch(ctx, logOids, branch, remote, defaultBranchName, connection)
+					trimmedOids, err := trimBranch(ctx, logOids, branch, defaultBranchName, connection)
 					if err != nil {
 						resultChan <- remoteBranchResult{err: err}
 						return
@@ -369,7 +369,7 @@ func applyWorktrees(ctx context.Context, branches []shared.Branch, connection sh
 	return results, nil
 }
 
-func trimBranch(ctx context.Context, oids []string, branch shared.Branch, remote shared.Remote, defaultBranchName string, connection shared.Connection) ([]string, error) {
+func trimBranch(ctx context.Context, oids []string, branch shared.Branch, defaultBranchName string, connection shared.Connection) ([]string, error) {
 	results := []string{}
 	childNames := []string{}
 

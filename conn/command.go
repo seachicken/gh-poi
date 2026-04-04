@@ -227,9 +227,12 @@ func (conn *Connection) RemoveConfig(ctx context.Context, key string) (string, e
 	return conn.run(ctx, "git", args, None)
 }
 
-func (conn *Connection) CheckoutBranch(ctx context.Context, branchName string) (string, error) {
+func (conn *Connection) CheckoutBranch(ctx context.Context, branchName string, detach bool) (string, error) {
 	args := []string{
 		"checkout", "--quiet", branchName,
+	}
+	if detach {
+		args = append(args, "--detach")
 	}
 	return conn.run(ctx, "git", args, None)
 }

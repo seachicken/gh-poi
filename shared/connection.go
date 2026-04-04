@@ -16,7 +16,7 @@ type Connection interface {
 	GetConfig(ctx context.Context, key string) (string, error)
 	AddConfig(ctx context.Context, key string, value string) (string, error)
 	RemoveConfig(ctx context.Context, key string) (string, error)
-	CheckoutBranch(ctx context.Context, branchName string) (string, error)
+	CheckoutBranch(ctx context.Context, branchName string, detach bool) (string, error)
 	DeleteBranches(ctx context.Context, branchNames []string) (string, error)
 	GetWorktrees(ctx context.Context) (string, error)
 	RemoveWorktree(ctx context.Context, path string) (string, error)

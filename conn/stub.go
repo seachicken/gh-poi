@@ -200,7 +200,7 @@ func (s *Stub) CheckoutBranch(err error, conf *Conf) *Stub {
 	configure(
 		s.Conn.
 			EXPECT().
-			CheckoutBranch(gomock.Any(), gomock.Any()).
+			CheckoutBranch(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return("", err),
 		conf,
 	)

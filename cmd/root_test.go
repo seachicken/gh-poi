@@ -359,10 +359,10 @@ func Test_BranchIsDeletableWhenBranchIsCheckedOutWithoutDefaultBranch(t *testing
 	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "issue1", actual[0].Name)
-	assert.Equal(t, shared.Deletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
+	assert.Equal(t, "(HEAD detached at origin/main)", actual[0].Name)
+	assert.Equal(t, shared.NotDeletable, actual[0].State)
+	assert.Equal(t, "issue1", actual[1].Name)
+	assert.Equal(t, shared.Deletable, actual[1].State)
 }
 
 func Test_BranchIsNotDeletableWhenBranchHasModifiedUncommittedChanges(t *testing.T) {

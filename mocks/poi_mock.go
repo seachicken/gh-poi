@@ -50,18 +50,18 @@ func (mr *MockConnectionMockRecorder) AddConfig(ctx, key, value interface{}) *go
 }
 
 // CheckoutBranch mocks base method.
-func (m *MockConnection) CheckoutBranch(ctx context.Context, branchName string) (string, error) {
+func (m *MockConnection) CheckoutBranch(ctx context.Context, branchName string, detach bool) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckoutBranch", ctx, branchName)
+	ret := m.ctrl.Call(m, "CheckoutBranch", ctx, branchName, detach)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckoutBranch indicates an expected call of CheckoutBranch.
-func (mr *MockConnectionMockRecorder) CheckoutBranch(ctx, branchName interface{}) *gomock.Call {
+func (mr *MockConnectionMockRecorder) CheckoutBranch(ctx, branchName, detach interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockConnection)(nil).CheckoutBranch), ctx, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockConnection)(nil).CheckoutBranch), ctx, branchName, detach)
 }
 
 // DeleteBranches mocks base method.

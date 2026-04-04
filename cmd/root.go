@@ -74,7 +74,7 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 
 	branches = checkDeletion(branches, state)
 
-	branches, err = switchToDefaultBranchIfDeleted(ctx, branches, defaultBranchName, connection, dryRun)
+	branches, err = switchToDefaultBranchIfDeleted(ctx, remote, branches, defaultBranchName, connection, dryRun)
 	if err != nil {
 		return nil, err
 	}
@@ -566,7 +566,7 @@ func isFullyMerged(branch shared.Branch, pr shared.PullRequest, state shared.Pul
 	return false
 }
 
-func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branch, defaultBranchName string, connection shared.Connection, dryRun bool) ([]shared.Branch, error) {
+func switchToDefaultBranchIfDeleted(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection, dryRun bool) ([]shared.Branch, error) {
 	needsCheckout := false
 	for _, branch := range branches {
 		if branch.Head && branch.State == shared.Deletable {
@@ -581,10 +581,21 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branc
 
 	results := []shared.Branch{}
 
-	if !dryRun {
-		_, err := connection.CheckoutBranch(ctx, defaultBranchName)
-		if err != nil {
-			return nil, err
+	newBranchName := defaultBranchName
+	if BranchNameExists(defaultBranchName, branches) {
+		if !dryRun {
+			_, err := connection.CheckoutBranch(ctx, newBranchName, false)
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		newBranchName = remote.Name + "/" + defaultBranchName
+		if !dryRun {
+			_, err := connection.CheckoutBranch(ctx, newBranchName, true)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -592,12 +603,15 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, branches []shared.Branc
 		branch := shared.Branch{}
 		branch.Head = true
 		branch.Name = defaultBranchName
+		if newBranchName != defaultBranchName {
+			branch.Name = "(HEAD detached at " + remote.Name + "/" + defaultBranchName + ")"
+		}
 		branch.State = shared.NotDeletable
 		results = append(results, branch)
 	}
 
 	for _, branch := range branches {
-		if branch.Name == defaultBranchName {
+		if branch.Name == newBranchName {
 			branch.Head = true
 		} else {
 			branch.Head = false

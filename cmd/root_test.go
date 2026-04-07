@@ -759,114 +759,122 @@ func Test_GetBranchesWhenClosedAndMergedPRs(t *testing.T) {
 	})
 }
 
-func Test_BranchIsDeletableWithBaseWorktreeCheckedOut(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+/*
+// Before
+// main  (main worktree)   : *---*---*
+//                            \     /
+// topic (linked worktree) :   *---* (PR merged)
+*/
+func Test_GetBranchesWhenMergedPRWithWorktree(t *testing.T) {
+	t.Run("deletable when main worktree is HEAD", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	s := conn.Setup(ctrl).
-		GetRemoteNames("origin", nil, nil).
-		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
-		GetBranchNames("main_@linkedIssue1", nil, nil).
-		GetMergedBranchNames("main_@linkedIssue1", nil, nil).
-		GetLog([]conn.LogStub{
-			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
-		}, nil, nil).
-		GetPullRequests("linkedIssue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("@linkedIssue1", nil, nil).
-		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil).
-		CheckoutBranch(nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+		s := conn.Setup(ctrl).
+			GetRemoteNames("origin", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetRepoNames("origin", nil, nil).
+			GetBranchNames("main_@linkedIssue1", nil, nil).
+			GetMergedBranchNames("main_@linkedIssue1", nil, nil).
+			GetLog([]conn.LogStub{
+				{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
+			}, nil, nil).
+			GetPullRequests("linkedIssue1Merged", nil, nil).
+			GetUncommittedChanges("", nil, nil).
+			GetWorktrees("@linkedIssue1", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{BranchName: "branch.main.merge", Filename: "mergeMain"},
+				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+				{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+				{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+			}, nil, nil).
+			CheckoutBranch(nil, nil)
+		remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
 
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "linkedIssue1", actual[0].Name)
-	assert.Equal(t, shared.Deletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
-}
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "linkedIssue1", actual[0].Name)
+		assert.Equal(t, shared.Deletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
 
-func Test_BranchIsNotDeletableWithLinkedWorktreeCheckedOut(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Run("not deletable when linked worktree is HEAD", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	s := conn.Setup(ctrl).
-		GetRemoteNames("origin", nil, nil).
-		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
-		GetBranchNames("main_@linkedIssue1", nil, nil).
-		GetMergedBranchNames("main_@linkedIssue1", nil, nil).
-		GetLog([]conn.LogStub{
-			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
-		}, nil, nil).
-		GetPullRequests("linkedIssue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("@main_+linkedIssue1", nil, nil).
-		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+		s := conn.Setup(ctrl).
+			GetRemoteNames("origin", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetRepoNames("origin", nil, nil).
+			GetBranchNames("main_@linkedIssue1", nil, nil).
+			GetMergedBranchNames("main_@linkedIssue1", nil, nil).
+			GetLog([]conn.LogStub{
+				{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
+			}, nil, nil).
+			GetPullRequests("linkedIssue1Merged", nil, nil).
+			GetUncommittedChanges("", nil, nil).
+			GetWorktrees("@main_+linkedIssue1", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{BranchName: "branch.main.merge", Filename: "mergeMain"},
+				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+				{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+				{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+			}, nil, nil)
+		remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
 
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "linkedIssue1", actual[0].Name)
-	assert.Equal(t, shared.NotDeletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
-}
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "linkedIssue1", actual[0].Name)
+		assert.Equal(t, shared.NotDeletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
 
-func Test_BranchIsNotDeletableWithLockedWorktree(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Run("not deletable with locked worktree", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	s := conn.Setup(ctrl).
-		GetRemoteNames("origin", nil, nil).
-		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_linkedIssue1", nil, nil).
-		GetMergedBranchNames("@main_linkedIssue1", nil, nil).
-		GetLog([]conn.LogStub{
-			{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
-		}, nil, nil).
-		GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
-			{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
-			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
-		}, nil, nil).
-		GetPullRequests("linkedIssue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
-		GetWorktrees("locked", nil, nil).
-		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
-		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+		s := conn.Setup(ctrl).
+			GetRemoteNames("origin", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetRepoNames("origin", nil, nil).
+			GetBranchNames("@main_linkedIssue1", nil, nil).
+			GetMergedBranchNames("@main_linkedIssue1", nil, nil).
+			GetLog([]conn.LogStub{
+				{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
+			}, nil, nil).
+			GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+				{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
+			}, nil, nil).
+			GetPullRequests("linkedIssue1Merged", nil, nil).
+			GetUncommittedChanges("", nil, nil).
+			GetWorktrees("locked", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{BranchName: "branch.main.merge", Filename: "mergeMain"},
+				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+				{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+				{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+			}, nil, nil)
+		remote, _ := GetRemote(context.Background(), s.Conn)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
 
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, "linkedIssue1", actual[0].Name)
-	assert.Equal(t, shared.NotDeletable, actual[0].State)
-	assert.Equal(t, "main", actual[1].Name)
-	assert.Equal(t, shared.NotDeletable, actual[1].State)
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "linkedIssue1", actual[0].Name)
+		assert.Equal(t, shared.NotDeletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
 }
 
 // issue1's head commit is the same as main's, so no distinct PR is found and

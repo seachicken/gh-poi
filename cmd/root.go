@@ -752,7 +752,10 @@ func DeleteBranches(ctx context.Context, branches []shared.Branch, connection sh
 	if err != nil {
 		return nil, err
 	}
-	connection.DeleteBranches(ctx, branchNames)
+	_, err = connection.DeleteBranches(ctx, branchNames)
+	if err != nil {
+		return nil, err
+	}
 
 	branchNamesAfter, err := connection.GetBranchNames(ctx)
 	if err != nil {

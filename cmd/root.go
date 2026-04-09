@@ -125,14 +125,16 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 	}
 
 	queryHashes := shared.GetQueryHashes(branches)
-	prChan := make(chan pullRequestResult, len(queryHashes))
+	queryHeads := shared.GetQueryHeads(branches)
+	queries := append(queryHashes, queryHeads...)
+	prChan := make(chan pullRequestResult, len(queries))
 	var wg sync.WaitGroup
 
-	for _, queryHash := range queryHashes {
+	for _, q := range queries {
 		wg.Add(1)
-		go func(hash string) {
+		go func(query string) {
 			defer wg.Done()
-			pullRequests, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, hash)
+			pullRequests, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, query)
 			if err != nil {
 				prChan <- pullRequestResult{err: err}
 				return
@@ -145,7 +147,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 			}
 
 			prChan <- pullRequestResult{prs: pr}
-		}(queryHash)
+		}(q)
 	}
 
 	go func() {

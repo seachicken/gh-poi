@@ -21,6 +21,36 @@ func GetQueryRepos(repoNames []string) string {
 	return strings.TrimSpace(repos.String())
 }
 
+func GetQueryHeads(branches []Branch) []string {
+	results := []string{}
+
+	var heads strings.Builder
+	for i, branch := range branches {
+		if len(branch.Commits) == 0 {
+			continue
+		}
+
+		separator := " "
+		if i == len(branches)-1 {
+			separator = ""
+		}
+		head := fmt.Sprintf("head:%s%s", branch.Name, separator)
+
+		// https://docs.github.com/en/rest/reference/search#limitations-on-query-length
+		if len(heads.String())+len(head) > 256 {
+			results = append(results, heads.String())
+			heads.Reset()
+		}
+
+		heads.WriteString(head)
+	}
+	if len(heads.String()) > 0 {
+		results = append(results, heads.String())
+	}
+
+	return results
+}
+
 func GetQueryHashes(branches []Branch) []string {
 	results := []string{}
 

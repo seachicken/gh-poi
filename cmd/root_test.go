@@ -263,6 +263,50 @@ func Test_GetBranchesWhenSquashAndMergedPR(t *testing.T) {
 
 /*
 // Before
+// main  : *---*(squash)
+//          \
+// topic :   * (PR squash-merged, hash search fails, head search finds PR)
+*/
+func Test_GetBranchesWhenSquashAndMergedPRInQuickScan(t *testing.T) {
+	t.Run("deletable", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		s := conn.Setup(ctrl).
+			GetRemoteNames("origin", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetRepoNames("origin", nil, nil).
+			GetBranchNames("@main_issue1", nil, nil).
+			GetMergedBranchNames("@main", nil, nil).
+			GetLog([]conn.LogStub{
+				{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
+			}, nil, nil).
+			GetPullRequests("issue1Merged", nil, nil).
+			GetUncommittedChanges("", nil, nil).
+			GetWorktrees("none", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{BranchName: "branch.main.merge", Filename: "mergeMain"},
+				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
+				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{BranchName: "branch.issue1.remote", Filename: "remote"},
+				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			}, nil, nil)
+		remote, _ := GetRemote(context.Background(), s.Conn)
+
+		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Quick, false)
+
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "issue1", actual[0].Name)
+		assert.Equal(t, shared.Deletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
+}
+
+/*
+// Before
 // upstream/main : *---*---*
 //                  \   ../
 // topic         :   *---* (PR merged)

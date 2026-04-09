@@ -20,6 +20,18 @@ func Test_GetQueryRepos(t *testing.T) {
 	)
 }
 
+func Test_GetQueryHeads(t *testing.T) {
+	assert.Equal(t,
+		[]string{"head:issue1 head:issue2 head:issue3"},
+		GetQueryHeads([]Branch{
+			{Head: false, Name: "main", Commits: []string{}, PullRequests: []PullRequest{}, State: Unknown},
+			{Head: true, Name: "issue1", Commits: []string{"356a192b7913b04c54574d18c28d46e6395428ab"}, PullRequests: []PullRequest{}, State: Unknown},
+			{Head: false, Name: "issue2", Commits: []string{"08a2aaaadff191eb76974b9b3d8b71f202c0156e"}, PullRequests: []PullRequest{}, State: Unknown},
+			{Head: false, Name: "issue3", Commits: []string{"77de68daecd823babbb58edb1c8e14d7106e83bb"}, PullRequests: []PullRequest{}, State: Unknown},
+		}),
+	)
+}
+
 func Test_GetQueryHashesWithCommitOid(t *testing.T) {
 	assert.Equal(t,
 		[]string{

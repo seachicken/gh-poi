@@ -1,0 +1,8 @@
+worktree /home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main
+HEAD a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0
+branch refs/heads/issue1
+
+worktree /home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1
+HEAD 6ebe3d30d23531af56bd23b5a098d3ccae2a534a
+branch refs/heads/issue2
+

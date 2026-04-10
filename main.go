@@ -287,14 +287,18 @@ func printBranches(branches []shared.Branch) {
 		}
 
 		reason := ""
-		if branch.IsLocked {
-			reason = "locked"
-		} else if branch.Worktree != nil && branch.Worktree.IsLocked {
-			reason = "worktree locked"
-		} else if branch.Worktree != nil && !branch.Worktree.IsMain && branch.Head {
-			reason = "worktree here"
-		} else if !branch.IsDefault && len(branch.PullRequests) > 0 && branch.HasTrackedChanges {
-			reason = "uncommitted changes"
+		if branch.State == shared.NotDeletable {
+			if branch.IsLocked {
+				reason = "locked"
+			} else if branch.Worktree != nil && branch.Worktree.IsLocked {
+				reason = "worktree locked"
+			} else if branch.Worktree != nil && branch.Worktree.IsMain && !branch.Head {
+				reason = "main worktree"
+			} else if branch.Worktree != nil && !branch.Worktree.IsMain && branch.Head {
+				reason = "worktree here"
+			} else if !branch.IsDefault && len(branch.PullRequests) > 0 && branch.HasTrackedChanges {
+				reason = "uncommitted changes"
+			}
 		}
 		if reason == "" {
 			fmt.Fprintln(color.Output, "")

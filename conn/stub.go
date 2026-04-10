@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/golang/mock/gomock"
 	"github.com/seachicken/gh-poi/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 type (

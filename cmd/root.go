@@ -17,14 +17,6 @@ import (
 	"github.com/seachicken/gh-poi/shared"
 )
 
-type (
-	UncommittedChange struct {
-		X    string
-		Y    string
-		Path string
-	}
-)
-
 const (
 	github    = "github.com"
 	localhost = "github.localhost"
@@ -103,11 +95,11 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 		if err != nil {
 			return nil, err
 		}
-		branches, err = applyTrackedChanges(ctx, branches, connection)
+		branches, err = applyWorktrees(ctx, branches, connection)
 		if err != nil {
 			return nil, err
 		}
-		branches, err = applyWorktrees(ctx, branches, connection)
+		branches, err = applyTrackedChanges(ctx, branches, connection)
 		if err != nil {
 			return nil, err
 		}
@@ -317,29 +309,36 @@ func applyCommits(ctx context.Context, branches []shared.Branch, defaultBranchNa
 }
 
 func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connection shared.Connection) ([]shared.Branch, error) {
-	var uncommittedChanges []UncommittedChange
-	if changes, err := connection.GetUncommittedChanges(ctx); err == nil {
-		uncommittedChanges = toUncommittedChange(SplitLines(changes))
-	} else {
-		return nil, err
-	}
-
 	results := []shared.Branch{}
+
 	for _, branch := range branches {
+		changes := []shared.UncommittedChange{}
+		var err error
 		if branch.Head {
-			hasTrackedChanges := false
-			for _, change := range uncommittedChanges {
-				if !change.IsUntracked() {
-					hasTrackedChanges = true
-					break
-				}
+			changes, err = conn.GetUncommittedChanges(ctx, connection)
+			if err != nil {
+				return results, err
 			}
-			if hasTrackedChanges {
+		} else if branch.Worktree != nil {
+			changes, err = conn.GetUncommittedChanges(ctx, connection, "-C", branch.Worktree.Path)
+			if err != nil {
+				return results, err
+			}
+		}
+
+		hasTrackedChanges := false
+		for _, change := range changes {
+			if !change.IsUntracked() {
 				branch.HasTrackedChanges = true
+				break
 			}
+		}
+		if hasTrackedChanges {
+			branch.HasTrackedChanges = true
 		}
 		results = append(results, branch)
 	}
+
 	return results, nil
 }
 
@@ -488,18 +487,6 @@ func findMatchedPullRequest(branchName string, prs []shared.PullRequest, prNumbe
 		}
 	}
 
-	return results
-}
-
-func toUncommittedChange(changes []string) []UncommittedChange {
-	results := []UncommittedChange{}
-	for _, change := range changes {
-		results = append(results, UncommittedChange{
-			string(change[0]),
-			string(change[1]),
-			string(change[3:]),
-		})
-	}
 	return results
 }
 
@@ -822,8 +809,4 @@ func BranchNameExists(branchName string, branches []shared.Branch) bool {
 func SplitLines(text string) []string {
 	return strings.FieldsFunc(strings.ReplaceAll(text, "\r\n", "\n"),
 		func(c rune) bool { return c == '\n' })
-}
-
-func (uc *UncommittedChange) IsUntracked() bool {
-	return uc.Y == "?"
 }

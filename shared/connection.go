@@ -12,7 +12,7 @@ type Connection interface {
 	GetLog(ctx context.Context, branchName string) (string, error)
 	GetAssociatedRefNames(ctx context.Context, oid string) (string, error)
 	GetPullRequests(ctx context.Context, hostname string, orgs string, repos string, queryHashes string) (string, error)
-	GetUncommittedChanges(ctx context.Context) (string, error)
+	GetUncommittedChanges(ctx context.Context, opts ...string) (string, error)
 	GetConfig(ctx context.Context, key string) (string, error)
 	AddConfig(ctx context.Context, key string, value string) (string, error)
 	RemoveConfig(ctx context.Context, key string) (string, error)

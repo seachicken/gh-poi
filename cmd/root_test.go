@@ -36,12 +36,13 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -87,7 +88,7 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "locked"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "locked"},
 			}, nil, nil)
 		setupDefault(s)
 		remote, _ := GetRemote(context.Background(), s.Conn)
@@ -109,7 +110,7 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "locked"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "locked"},
 			}, nil, nil)
 		setupDefault(s)
 		remote, _ := GetRemote(context.Background(), s.Conn)
@@ -153,13 +154,14 @@ func Test_GetBranchesWhenSquashAndMergedPR(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -224,13 +226,14 @@ func Test_GetBranchesWhenSquashAndMergedPRByUpstream(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -264,10 +267,10 @@ func Test_GetBranchesWhenSquashAndMergedPRByUpstream(t *testing.T) {
 			}, nil, nil).
 			GetPullRequests("forkMainUpMerged", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.fork/main.merge", Filename: "mergeForkMain"},
-				{BranchName: "branch.fork/main.remote", Filename: "remote"},
-				{BranchName: "branch.fork/main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.fork/main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.fork/main.merge", Filename: "mergeForkMain"},
+				{Key: "branch.fork/main.remote", Filename: "remote"},
+				{Key: "branch.fork/main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.fork/main.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 		setupDefault(s)
 		remote, _ := GetRemote(context.Background(), s.Conn)
@@ -309,13 +312,14 @@ func Test_GetBranchesWhenMergedPRWithDefaultBranchAsHeadRef(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -363,10 +367,11 @@ func Test_GetBranchesWhenSquashAndMergedPRWithoutDefaultBranch(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil).
 			CheckoutBranch(nil, nil)
 	}
@@ -416,13 +421,14 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil).
 			CheckoutBranch(nil, nil)
 	}
@@ -492,13 +498,14 @@ func Test_GetBranchesWhenMergedPRWithNotFullyMerged(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -546,13 +553,14 @@ func Test_GetBranchesWhenClosedPR(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -616,13 +624,14 @@ func Test_GetBranchesWhenClosedAndMergedPRs(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue1.remote", Filename: "remote"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 	}
 
@@ -684,12 +693,13 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("@main_+linkedIssue1", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.main.merge", Filename: "mergeMain"},
-				{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.linkedIssue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.linkedIssue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.linkedIssue1.gh-poi-protected", Filename: "empty"},
 			}, nil, nil).
 			CheckoutBranch(nil, nil)
 	}
@@ -798,12 +808,13 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("@mainIssue1_+linkedIssue2", nil, nil).
 			GetConfig([]conn.ConfigStub{
-				{BranchName: "branch.issue1.merge", Filename: "mergeMain"},
-				{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
-				{BranchName: "branch.issue2.merge", Filename: "mergeIssue1"},
-				{BranchName: "branch.issue2.gh-poi-locked", Filename: "empty"},
-				{BranchName: "branch.issue2.gh-poi-protected", Filename: "empty"},
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeMain"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue2.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue2.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue2.gh-poi-protected", Filename: "empty"},
 			}, nil, nil).
 			CheckoutBranch(nil, nil)
 	}
@@ -865,13 +876,14 @@ func Test_BranchIsNotDeletableWhenFirstCommitOfTopicBranchIsAssociatedWithDefaul
 		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -909,13 +921,14 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -951,13 +964,14 @@ func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBran
 		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -994,11 +1008,12 @@ func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.(HEAD detached at a97e963).gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.(HEAD detached at a97e963).gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.(HEAD detached at a97e963).gh-poi-locked", Filename: "empty"},
+			{Key: "branch.(HEAD detached at a97e963).gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -1047,13 +1062,14 @@ func Test_DoesNotReturnErrorWhenGetSshConfigFails(t *testing.T) {
 		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -1069,7 +1085,10 @@ func Test_ReturnsErrorWhenGetRepoNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", ErrCommand, nil)
+		GetRepoNames("origin", ErrCommand, nil).
+		GetConfig([]conn.ConfigStub{
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
 	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
@@ -1085,7 +1104,10 @@ func Test_ReturnsErrorWhenGetBranchNamesFails(t *testing.T) {
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
-		GetBranchNames("@main_issue1", ErrCommand, nil)
+		GetBranchNames("@main_issue1", ErrCommand, nil).
+		GetConfig([]conn.ConfigStub{
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
 	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
@@ -1102,7 +1124,10 @@ func Test_ReturnsErrorWhenGetMergedBranchNamesFails(t *testing.T) {
 		GetSshConfig("github.com", nil, nil).
 		GetRepoNames("origin", nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
-		GetMergedBranchNames("@main", ErrCommand, nil)
+		GetMergedBranchNames("@main", ErrCommand, nil).
+		GetConfig([]conn.ConfigStub{
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
 	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
@@ -1124,11 +1149,12 @@ func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "issue1"},
 		}, ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -1155,11 +1181,12 @@ func Test_ReturnsErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -1191,11 +1218,12 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -1227,13 +1255,14 @@ func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 		}, ErrCommand, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -1267,19 +1296,52 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 		GetWorktrees("none", nil, nil).
 		CheckoutBranch(ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
-			{BranchName: "branch.main.merge", Filename: "mergeMain"},
-			{BranchName: "branch.main.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.main.gh-poi-protected", Filename: "empty"},
-			{BranchName: "branch.issue1.merge", Filename: "mergeIssue1"},
-			{BranchName: "branch.issue1.remote", Filename: "remote"},
-			{BranchName: "branch.issue1.gh-poi-locked", Filename: "empty"},
-			{BranchName: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+			{Key: "branch.main.merge", Filename: "mergeMain"},
+			{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+			{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+			{Key: "branch.issue1.remote", Filename: "remote"},
+			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
 	remote, _ := GetRemote(context.Background(), s.Conn)
 
 	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
+}
+
+func Test_GetRemote(t *testing.T) {
+	t.Run("default remote is origin", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl).
+			GetRemoteNames("origin_upstream", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "remote.upstream.gh-resolved", Filename: "empty"},
+			}, nil, nil)
+
+		actual, _ := GetRemote(context.Background(), s.Conn)
+		assert.Equal(t, "origin", actual.Name)
+	})
+
+	t.Run("respect remote with gh repo set-default", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl).
+			GetRemoteNames("origin_upstream", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
+			}, nil, nil)
+
+		actual, _ := GetRemote(context.Background(), s.Conn)
+		assert.Equal(t, "upstream", actual.Name)
+	})
 }
 
 func Test_DeleteBranches(t *testing.T) {

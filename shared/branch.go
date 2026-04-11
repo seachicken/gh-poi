@@ -19,6 +19,12 @@ type (
 		State             BranchState
 		Worktree          *Worktree
 	}
+
+	UncommittedChange struct {
+		X    string
+		Y    string
+		Path string
+	}
 )
 
 const (
@@ -32,4 +38,8 @@ var detachedBranchNameRegex = regexp.MustCompile(`^\(.+\)`)
 
 func (b Branch) IsDetached() bool {
 	return detachedBranchNameRegex.MatchString(b.Name)
+}
+
+func (uc *UncommittedChange) IsUntracked() bool {
+	return uc.Y == "?"
 }

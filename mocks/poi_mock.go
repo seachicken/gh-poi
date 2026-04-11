@@ -221,18 +221,23 @@ func (mr *MockConnectionMockRecorder) GetSshConfig(ctx, name any) *gomock.Call {
 }
 
 // GetUncommittedChanges mocks base method.
-func (m *MockConnection) GetUncommittedChanges(ctx context.Context) (string, error) {
+func (m *MockConnection) GetUncommittedChanges(ctx context.Context, opts ...string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUncommittedChanges", ctx)
+	varargs := []any{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetUncommittedChanges", varargs...)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUncommittedChanges indicates an expected call of GetUncommittedChanges.
-func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx any) *gomock.Call {
+func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), ctx)
+	varargs := append([]any{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), varargs...)
 }
 
 // GetWorktrees mocks base method.

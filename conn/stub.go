@@ -43,6 +43,11 @@ type (
 		Filename string
 	}
 
+	UncommittedChangeStub struct {
+		Path   string
+		Output string
+	}
+
 	LogStub struct {
 		BranchName string
 		Filename   string
@@ -169,15 +174,27 @@ func (s *Stub) GetPullRequests(filename string, err error, conf *Conf) *Stub {
 	return s
 }
 
-func (s *Stub) GetUncommittedChanges(uncommittedChanges string, err error, conf *Conf) *Stub {
+func (s *Stub) GetUncommittedChanges(stubs []UncommittedChangeStub, err error, conf *Conf) *Stub {
 	s.T.Helper()
-	configure(
-		s.Conn.
-			EXPECT().
-			GetUncommittedChanges(gomock.Any()).
-			Return(uncommittedChanges, err),
-		conf,
-	)
+	for _, stub := range stubs {
+		if stub.Path == "" {
+			configure(
+				s.Conn.
+					EXPECT().
+					GetUncommittedChanges(gomock.Any()).
+					Return(stub.Output, err),
+				conf,
+			)
+		} else {
+			configure(
+				s.Conn.
+					EXPECT().
+					GetUncommittedChanges(gomock.Any(), "-C", stub.Path).
+					Return(stub.Output, err),
+				conf,
+			)
+		}
+	}
 	return s
 }
 

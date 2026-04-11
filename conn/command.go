@@ -199,11 +199,31 @@ func (conn *Connection) GetPullRequests(
 	return conn.run(ctx, "gh", args, None)
 }
 
-func (conn *Connection) GetUncommittedChanges(ctx context.Context) (string, error) {
-	args := []string{
-		"status", "--short",
+func GetUncommittedChanges(ctx context.Context, conn shared.Connection, opts ...string) ([]shared.UncommittedChange, error) {
+	output, err := conn.GetUncommittedChanges(ctx, opts...)
+	if err != nil {
+		return []shared.UncommittedChange{}, err
 	}
+	return parseUncommittedChanges(output), nil
+}
+
+func (conn *Connection) GetUncommittedChanges(ctx context.Context, opts ...string) (string, error) {
+	args := append(opts,
+		"status", "--porcelain",
+	)
 	return conn.run(ctx, "git", args, None)
+}
+
+func parseUncommittedChanges(output string) []shared.UncommittedChange {
+	results := []shared.UncommittedChange{}
+	for _, line := range splitLines(output) {
+		results = append(results, shared.UncommittedChange{
+			X:    string(line[0]),
+			Y:    string(line[1]),
+			Path: string(line[3:]),
+		})
+	}
+	return results
 }
 
 func (conn *Connection) GetConfig(ctx context.Context, key string) (string, error) {

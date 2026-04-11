@@ -31,7 +31,9 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 				{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "issue1", Filename: "issue1Merged"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -147,7 +149,9 @@ func Test_GetBranchesWhenSquashAndMergedPR(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -217,7 +221,9 @@ func Test_GetBranchesWhenSquashAndMergedPRByUpstream(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1UpMerged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -301,7 +307,9 @@ func Test_GetBranchesWhenMergedPRWithDefaultBranchAsHeadRef(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("mainMerged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -354,7 +362,9 @@ func Test_GetBranchesWhenSquashAndMergedPRWithoutDefaultBranch(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "issue1_originMain"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -405,7 +415,10 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged", nil, nil).
-			GetUncommittedChanges(" M README.md", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: " M README.md"},
+				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_basic", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -440,7 +453,9 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl).
-			GetUncommittedChanges("?? new.txt", nil, nil)
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: "?? new.txt"},
+			}, nil, nil)
 		setupDefault(s)
 		remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -478,7 +493,9 @@ func Test_GetBranchesWhenMergedPRWithNotFullyMerged(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -531,7 +548,9 @@ func Test_GetBranchesWhenClosedPR(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1Closed", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -600,7 +619,9 @@ func Test_GetBranchesWhenClosedAndMergedPRs(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged_issue1Closed", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
 			GetWorktrees("none", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -659,14 +680,18 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 			GetRemoteNames("origin", nil, nil).
 			GetSshConfig("github.com", nil, nil).
 			GetRepoNames("origin", nil, nil).
-			GetBranchNames("main_@linkedIssue1", nil, nil).
+			GetBranchNames("@main_linkedIssue1", nil, nil).
 			GetMergedBranchNames("main_@linkedIssue1", nil, nil).
 			GetLog([]conn.LogStub{
 				{BranchName: "main", Filename: "main_issue1Merged"}, {BranchName: "linkedIssue1", Filename: "issue1Merged"},
 			}, nil, nil).
 			GetPullRequests("linkedIssue1Merged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
-			GetWorktrees("@linkedIssue1", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Output: ""},
+				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Output: ""},
+			}, nil, nil).
+			GetWorktrees("@main_+linkedIssue1", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
 				{Key: "branch.main.merge", Filename: "mergeMain"},
@@ -682,7 +707,8 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 	t.Run("deletable when HEAD is not delete target worktree", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		s := conn.Setup(ctrl)
+		s := conn.Setup(ctrl).
+			GetBranchNames("@main_linkedIssue1", nil, nil)
 		setupDefault(s)
 		remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -699,7 +725,26 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl).
-			GetWorktrees("@main_+linkedIssue1", nil, nil)
+			GetBranchNames("main_@linkedIssue1", nil, nil)
+		setupDefault(s)
+		remote, _ := GetRemote(context.Background(), s.Conn)
+
+		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "linkedIssue1", actual[0].Name)
+		assert.Equal(t, shared.NotDeletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
+
+	t.Run("not deletable with uncommited changes", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Output: " M README.md"},
+			}, nil, nil)
 		setupDefault(s)
 		remote, _ := GetRemote(context.Background(), s.Conn)
 
@@ -756,7 +801,11 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 				{BranchName: "issue1", Filename: "issue1Merged"}, {BranchName: "issue2", Filename: "issue1"},
 			}, nil, nil).
 			GetPullRequests("issue1Merged", nil, nil).
-			GetUncommittedChanges("", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Output: ""},
+				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Output: ""},
+			}, nil, nil).
 			GetWorktrees("@mainIssue1_+linkedIssue2", nil, nil).
 			GetConfig([]conn.ConfigStub{
 				{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -822,7 +871,9 @@ func Test_BranchIsNotDeletableWhenFirstCommitOfTopicBranchIsAssociatedWithDefaul
 			{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: "main"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -865,7 +916,9 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 			{Oid: "d787669ee4a103fe0b361fe31c10ea037c72f27c", Filename: "issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -906,7 +959,9 @@ func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBran
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -947,7 +1002,10 @@ func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("notFound", nil, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_basic", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -999,7 +1057,9 @@ func Test_DoesNotReturnErrorWhenGetSshConfigFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -1153,7 +1213,9 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", ErrCommand, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -1188,7 +1250,10 @@ func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", ErrCommand, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+		}, ErrCommand, nil).
+		GetWorktrees("none", nil, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
 			{Key: "branch.main.merge", Filename: "mergeMain"},
@@ -1224,7 +1289,10 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 			{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 		}, nil, nil).
 		GetPullRequests("issue1Merged", nil, nil).
-		GetUncommittedChanges("", nil, nil).
+		GetUncommittedChanges([]conn.UncommittedChangeStub{
+			{Path: "", Output: ""},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_basic", Output: ""},
+		}, nil, nil).
 		GetWorktrees("none", nil, nil).
 		CheckoutBranch(ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{

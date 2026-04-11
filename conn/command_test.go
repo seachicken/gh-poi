@@ -142,6 +142,15 @@ func Test_CreateRemoteWithCustomHostname(t *testing.T) {
 	)
 }
 
+func Test_ParseUncommittedChanges(t *testing.T) {
+	assert.Equal(t,
+		[]shared.UncommittedChange{
+			{X: " ", Y: "M", Path: "README.md"},
+		},
+		parseUncommittedChanges(" M README.md"),
+	)
+}
+
 func Test_ParseWorktreesWithLinkedWorktree(t *testing.T) {
 	stub := (&Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "@main_+linkedIssue1")
 	assert.Equal(t,

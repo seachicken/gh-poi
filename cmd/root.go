@@ -38,7 +38,7 @@ func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote
 		return shared.Remote{}, err
 	}
 
-	if remote, err := getPrimaryRemote(remotes); err == nil {
+	if remote, err := getPrimaryRemote(ctx, remotes, connection); err == nil {
 		hostname := remote.Hostname
 		ghHost := os.Getenv("GH_HOST")
 		if ghHost == "" {
@@ -52,6 +52,50 @@ func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote
 	}
 
 	return shared.Remote{}, err
+}
+
+// https://github.com/cli/cli/blob/8f28d1f9d5b112b222f96eb793682ff0b5a7927d/internal/ghinstance/host.go#L26
+func normalizeHostname(host string) string {
+	hostname := strings.ToLower(host)
+	if strings.HasSuffix(hostname, "."+github) {
+		return github
+	}
+	if strings.HasSuffix(hostname, "."+localhost) {
+		return localhost
+	}
+	return hostname
+}
+
+func getPrimaryRemote(ctx context.Context, remotes []shared.Remote, connection shared.Connection) (shared.Remote, error) {
+	if len(remotes) == 0 {
+		return shared.Remote{}, ErrNotFound
+	}
+
+	for _, remote := range remotes {
+		config, _ := connection.GetConfig(ctx, fmt.Sprintf("remote.%s.gh-resolved", remote.Name))
+		splitConfig := SplitLines(config)
+		if len(splitConfig) > 0 && splitConfig[0] == "base" {
+			return remote, nil
+		}
+	}
+
+	for _, remote := range remotes {
+		if remote.Name == "origin" {
+			return remote, nil
+		}
+	}
+
+	return remotes[0], nil
+}
+
+func findHostname(params []string, defaultName string) string {
+	for _, param := range params {
+		kv := strings.Split(param, " ")
+		if kv[0] == "hostname" {
+			return kv[1]
+		}
+	}
+	return defaultName
 }
 
 func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, state shared.PullRequestState, scan shared.ScanMode, dryRun bool) ([]shared.
@@ -163,41 +207,6 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 	branches = applyPullRequest(ctx, branches, prs, connection)
 
 	return branches, nil
-}
-
-// https://github.com/cli/cli/blob/8f28d1f9d5b112b222f96eb793682ff0b5a7927d/internal/ghinstance/host.go#L26
-func normalizeHostname(host string) string {
-	hostname := strings.ToLower(host)
-	if strings.HasSuffix(hostname, "."+github) {
-		return github
-	}
-	if strings.HasSuffix(hostname, "."+localhost) {
-		return localhost
-	}
-	return hostname
-}
-
-func getPrimaryRemote(remotes []shared.Remote) (shared.Remote, error) {
-	if len(remotes) == 0 {
-		return shared.Remote{}, ErrNotFound
-	}
-
-	for _, remote := range remotes {
-		if remote.Name == "origin" {
-			return remote, nil
-		}
-	}
-	return remotes[0], nil
-}
-
-func findHostname(params []string, defaultName string) string {
-	for _, param := range params {
-		kv := strings.Split(param, " ")
-		if kv[0] == "hostname" {
-			return kv[1]
-		}
-	}
-	return defaultName
 }
 
 func extractMergedBranchNames(mergedNames []string) []string {

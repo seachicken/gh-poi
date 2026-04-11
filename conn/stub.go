@@ -53,8 +53,8 @@ type (
 	}
 
 	ConfigStub struct {
-		BranchName string
-		Filename   string
+		Key      string
+		Filename string
 	}
 )
 
@@ -187,7 +187,7 @@ func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
 		configure(
 			s.Conn.
 				EXPECT().
-				GetConfig(gomock.Any(), stub.BranchName).
+				GetConfig(gomock.Any(), stub.Key).
 				Return(s.ReadFile("git", "config", stub.Filename), err),
 			conf,
 		)

@@ -24,33 +24,117 @@ const (
 
 var ErrNotFound = errors.New("not found")
 
-func GetRemote(ctx context.Context, connection shared.Connection) (shared.Remote, error) {
+// Returns a list of remotes prioritized for PR discovery.
+// Both modes prioritize "origin,"  and when searching for pull requests,
+// the parent (a.k.a upstream) repository is also included in the search.
+//
+// quick:
+//   - Focuses on the most likely PR sources to minimize API calls.
+//   - Returns only "origin" and the remote configured via `gh repo set-default`.
+//
+// deep:
+//   - Scans all registered remotes to ensure comprehensive PR discovery.
+//   - Useful for complex setups where PRs may span multiple forks or parents.
+func GetPreferredRemotes(ctx context.Context, connection shared.Connection, scan shared.ScanMode) ([]shared.Remote, error) {
 	remotes, err := conn.GetRemoteNames(ctx, connection)
 	if err != nil {
-		return shared.Remote{}, err
+		return []shared.Remote{}, err
+	}
+	if len(remotes) == 0 {
+		return []shared.Remote{}, ErrNotFound
 	}
 
-	if remote, err := getPrimaryRemote(remotes); err == nil {
-		hostname := remote.Hostname
-		ghHost := os.Getenv("GH_HOST")
+	uniqueRemotes := make(map[string]shared.Remote)
+	for _, remote := range remotes {
+		uniqueRemotes[remote.Name] = remote
+	}
+
+	var primaryRemote *shared.Remote
+	var ghResolvedRemote *shared.Remote
+	var otherRemotes []shared.Remote
+	for key, remote := range uniqueRemotes {
+		config, _ := connection.GetConfig(ctx, fmt.Sprintf("remote.%s.gh-resolved", remote.Name))
+		splitConfig := SplitLines(config)
+		if len(splitConfig) > 0 && len(splitConfig[0]) > 0 {
+			remote.GhResolved = splitConfig[0]
+			ghResolvedRemote = &remote
+			uniqueRemotes[key] = remote
+		}
+	}
+	_, ok := uniqueRemotes["origin"]
+	if ok {
+		for _, remote := range uniqueRemotes {
+			if remote.Name == "origin" {
+				primaryRemote = &remote
+			} else {
+				otherRemotes = append(otherRemotes, remote)
+			}
+		}
+	} else {
+		first := true
+		for _, remote := range uniqueRemotes {
+			if first {
+				primaryRemote = &remote
+			} else {
+				otherRemotes = append(otherRemotes, remote)
+			}
+			first = false
+		}
+	}
+
+	preferredRemotes := []shared.Remote{}
+	if scan == shared.Quick {
+		if ghResolvedRemote == nil || primaryRemote.Name == ghResolvedRemote.Name {
+			preferredRemotes = []shared.Remote{*primaryRemote}
+		} else {
+			preferredRemotes = []shared.Remote{*primaryRemote, *ghResolvedRemote}
+		}
+	} else {
+		preferredRemotes = append([]shared.Remote{*primaryRemote}, otherRemotes...)
+	}
+
+	ghHost := os.Getenv("GH_HOST")
+	for key, remote := range preferredRemotes {
 		if ghHost == "" {
-			if config, err := connection.GetSshConfig(ctx, hostname); err == nil {
-				remote.Hostname = normalizeHostname(findHostname(SplitLines(config), hostname))
+			if config, err := connection.GetSshConfig(ctx, remote.Hostname); err == nil {
+				remote.Hostname = normalizeHostname(findHostname(SplitLines(config), remote.Hostname))
 			}
 		} else {
 			remote.Hostname = ghHost
 		}
-		return remote, nil
+		preferredRemotes[key] = remote
 	}
 
-	return shared.Remote{}, err
+	return preferredRemotes, nil
 }
 
-func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Connection, state shared.PullRequestState, scan shared.ScanMode, dryRun bool) ([]shared.
+// https://github.com/cli/cli/blob/8f28d1f9d5b112b222f96eb793682ff0b5a7927d/internal/ghinstance/host.go#L26
+func normalizeHostname(host string) string {
+	hostname := strings.ToLower(host)
+	if strings.HasSuffix(hostname, "."+github) {
+		return github
+	}
+	if strings.HasSuffix(hostname, "."+localhost) {
+		return localhost
+	}
+	return hostname
+}
+
+func findHostname(params []string, defaultName string) string {
+	for _, param := range params {
+		kv := strings.Split(param, " ")
+		if kv[0] == "hostname" {
+			return kv[1]
+		}
+	}
+	return defaultName
+}
+
+func GetBranches(ctx context.Context, remotes []shared.Remote, connection shared.Connection, state shared.PullRequestState, scan shared.ScanMode, dryRun bool) ([]shared.
 	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
-	if repos, err := connection.GetRepoNames(ctx, remote.Hostname, remote.RepoName); err == nil {
+	if repos, err := connection.GetRepoNames(ctx, remotes[0].Hostname, remotes[0].RepoName); err == nil {
 		repoNames, defaultBranchName, err = getRepo(repos)
 		if err != nil {
 			return nil, err
@@ -59,14 +143,14 @@ func GetBranches(ctx context.Context, remote shared.Remote, connection shared.Co
 		return nil, err
 	}
 
-	branches, err := loadBranches(ctx, remote, defaultBranchName, repoNames, connection, scan)
+	branches, err := loadBranches(ctx, remotes[0], defaultBranchName, repoNames, connection, scan)
 	if err != nil {
 		return nil, err
 	}
 
 	branches = checkDeletion(branches, state)
 
-	branches, err = switchToDefaultBranchIfDeleted(ctx, remote, branches, defaultBranchName, connection, dryRun)
+	branches, err = switchToDefaultBranchIfDeleted(ctx, remotes, branches, defaultBranchName, connection, dryRun)
 	if err != nil {
 		return nil, err
 	}
@@ -155,41 +239,6 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 	branches = applyPullRequest(ctx, branches, prs, connection)
 
 	return branches, nil
-}
-
-// https://github.com/cli/cli/blob/8f28d1f9d5b112b222f96eb793682ff0b5a7927d/internal/ghinstance/host.go#L26
-func normalizeHostname(host string) string {
-	hostname := strings.ToLower(host)
-	if strings.HasSuffix(hostname, "."+github) {
-		return github
-	}
-	if strings.HasSuffix(hostname, "."+localhost) {
-		return localhost
-	}
-	return hostname
-}
-
-func getPrimaryRemote(remotes []shared.Remote) (shared.Remote, error) {
-	if len(remotes) == 0 {
-		return shared.Remote{}, ErrNotFound
-	}
-
-	for _, remote := range remotes {
-		if remote.Name == "origin" {
-			return remote, nil
-		}
-	}
-	return remotes[0], nil
-}
-
-func findHostname(params []string, defaultName string) string {
-	for _, param := range params {
-		kv := strings.Split(param, " ")
-		if kv[0] == "hostname" {
-			return kv[1]
-		}
-	}
-	return defaultName
 }
 
 func extractMergedBranchNames(mergedNames []string) []string {
@@ -553,7 +602,7 @@ func isFullyMerged(branch shared.Branch, pr shared.PullRequest, state shared.Pul
 	return false
 }
 
-func switchToDefaultBranchIfDeleted(ctx context.Context, remote shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection, dryRun bool) ([]shared.Branch, error) {
+func switchToDefaultBranchIfDeleted(ctx context.Context, remotes []shared.Remote, branches []shared.Branch, defaultBranchName string, connection shared.Connection, dryRun bool) ([]shared.Branch, error) {
 	needsCheckout := false
 	for _, branch := range branches {
 		if branch.Head && branch.State == shared.Deletable {
@@ -568,6 +617,12 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, remote shared.Remote, b
 
 	results := []shared.Branch{}
 
+	var remoteName = remotes[0].Name
+	for _, remote := range remotes {
+		if remote.GhResolved != "" {
+			remoteName = remote.Name
+		}
+	}
 	newBranchName := defaultBranchName
 	if BranchNameExists(defaultBranchName, branches) {
 		if !dryRun {
@@ -577,7 +632,7 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, remote shared.Remote, b
 			}
 		}
 	} else {
-		newBranchName = remote.Name + "/" + defaultBranchName
+		newBranchName = remoteName + "/" + defaultBranchName
 		if !dryRun {
 			_, err := connection.CheckoutBranch(ctx, newBranchName, true)
 			if err != nil {
@@ -591,7 +646,7 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, remote shared.Remote, b
 		branch.Head = true
 		branch.Name = defaultBranchName
 		if newBranchName != defaultBranchName {
-			branch.Name = "(HEAD detached at " + remote.Name + "/" + defaultBranchName + ")"
+			branch.Name = "(HEAD detached at " + remoteName + "/" + defaultBranchName + ")"
 		}
 		branch.State = shared.NotDeletable
 		results = append(results, branch)

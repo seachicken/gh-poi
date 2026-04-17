@@ -1,0 +1,2 @@
+midstream	git@github.com:owner/repo.git (fetch)
+midstream	git@github.com:owner/repo.git (push)

@@ -178,13 +178,13 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	}
 	var fetchingErr error
 
-	remote, err := cmd.GetRemote(ctx, connection)
+	remotes, err := cmd.GetPreferredRemotes(ctx, connection, scan.toModel())
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	branches, fetchingErr := cmd.GetBranches(ctx, remote, connection, state.toModel(), scan.toModel(), dryRun)
+	branches, fetchingErr := cmd.GetBranches(ctx, remotes, connection, state.toModel(), scan.toModel(), dryRun)
 
 	sp.Stop()
 
@@ -208,7 +208,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 
 		var deletingErr error
 		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
-		connection.PruneRemoteBranches(ctx, remote.Name)
+		connection.PruneRemoteBranches(ctx, remotes[0].Name)
 
 		sp.Stop()
 

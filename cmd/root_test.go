@@ -51,9 +51,9 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -72,9 +72,9 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "main_issue1"},
 			}, nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -91,9 +91,9 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 				{Key: "branch.issue1.gh-poi-locked", Filename: "locked"},
 			}, nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -113,9 +113,9 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 				{Key: "branch.issue1.gh-poi-protected", Filename: "locked"},
 			}, nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -170,9 +170,9 @@ func Test_GetBranchesWhenSquashAndMergedPR(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -187,9 +187,9 @@ func Test_GetBranchesWhenSquashAndMergedPR(t *testing.T) {
 		s := conn.Setup(ctrl).
 			CheckoutBranch(nil, conn.NewConf(&conn.Times{N: 0}))
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, true)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, true)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -242,9 +242,9 @@ func Test_GetBranchesWhenSquashAndMergedPRByUpstream(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -273,9 +273,9 @@ func Test_GetBranchesWhenSquashAndMergedPRByUpstream(t *testing.T) {
 				{Key: "branch.fork/main.gh-poi-protected", Filename: "empty"},
 			}, nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "fork/main", actual[0].Name)
@@ -328,9 +328,9 @@ func Test_GetBranchesWhenMergedPRWithDefaultBranchAsHeadRef(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -346,7 +346,7 @@ func Test_GetBranchesWhenMergedPRWithDefaultBranchAsHeadRef(t *testing.T) {
 //                \   ../
 // topic       :   *---* (PR merged)
 */
-func Test_GetBranchesWhenSquashAndMergedPRWithoutDefaultBranch(t *testing.T) {
+func Test_GetBranchesWhenSquashAndMergedToOriginAndMissingDefaultBranch(t *testing.T) {
 	setupDefault := func(s *conn.Stub) *conn.Stub {
 		return s.
 			GetRemoteNames("origin", nil, nil).
@@ -381,12 +381,66 @@ func Test_GetBranchesWhenSquashAndMergedPRWithoutDefaultBranch(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "(HEAD detached at origin/main)", actual[0].Name)
+		assert.Equal(t, shared.NotDeletable, actual[0].State)
+		assert.Equal(t, "issue1", actual[1].Name)
+		assert.Equal(t, shared.Deletable, actual[1].State)
+	})
+}
+
+/*
+// Before
+// upstream/main : *-------*
+//                  \   ../
+// topic         :   *---* (PR merged)
+*/
+func Test_GetBranchesWhenSquashAndMergedToUpstreamAndMissingDefaultBranch(t *testing.T) {
+	setupDefault := func(s *conn.Stub) *conn.Stub {
+		return s.
+			GetRemoteNames("origin_upstream", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetRepoNames("origin", nil, nil).
+			GetBranchNames("@issue1", nil, nil).
+			GetMergedBranchNames("empty", nil, nil).
+			GetLog([]conn.LogStub{
+				{BranchName: "issue1", Filename: "issue1"},
+			}, nil, nil).
+			GetAssociatedRefNames([]conn.AssociatedBranchNamesStub{
+				{Oid: "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0", Filename: "issue1"},
+				{Oid: "6ebe3d30d23531af56bd23b5a098d3ccae2a534a", Filename: "issue1_originMain"},
+			}, nil, nil).
+			GetPullRequests("issue1Merged", nil, nil).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
+			GetWorktrees("none", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			}, nil, nil).
+			CheckoutBranch(nil, nil)
+	}
+
+	t.Run("deletable when default branch does not exists", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+		setupDefault(s)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
+
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
+
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "(HEAD detached at upstream/main)", actual[0].Name)
 		assert.Equal(t, shared.NotDeletable, actual[0].State)
 		assert.Equal(t, "issue1", actual[1].Name)
 		assert.Equal(t, shared.Deletable, actual[1].State)
@@ -438,9 +492,9 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -457,9 +511,9 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 				{Path: "", Output: "?? new.txt"},
 			}, nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -514,9 +568,9 @@ func Test_GetBranchesWhenMergedPRWithNotFullyMerged(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -569,9 +623,9 @@ func Test_GetBranchesWhenClosedPR(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -585,9 +639,9 @@ func Test_GetBranchesWhenClosedPR(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Closed, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Closed, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -640,9 +694,9 @@ func Test_GetBranchesWhenClosedAndMergedPRs(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -656,9 +710,9 @@ func Test_GetBranchesWhenClosedAndMergedPRs(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Closed, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Closed, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -710,9 +764,9 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 		s := conn.Setup(ctrl).
 			GetBranchNames("@main_linkedIssue1", nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "linkedIssue1", actual[0].Name)
@@ -727,9 +781,9 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 		s := conn.Setup(ctrl).
 			GetBranchNames("main_@linkedIssue1", nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "linkedIssue1", actual[0].Name)
@@ -746,9 +800,9 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 				{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Output: " M README.md"},
 			}, nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "linkedIssue1", actual[0].Name)
@@ -769,9 +823,9 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 			}, nil, nil).
 			GetWorktrees("locked", nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "linkedIssue1", actual[0].Name)
@@ -824,9 +878,9 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 		defer ctrl.Finish()
 		s := conn.Setup(ctrl)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Quick)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Quick, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Quick, false)
 
 		assert.Equal(t, 3, len(actual))
 		assert.Equal(t, "(HEAD detached at origin/main)", actual[0].Name)
@@ -843,9 +897,9 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 		s := conn.Setup(ctrl).
 			GetBranchNames("issue1_@issue2", nil, nil)
 		setupDefault(s)
-		remote, _ := GetRemote(context.Background(), s.Conn)
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Quick)
 
-		actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Quick, false)
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Quick, false)
 
 		assert.Equal(t, 2, len(actual))
 		assert.Equal(t, "issue1", actual[0].Name)
@@ -885,9 +939,9 @@ func Test_BranchIsNotDeletableWhenFirstCommitOfTopicBranchIsAssociatedWithDefaul
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Quick)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Quick, false)
+	actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Quick, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -930,9 +984,9 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -973,9 +1027,9 @@ func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBran
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "issue1", actual[0].Name)
@@ -1015,9 +1069,9 @@ func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 			{Key: "branch.(HEAD detached at a97e963).gh-poi-locked", Filename: "empty"},
 			{Key: "branch.(HEAD detached at a97e963).gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	actual, _ := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, "(HEAD detached at a97e963)", actual[0].Name)
@@ -1034,7 +1088,7 @@ func Test_ReturnsErrorWhenGetRemoteNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", ErrCommand, nil)
 
-	_, err := GetRemote(context.Background(), s.Conn)
+	_, err := GetPreferredRemotes(context.Background(), s.Conn, shared.Quick)
 
 	assert.NotNil(t, err)
 }
@@ -1071,9 +1125,9 @@ func Test_DoesNotReturnErrorWhenGetSshConfigFails(t *testing.T) {
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.Nil(t, err)
 }
@@ -1089,9 +1143,9 @@ func Test_ReturnsErrorWhenGetRepoNamesFails(t *testing.T) {
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1108,9 +1162,9 @@ func Test_ReturnsErrorWhenGetBranchNamesFails(t *testing.T) {
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1128,9 +1182,9 @@ func Test_ReturnsErrorWhenGetMergedBranchNamesFails(t *testing.T) {
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1156,9 +1210,9 @@ func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1188,9 +1242,9 @@ func Test_ReturnsErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1225,9 +1279,9 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1264,9 +1318,9 @@ func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
@@ -1305,42 +1359,121 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 			{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 			{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 		}, nil, nil)
-	remote, _ := GetRemote(context.Background(), s.Conn)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
 
-	_, err := GetBranches(context.Background(), remote, s.Conn, shared.Merged, shared.Deep, false)
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
 }
 
-func Test_GetRemote(t *testing.T) {
-	t.Run("default remote is origin", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		s := conn.Setup(ctrl).
-			GetRemoteNames("origin_upstream", nil, nil).
-			GetSshConfig("github.com", nil, nil).
-			GetConfig([]conn.ConfigStub{
-				{Key: "remote.origin.gh-resolved", Filename: "empty"},
-				{Key: "remote.upstream.gh-resolved", Filename: "empty"},
-			}, nil, nil)
+func Test_GetPreferredRemotes(t *testing.T) {
+	t.Run("with quick scan", func(t *testing.T) {
+		scan := shared.Quick
 
-		actual, _ := GetRemote(context.Background(), s.Conn)
-		assert.Equal(t, "origin", actual.Name)
+		t.Run("returns origin as highest priority", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 1, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+		})
+
+		t.Run("returns first remote when origin is missing", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("midstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.midstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 1, len(actual))
+			assert.Equal(t, "midstream", actual[0].Name)
+		})
+
+		t.Run("returns origin and gh-resolved when gh-resolved is configured", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+			assert.Equal(t, "", actual[0].GhResolved)
+			assert.Equal(t, "upstream", actual[1].Name)
+			assert.Equal(t, "base", actual[1].GhResolved)
+		})
 	})
 
-	t.Run("respect remote with gh repo set-default", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		s := conn.Setup(ctrl).
-			GetRemoteNames("origin_upstream", nil, nil).
-			GetSshConfig("github.com", nil, nil).
-			GetConfig([]conn.ConfigStub{
-				{Key: "remote.origin.gh-resolved", Filename: "empty"},
-				{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
-			}, nil, nil)
+	t.Run("with deep scan", func(t *testing.T) {
+		scan := shared.Deep
 
-		actual, _ := GetRemote(context.Background(), s.Conn)
-		assert.Equal(t, "upstream", actual.Name)
+		t.Run("returns origin as highest priority", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+			assert.Equal(t, "upstream", actual[1].Name)
+		})
+
+		t.Run("returns first remote when origin is missing", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("midstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.midstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 1, len(actual))
+			assert.Equal(t, "midstream", actual[0].Name)
+		})
+
+		t.Run("returns origin and gh-resolved when gh-resolved is configured", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+			assert.Equal(t, "", actual[0].GhResolved)
+			assert.Equal(t, "upstream", actual[1].Name)
+			assert.Equal(t, "base", actual[1].GhResolved)
+		})
 	})
 }
 

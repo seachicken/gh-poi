@@ -84,7 +84,7 @@ func GetPreferredRemotes(ctx context.Context, connection shared.Connection, scan
 
 	preferredRemotes := []shared.Remote{}
 	if scan == shared.Quick {
-		if ghResolvedRemote == nil || *primaryRemote == *ghResolvedRemote {
+		if ghResolvedRemote == nil || primaryRemote.Name == ghResolvedRemote.Name {
 			preferredRemotes = []shared.Remote{*primaryRemote}
 		} else {
 			preferredRemotes = []shared.Remote{*primaryRemote, *ghResolvedRemote}
@@ -94,7 +94,7 @@ func GetPreferredRemotes(ctx context.Context, connection shared.Connection, scan
 	}
 
 	ghHost := os.Getenv("GH_HOST")
-	for _, remote := range preferredRemotes {
+	for key, remote := range preferredRemotes {
 		if ghHost == "" {
 			if config, err := connection.GetSshConfig(ctx, remote.Hostname); err == nil {
 				remote.Hostname = normalizeHostname(findHostname(SplitLines(config), remote.Hostname))
@@ -102,6 +102,7 @@ func GetPreferredRemotes(ctx context.Context, connection shared.Connection, scan
 		} else {
 			remote.Hostname = ghHost
 		}
+		preferredRemotes[key] = remote
 	}
 
 	return preferredRemotes, nil

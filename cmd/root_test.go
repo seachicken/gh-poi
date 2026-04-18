@@ -13,6 +13,117 @@ import (
 
 var ErrCommand = errors.New("failed to run external command")
 
+func Test_GetPreferredRemotes(t *testing.T) {
+	t.Run("with quick scan", func(t *testing.T) {
+		scan := shared.Quick
+
+		t.Run("returns origin as highest priority", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 1, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+		})
+
+		t.Run("returns first remote when origin is missing", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("midstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.midstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 1, len(actual))
+			assert.Equal(t, "midstream", actual[0].Name)
+		})
+
+		t.Run("returns origin and gh-resolved when gh-resolved is configured", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+			assert.Equal(t, "", actual[0].GhResolved)
+			assert.Equal(t, "upstream", actual[1].Name)
+			assert.Equal(t, "base", actual[1].GhResolved)
+		})
+	})
+
+	t.Run("with deep scan", func(t *testing.T) {
+		scan := shared.Deep
+
+		t.Run("returns origin as highest priority", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+			assert.Equal(t, "upstream", actual[1].Name)
+		})
+
+		t.Run("returns first remote when origin is missing", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("midstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.midstream.gh-resolved", Filename: "empty"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 1, len(actual))
+			assert.Equal(t, "midstream", actual[0].Name)
+		})
+
+		t.Run("returns origin and gh-resolved when gh-resolved is configured", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin_upstream", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
+				}, nil, nil)
+
+			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "origin", actual[0].Name)
+			assert.Equal(t, "", actual[0].GhResolved)
+			assert.Equal(t, "upstream", actual[1].Name)
+			assert.Equal(t, "base", actual[1].GhResolved)
+		})
+	})
+}
+
 /*
 // Before
 // main  : *---*---*
@@ -1462,117 +1573,6 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
-}
-
-func Test_GetPreferredRemotes(t *testing.T) {
-	t.Run("with quick scan", func(t *testing.T) {
-		scan := shared.Quick
-
-		t.Run("returns origin as highest priority", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			s := conn.Setup(ctrl).
-				GetRemoteNames("origin_upstream", nil, nil).
-				GetSshConfig("github.com", nil, nil).
-				GetConfig([]conn.ConfigStub{
-					{Key: "remote.origin.gh-resolved", Filename: "empty"},
-					{Key: "remote.upstream.gh-resolved", Filename: "empty"},
-				}, nil, nil)
-
-			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
-			assert.Equal(t, 1, len(actual))
-			assert.Equal(t, "origin", actual[0].Name)
-		})
-
-		t.Run("returns first remote when origin is missing", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			s := conn.Setup(ctrl).
-				GetRemoteNames("midstream", nil, nil).
-				GetSshConfig("github.com", nil, nil).
-				GetConfig([]conn.ConfigStub{
-					{Key: "remote.midstream.gh-resolved", Filename: "empty"},
-				}, nil, nil)
-
-			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
-			assert.Equal(t, 1, len(actual))
-			assert.Equal(t, "midstream", actual[0].Name)
-		})
-
-		t.Run("returns origin and gh-resolved when gh-resolved is configured", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			s := conn.Setup(ctrl).
-				GetRemoteNames("origin_upstream", nil, nil).
-				GetSshConfig("github.com", nil, nil).
-				GetConfig([]conn.ConfigStub{
-					{Key: "remote.origin.gh-resolved", Filename: "empty"},
-					{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
-				}, nil, nil)
-
-			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
-			assert.Equal(t, 2, len(actual))
-			assert.Equal(t, "origin", actual[0].Name)
-			assert.Equal(t, "", actual[0].GhResolved)
-			assert.Equal(t, "upstream", actual[1].Name)
-			assert.Equal(t, "base", actual[1].GhResolved)
-		})
-	})
-
-	t.Run("with deep scan", func(t *testing.T) {
-		scan := shared.Deep
-
-		t.Run("returns origin as highest priority", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			s := conn.Setup(ctrl).
-				GetRemoteNames("origin_upstream", nil, nil).
-				GetSshConfig("github.com", nil, nil).
-				GetConfig([]conn.ConfigStub{
-					{Key: "remote.origin.gh-resolved", Filename: "empty"},
-					{Key: "remote.upstream.gh-resolved", Filename: "empty"},
-				}, nil, nil)
-
-			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
-			assert.Equal(t, 2, len(actual))
-			assert.Equal(t, "origin", actual[0].Name)
-			assert.Equal(t, "upstream", actual[1].Name)
-		})
-
-		t.Run("returns first remote when origin is missing", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			s := conn.Setup(ctrl).
-				GetRemoteNames("midstream", nil, nil).
-				GetSshConfig("github.com", nil, nil).
-				GetConfig([]conn.ConfigStub{
-					{Key: "remote.midstream.gh-resolved", Filename: "empty"},
-				}, nil, nil)
-
-			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
-			assert.Equal(t, 1, len(actual))
-			assert.Equal(t, "midstream", actual[0].Name)
-		})
-
-		t.Run("returns origin and gh-resolved when gh-resolved is configured", func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			s := conn.Setup(ctrl).
-				GetRemoteNames("origin_upstream", nil, nil).
-				GetSshConfig("github.com", nil, nil).
-				GetConfig([]conn.ConfigStub{
-					{Key: "remote.origin.gh-resolved", Filename: "empty"},
-					{Key: "remote.upstream.gh-resolved", Filename: "ghResolved"},
-				}, nil, nil)
-
-			actual, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
-			assert.Equal(t, 2, len(actual))
-			assert.Equal(t, "origin", actual[0].Name)
-			assert.Equal(t, "", actual[0].GhResolved)
-			assert.Equal(t, "upstream", actual[1].Name)
-			assert.Equal(t, "base", actual[1].GhResolved)
-		})
-	})
 }
 
 func Test_DeleteBranches(t *testing.T) {

@@ -23,6 +23,11 @@ type (
 		Times *Times
 	}
 
+	RepoNamesStub struct {
+		RepoName string
+		Filename string
+	}
+
 	RemoteHeadStub struct {
 		BranchName string
 		Filename   string
@@ -102,15 +107,17 @@ func (s *Stub) GetSshConfig(filename string, err error, conf *Conf) *Stub {
 	return s
 }
 
-func (s *Stub) GetRepoNames(filename string, err error, conf *Conf) *Stub {
+func (s *Stub) GetRepoNames(stubs []RepoNamesStub, err error, conf *Conf) *Stub {
 	s.T.Helper()
-	configure(
-		s.Conn.
-			EXPECT().
-			GetRepoNames(gomock.Any(), gomock.Any(), gomock.Any()).
-			Return(s.ReadFile("gh", "repo", filename), err),
-		conf,
-	)
+	for _, stub := range stubs {
+		configure(
+			s.Conn.
+				EXPECT().
+				GetRepoNames(gomock.Any(), gomock.Any(), stub.RepoName).
+				Return(s.ReadFile("gh", "repo", stub.Filename), err),
+			conf,
+		)
+	}
 	return s
 }
 

@@ -134,12 +134,40 @@ func GetBranches(ctx context.Context, remotes []shared.Remote, connection shared
 	Branch, error) {
 	var repoNames []string
 	var defaultBranchName string
-	if repos, err := connection.GetRepoNames(ctx, remotes[0].Hostname, remotes[0].RepoName); err == nil {
-		repoNames, defaultBranchName, err = getRepo(repos)
-		if err != nil {
-			return nil, err
+	var err error
+	if scan == shared.Quick {
+		if repos, e := connection.GetRepoNames(ctx, remotes[0].Hostname, remotes[0].ResolvedRepoName()); e == nil {
+			repoNames, defaultBranchName, err = getRepo(repos)
+		} else {
+			err = e
 		}
 	} else {
+		uniqueRepoNames := make(map[string]bool)
+		first := true
+		for _, remote := range remotes {
+			if repos, e := connection.GetRepoNames(ctx, remote.Hostname, remote.ResolvedRepoName()); e == nil {
+				names, defaultName, e := getRepo(repos)
+				if e != nil {
+					err = e
+					continue
+				}
+				for _, name := range names {
+					uniqueRepoNames[name] = true
+				}
+				if first {
+					defaultBranchName = defaultName
+				}
+			} else {
+				err = e
+				continue
+			}
+			first = false
+		}
+		for repoName := range uniqueRepoNames {
+			repoNames = append(repoNames, repoName)
+		}
+	}
+	if err != nil {
 		return nil, err
 	}
 
@@ -506,7 +534,7 @@ func findMatchedPullRequest(branchName string, prs []shared.PullRequest, prNumbe
 
 	prExists := func(pr shared.PullRequest) bool {
 		for _, result := range results {
-			if pr.Number == result.Number {
+			if pr.Url == result.Url && pr.Number == result.Number {
 				return true
 			}
 		}

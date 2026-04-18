@@ -25,7 +25,7 @@ const (
 var ErrNotFound = errors.New("not found")
 
 // Returns a list of remotes prioritized for PR discovery.
-// Both modes prioritize "origin,"  and when searching for pull requests,
+// Both modes prioritize "origin," and when searching for pull requests,
 // the parent (a.k.a upstream) repository is also included in the search.
 //
 // quick:

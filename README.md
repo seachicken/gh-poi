@@ -25,8 +25,8 @@ gh extension install seachicken/gh-poi
 - `gh poi` Delete the merged local branches
 - `gh poi --state (closed|merged)` Specify the PR state to delete (default `merged`)
 - `gh poi --scan (quick|deep)` Specify the scan mode (default `quick`)
-  - `quick`: Fast; identifies PRs using only the latest commit on each branch
-  - `deep`: Slower but more accurate; scans a longer history to link branches to PRs
+  - `quick`: Fast; checks "origin" and "upstream" remotes. Identifies PRs using only the latest commit on each branch
+  - `deep`: Comprehensive; scans all registered remotes. Performs a deeper history check to link branches to PRs, ensuring no potential matches are missed across multiple forks
   - Note: poi ensures safe deletion in both modes
 - `gh poi --dry-run` Show branches to delete without actually deleting it
 - `gh poi --debug` Enable debug logs

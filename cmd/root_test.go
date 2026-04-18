@@ -27,7 +27,9 @@ func Test_GetBranchesWhenMergedPR(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main_issue1", nil, nil).
 				GetLog([]conn.LogStub{
@@ -145,7 +147,9 @@ func Test_GetBranchesWhenSquashAndMergedPR(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -221,7 +225,9 @@ func Test_GetBranchesWhenSquashAndMergedPRByUpstream(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin_upstream", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin_upstream"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -311,7 +317,9 @@ func Test_GetBranchesWhenMergedPRWithDefaultBranchAsHeadRef(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -370,7 +378,9 @@ func Test_GetBranchesWhenSquashAndMergedToOriginAndMissingDefaultBranch(t *testi
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@issue1", nil, nil).
 				GetMergedBranchNames("empty", nil, nil).
 				GetLog([]conn.LogStub{
@@ -427,7 +437,9 @@ func Test_GetBranchesWhenSquashAndMergedToUpstreamAndMissingDefaultBranch(t *tes
 			return s.
 				GetRemoteNames("origin_upstream", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@issue1", nil, nil).
 				GetMergedBranchNames("empty", nil, nil).
 				GetLog([]conn.LogStub{
@@ -485,7 +497,9 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("main_@issue1", nil, nil).
 				GetMergedBranchNames("main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -565,7 +579,9 @@ func Test_GetBranchesWhenMergedPRWithNotFullyMerged(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -626,7 +642,9 @@ func Test_GetBranchesWhenClosedPR(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -701,7 +719,9 @@ func Test_GetBranchesWhenClosedAndMergedPRs(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_issue1", nil, nil).
 				GetMergedBranchNames("@main", nil, nil).
 				GetLog([]conn.LogStub{
@@ -776,7 +796,9 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@main_linkedIssue1", nil, nil).
 				GetMergedBranchNames("main_@linkedIssue1", nil, nil).
 				GetLog([]conn.LogStub{
@@ -895,7 +917,9 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 			return s.
 				GetRemoteNames("origin", nil, nil).
 				GetSshConfig("github.com", nil, nil).
-				GetRepoNames("origin", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
 				GetBranchNames("@issue1_issue2", nil, nil).
 				GetMergedBranchNames("@main_issue1", nil, nil).
 				GetLog([]conn.LogStub{
@@ -966,7 +990,9 @@ func Test_BranchIsNotDeletableWhenFirstCommitOfTopicBranchIsAssociatedWithDefaul
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1005,7 +1031,9 @@ func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1051,7 +1079,9 @@ func Test_NoCommitHistoryWhenFirstCommitOfTopicBranchIsAssociatedWithDefaultBran
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1094,7 +1124,9 @@ func Test_NoCommitHistoryWhenDetachedBranch(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("main_@detached", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1148,7 +1180,9 @@ func Test_DoesNotReturnErrorWhenGetSshConfigFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", ErrCommand, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1187,7 +1221,9 @@ func Test_ReturnsErrorWhenGetRepoNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", ErrCommand, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
 		}, nil, nil)
@@ -1205,7 +1241,9 @@ func Test_ReturnsErrorWhenGetBranchNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
 			{Key: "remote.origin.gh-resolved", Filename: "empty"},
@@ -1224,7 +1262,9 @@ func Test_ReturnsErrorWhenGetMergedBranchNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", ErrCommand, nil).
 		GetConfig([]conn.ConfigStub{
@@ -1244,7 +1284,9 @@ func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1272,7 +1314,9 @@ func Test_ReturnsErrorWhenGetAssociatedRefNamesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1304,7 +1348,9 @@ func Test_ReturnsErrorWhenGetPullRequestsFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1341,7 +1387,9 @@ func Test_ReturnsErrorWhenGetUncommittedChangesFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("@main_issue1", nil, nil).
 		GetMergedBranchNames("@main", nil, nil).
 		GetLog([]conn.LogStub{
@@ -1380,7 +1428,9 @@ func Test_ReturnsErrorWhenCheckoutBranchFails(t *testing.T) {
 	s := conn.Setup(ctrl).
 		GetRemoteNames("origin", nil, nil).
 		GetSshConfig("github.com", nil, nil).
-		GetRepoNames("origin", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
 		GetBranchNames("main_@issue1", nil, nil).
 		GetMergedBranchNames("main", nil, nil).
 		GetLog([]conn.LogStub{

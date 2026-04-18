@@ -320,10 +320,30 @@ func parseWorktrees(output string) []shared.Worktree {
 }
 
 func (conn *Connection) RemoveWorktree(ctx context.Context, path string) (string, error) {
-	args := []string{
-		"worktree", "remove", path,
+	tmpDir, err := os.MkdirTemp("", "gh-poi-worktree-*")
+	if err != nil {
+		return conn.removeWorktreeFallback(ctx, path)
 	}
-	return conn.run(ctx, "git", args, None)
+	os.Remove(tmpDir)
+
+	err = os.Rename(path, tmpDir)
+	if err != nil {
+		return conn.removeWorktreeFallback(ctx, path)
+	}
+
+	result, err := conn.run(ctx, "git", []string{"worktree", "prune"}, None)
+	if err != nil {
+		os.Rename(tmpDir, path)
+		return "", err
+	}
+
+	go os.RemoveAll(tmpDir)
+
+	return result, nil
+}
+
+func (conn *Connection) removeWorktreeFallback(ctx context.Context, path string) (string, error) {
+	return conn.run(ctx, "git", []string{"worktree", "remove", path}, None)
 }
 
 func (conn *Connection) run(ctx context.Context, name string, args []string, mask DebugMask) (string, error) {

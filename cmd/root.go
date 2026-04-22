@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"sort"
@@ -137,7 +139,7 @@ func GetBranches(ctx context.Context, remotes []shared.Remote, connection shared
 	var err error
 	if scan == shared.Quick {
 		if repos, e := connection.GetRepoNames(ctx, remotes[0].Hostname, remotes[0].ResolvedRepoName()); e == nil {
-			repoNames, defaultBranchName, err = getRepo(repos)
+			repoNames, defaultBranchName, _, err = getRepo(repos)
 		} else {
 			err = e
 		}
@@ -146,7 +148,7 @@ func GetBranches(ctx context.Context, remotes []shared.Remote, connection shared
 		first := true
 		for _, remote := range remotes {
 			if repos, e := connection.GetRepoNames(ctx, remote.Hostname, remote.ResolvedRepoName()); e == nil {
-				names, defaultName, e := getRepo(repos)
+				names, defaultName, _, e := getRepo(repos)
 				if e != nil {
 					err = e
 					continue
@@ -707,7 +709,42 @@ func ToBranch(branchNames []string) []shared.Branch {
 	return results
 }
 
-func getRepo(jsonResp string) ([]string, string, error) {
+func GetRepo(ctx context.Context, connection shared.Connection, remotes []shared.Remote) ([]string, string, string, error) {
+	var repoNames []string
+	var defaultBranchName string
+	var parentDefaultBranchName string
+	var err error
+
+	if repos, e := connection.GetRepoNames(ctx, remotes[0].Hostname, remotes[0].ResolvedRepoName()); e == nil {
+		repoNames, defaultBranchName, parentDefaultBranchName, err = getRepo(repos)
+	} else {
+		err = e
+	}
+
+	return repoNames, defaultBranchName, parentDefaultBranchName, err
+}
+
+func ParseRepoName(repoNames []string) (owner string, repo string, isFork bool, parentOwner string, parentRepo string) {
+	if len(repoNames) == 0 {
+		return "", "", false, "", ""
+	}
+	parts := strings.SplitN(repoNames[0], "/", 2)
+	owner = parts[0]
+	if len(parts) > 1 {
+		repo = parts[1]
+	}
+	isFork = len(repoNames) > 1
+	if isFork {
+		parentParts := strings.SplitN(repoNames[1], "/", 2)
+		if len(parentParts) == 2 {
+			parentOwner = parentParts[0]
+			parentRepo = parentParts[1]
+		}
+	}
+	return
+}
+
+func getRepo(jsonResp string) ([]string, string, string, error) {
 	type response struct {
 		DefaultBranchRef struct {
 			Name string
@@ -727,7 +764,7 @@ func getRepo(jsonResp string) ([]string, string, error) {
 
 	var resp response
 	if err := json.Unmarshal([]byte(jsonResp), &resp); err != nil {
-		return nil, "", fmt.Errorf("error unmarshaling response: %w", err)
+		return nil, "", "", fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
 	repoNames := []string{
@@ -737,7 +774,7 @@ func getRepo(jsonResp string) ([]string, string, error) {
 		repoNames = append(repoNames, resp.Parent.Owner.Login+"/"+resp.Parent.Name)
 	}
 
-	return repoNames, resp.DefaultBranchRef.Name, nil
+	return repoNames, resp.DefaultBranchRef.Name, resp.Parent.DefaultBranchName, nil
 }
 
 func toPullRequests(jsonResp string) ([]shared.PullRequest, error) {
@@ -893,4 +930,312 @@ func BranchNameExists(branchName string, branches []shared.Branch) bool {
 func SplitLines(text string) []string {
 	return strings.FieldsFunc(strings.ReplaceAll(text, "\r\n", "\n"),
 		func(c rune) bool { return c == '\n' })
+}
+
+func IsRepoDeletable(branches []shared.Branch) bool {
+	hasMergedPR := false
+	for _, branch := range branches {
+		if branch.State == shared.Deletable || branch.State == shared.Deleted {
+			hasMergedPR = true
+			break
+		}
+	}
+	if !hasMergedPR {
+		return false
+	}
+
+	for _, branch := range branches {
+		if branch.State == shared.Deletable || branch.State == shared.Deleted {
+			continue
+		}
+		if branch.IsDetached() {
+			continue
+		}
+		if !branch.IsMerged {
+			return false
+		}
+		if branch.HasTrackedChanges {
+			return false
+		}
+	}
+
+	return true
+}
+
+func FindGitRepos(root string) ([]string, error) {
+	var repos []string
+	absRoot, err := filepath.Abs(root)
+	if err != nil {
+		return nil, err
+	}
+
+	gitRepos := make(map[string]bool)
+
+	err = filepath.WalkDir(absRoot, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			if os.IsPermission(err) {
+				return nil
+			}
+			return err
+		}
+		if !d.IsDir() {
+			return nil
+		}
+		if d.Name() == ".git" {
+			repoPath := filepath.Dir(path)
+			gitRepos[repoPath] = true
+			repos = append(repos, repoPath)
+			return filepath.SkipDir
+		}
+		if path != absRoot && strings.HasPrefix(d.Name(), ".") {
+			return filepath.SkipDir
+		}
+		// Skip subdirectories of already-found repos
+		for repo := range gitRepos {
+			if strings.HasPrefix(path, repo+string(filepath.Separator)) {
+				return filepath.SkipDir
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Remove repos that are subdirectories of other found repos
+	filtered := make([]string, 0, len(repos))
+	for i, repo := range repos {
+		isChild := false
+		for j, other := range repos {
+			if i != j && strings.HasPrefix(repo, other+string(filepath.Separator)) {
+				isChild = true
+				break
+			}
+		}
+		if !isChild {
+			filtered = append(filtered, repo)
+		}
+	}
+
+	slices.Sort(filtered)
+	return filtered, nil
+}
+
+func ParseUserRepos(jsonResp string) ([]string, error) {
+	type response []struct {
+		NameWithOwner string `json:"nameWithOwner"`
+	}
+
+	var repos response
+	if err := json.Unmarshal([]byte(jsonResp), &repos); err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %w", err)
+	}
+
+	result := make([]string, len(repos))
+	for i, repo := range repos {
+		result[i] = repo.NameWithOwner
+	}
+	return result, nil
+}
+
+type UserRepoInfo struct {
+	NameWithOwner  string
+	IsFork         bool
+	DefaultBranch  string
+	ParentOwner    string
+	ParentRepo     string
+}
+
+func ParseUserReposDetailed(jsonResp string) ([]UserRepoInfo, error) {
+	type response []struct {
+		NameWithOwner   string `json:"nameWithOwner"`
+		IsFork          bool   `json:"isFork"`
+		DefaultBranchRef struct {
+			Name string `json:"name"`
+		} `json:"defaultBranchRef"`
+		Parent *struct {
+			Name  string `json:"name"`
+			Owner struct {
+				Login string `json:"login"`
+			} `json:"owner"`
+		} `json:"parent"`
+	}
+
+	var repos response
+	if err := json.Unmarshal([]byte(jsonResp), &repos); err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %w", err)
+	}
+
+	result := make([]UserRepoInfo, len(repos))
+	for i, repo := range repos {
+		info := UserRepoInfo{
+			NameWithOwner: repo.NameWithOwner,
+			IsFork:        repo.IsFork,
+			DefaultBranch: repo.DefaultBranchRef.Name,
+		}
+		if repo.Parent != nil {
+			info.ParentOwner = repo.Parent.Owner.Login
+			info.ParentRepo = repo.Parent.Name
+		}
+		result[i] = info
+	}
+	return result, nil
+}
+
+type PRInfo struct {
+	Number      int
+	HeadRefName string
+	State       string
+	MergedAt    string
+	Author      string
+}
+
+
+func ParsePullRequestsList(jsonResp string) ([]PRInfo, error) {
+	type response []struct {
+		Number  int    `json:"number"`
+		HeadRef struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+		User struct {
+			Login string `json:"login"`
+		} `json:"user"`
+		State    string `json:"state"`
+		MergedAt string `json:"merged_at"`
+	}
+	var prs response
+	if err := json.Unmarshal([]byte(jsonResp), &prs); err != nil {
+		return nil, fmt.Errorf("error unmarshaling pull requests: %w", err)
+	}
+	result := make([]PRInfo, len(prs))
+	for i, pr := range prs {
+		result[i] = PRInfo{
+			Number:      pr.Number,
+			HeadRefName: pr.HeadRef.Ref,
+			State:       pr.State,
+			MergedAt:    pr.MergedAt,
+			Author:      pr.User.Login,
+		}
+	}
+	return result, nil
+}
+
+
+func IsRepoDeletableAPI(ctx context.Context, connection shared.Connection, owner string, repo string, defaultBranch string, parentDefaultBranch string, isFork bool, parentOwner string, parentRepo string, viewerLogin string) (bool, error) {
+	if !isFork {
+		return false, nil
+	}
+
+	mergedBranches := make(map[string]bool)
+	reposToCheck := []struct{ o, r string }{{owner, repo}}
+	if parentOwner != "" && parentRepo != "" {
+		reposToCheck = append(reposToCheck, struct{ o, r string }{parentOwner, parentRepo})
+	}
+
+	var prAPIErrors []error
+	for _, target := range reposToCheck {
+		prsJSON, err := connection.GetRepoPullRequestsList(ctx, target.o, target.r)
+		if err != nil {
+			prAPIErrors = append(prAPIErrors, err)
+			continue
+		}
+		prs, err := ParsePullRequestsList(prsJSON)
+		if err != nil {
+			prAPIErrors = append(prAPIErrors, err)
+			continue
+		}
+		for _, pr := range prs {
+			if pr.Author == viewerLogin && pr.State == "open" {
+				return false, nil
+			}
+			if pr.Author == viewerLogin && (pr.State == "closed" || pr.State == "merged") {
+				mergedBranches[pr.HeadRefName] = true
+			}
+		}
+	}
+
+	if len(prAPIErrors) > 0 {
+		return false, fmt.Errorf("failed to fetch pull requests: %w", errors.Join(prAPIErrors...))
+	}
+
+	if defaultBranch == "" {
+		return true, nil
+	}
+
+	branchesJSON, err := connection.GetRepoBranches(ctx, owner, repo)
+	if err != nil {
+		return false, fmt.Errorf("failed to fetch branches: %w", err)
+	}
+
+	type branch struct {
+		Name string `json:"name"`
+	}
+	var branches []branch
+	if err := json.Unmarshal([]byte(branchesJSON), &branches); err != nil {
+		return false, fmt.Errorf("failed to parse branches response: %w", err)
+	}
+
+	compareBase := defaultBranch
+	if parentDefaultBranch != "" && parentOwner != "" && parentRepo != "" {
+		compareBase = parentOwner + ":" + parentDefaultBranch
+	}
+	for _, b := range branches {
+		if b.Name == defaultBranch && compareBase == defaultBranch {
+			continue
+		}
+		if mergedBranches[b.Name] {
+			continue
+		}
+		compareJSON, err := connection.CompareCommits(ctx, owner, repo, compareBase, b.Name)
+		if err != nil {
+			// Branches with no common history (e.g. gh-pages orphan branches)
+			// can't be compared. Skip them rather than failing the fork check.
+			continue
+		}
+		type commitAuthor struct {
+			Login string `json:"login"`
+		}
+		type comparisonCommit struct {
+			Author commitAuthor `json:"author"`
+		}
+		type comparison struct {
+			AheadBy int                `json:"ahead_by"`
+			Commits []comparisonCommit `json:"commits"`
+		}
+		var comp comparison
+		if err := json.Unmarshal([]byte(compareJSON), &comp); err != nil {
+			return false, fmt.Errorf("failed to parse comparison response for branch %s: %w", b.Name, err)
+		}
+		if comp.AheadBy > 0 {
+			for _, c := range comp.Commits {
+				if c.Author.Login == viewerLogin {
+					return false, nil
+				}
+			}
+		}
+	}
+
+	return true, nil
+}
+
+func ParseAuthScopes(output string) []string {
+	for _, line := range strings.Split(output, "\n") {
+		if after, ok := strings.CutPrefix(strings.TrimSpace(line), "- Token scopes:"); ok {
+			scopes := strings.TrimSpace(after)
+			if scopes == "" {
+				return nil
+			}
+			result := strings.Split(scopes, ",")
+			for i := range result {
+				result[i] = strings.Trim(strings.TrimSpace(result[i]), "'")
+			}
+			return result
+		}
+	}
+	return nil
+}
+
+// HasDeleteRepoScope returns true if the scopes list includes delete_repo.
+func HasDeleteRepoScope(scopes []string) bool {
+	return slices.Contains(scopes, "delete_repo")
 }

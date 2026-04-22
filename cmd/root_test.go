@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/seachicken/gh-poi/conn"
@@ -1660,5 +1663,481 @@ func Test_DeleteBranches(t *testing.T) {
 		assert.Equal(t, shared.NotDeletable, actual[0].State)
 		assert.Equal(t, "main", actual[1].Name)
 		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
+}
+
+func Test_IsRepoDeletable(t *testing.T) {
+	t.Run("returns true when all branches are deletable or deleted", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deletable, IsMerged: true},
+			{Name: "bugfix", State: shared.Deleted, IsMerged: true},
+		}
+		assert.True(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns true when one deleted and default branch is merged", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deleted, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: true, IsDefault: true},
+		}
+		assert.True(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns true when one deletable and only detached HEAD remains", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deletable, IsMerged: true},
+			{Name: "(HEAD detached at origin/main)", State: shared.NotDeletable, IsMerged: false},
+		}
+		assert.True(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false when no branches are deletable or deleted", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "main", State: shared.NotDeletable, IsMerged: true},
+			{Name: "feature", State: shared.NotDeletable, IsMerged: false},
+		}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false when remaining branch is not merged", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deletable, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: false},
+		}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false when remaining branch has tracked changes", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deletable, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: true, HasTrackedChanges: true},
+		}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns true when one deleted and default branch is behind upstream", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deleted, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: true, IsDefault: true},
+		}
+		assert.True(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false when default branch is ahead of upstream", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deletable, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: false, IsDefault: true},
+		}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false when locked branch is not merged", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deletable, IsMerged: true},
+			{Name: "locked-branch", State: shared.NotDeletable, IsMerged: false, IsLocked: true},
+		}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns true with mixed deletable and merged remaining branches", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature1", State: shared.Deleted, IsMerged: true},
+			{Name: "feature2", State: shared.Deletable, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: true, IsDefault: true},
+		}
+		assert.True(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false with empty branch list", func(t *testing.T) {
+		branches := []shared.Branch{}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("skips multiple detached HEADs", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature", State: shared.Deleted, IsMerged: true},
+			{Name: "(HEAD detached at origin/main)", State: shared.NotDeletable, IsMerged: false},
+			{Name: "(HEAD detached at abc123)", State: shared.NotDeletable, IsMerged: false, HasTrackedChanges: true},
+		}
+		assert.True(t, IsRepoDeletable(branches))
+	})
+
+	t.Run("returns false when one remaining branch not merged among many merged", func(t *testing.T) {
+		branches := []shared.Branch{
+			{Name: "feature1", State: shared.Deleted, IsMerged: true},
+			{Name: "main", State: shared.NotDeletable, IsMerged: true, IsDefault: true},
+			{Name: "wip-branch", State: shared.NotDeletable, IsMerged: false},
+		}
+		assert.False(t, IsRepoDeletable(branches))
+	})
+}
+
+func Test_FindGitRepos(t *testing.T) {
+	t.Run("finds repos in directory tree", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		os.MkdirAll(filepath.Join(tmpDir, "repo1", ".git"), 0755)
+		os.MkdirAll(filepath.Join(tmpDir, "repo2", ".git"), 0755)
+		os.MkdirAll(filepath.Join(tmpDir, "not-a-repo"), 0755)
+
+		repos, err := FindGitRepos(tmpDir)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(repos))
+		slices.Sort(repos)
+		assert.Equal(t, filepath.Join(tmpDir, "repo1"), repos[0])
+		assert.Equal(t, filepath.Join(tmpDir, "repo2"), repos[1])
+	})
+
+	t.Run("skips hidden directories", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		os.MkdirAll(filepath.Join(tmpDir, "visible", ".git"), 0755)
+		os.MkdirAll(filepath.Join(tmpDir, ".hidden", "repo", ".git"), 0755)
+
+		repos, err := FindGitRepos(tmpDir)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(repos))
+		assert.Equal(t, filepath.Join(tmpDir, "visible"), repos[0])
+	})
+
+	t.Run("skips nested git directories", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		os.MkdirAll(filepath.Join(tmpDir, "repo", ".git"), 0755)
+		os.MkdirAll(filepath.Join(tmpDir, "repo", "subdir", ".git"), 0755)
+
+		repos, err := FindGitRepos(tmpDir)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(repos))
+		assert.Equal(t, filepath.Join(tmpDir, "repo"), repos[0])
+	})
+
+	t.Run("returns empty for directory with no repos", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		os.MkdirAll(filepath.Join(tmpDir, "plain-dir"), 0755)
+
+		repos, err := FindGitRepos(tmpDir)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 0, len(repos))
+	})
+
+	t.Run("handles deeply nested repos", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		os.MkdirAll(filepath.Join(tmpDir, "a", "b", "c", "deep-repo", ".git"), 0755)
+
+		repos, err := FindGitRepos(tmpDir)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(repos))
+		assert.Equal(t, filepath.Join(tmpDir, "a", "b", "c", "deep-repo"), repos[0])
+	})
+		t.Run("filters nested repos via post-walk deduplication", func(t *testing.T) {
+			tmpDir := t.TempDir()
+			os.MkdirAll(filepath.Join(tmpDir, "outer", "inner", ".git"), 0755)
+			os.MkdirAll(filepath.Join(tmpDir, "outer", ".git"), 0755)
+
+			repos, err := FindGitRepos(tmpDir)
+
+			assert.Nil(t, err)
+			assert.Equal(t, 1, len(repos))
+			assert.Equal(t, filepath.Join(tmpDir, "outer"), repos[0])
+		})
+}
+
+func Test_ParseUserRepos(t *testing.T) {
+	t.Run("parses valid JSON response", func(t *testing.T) {
+		jsonResp := `[{"nameWithOwner":"owner/repo1"},{"nameWithOwner":"owner/repo2"}]`
+		repos, err := ParseUserRepos(jsonResp)
+		assert.Nil(t, err)
+		assert.Equal(t, []string{"owner/repo1", "owner/repo2"}, repos)
+	})
+
+	t.Run("returns empty for empty array", func(t *testing.T) {
+		jsonResp := `[]`
+		repos, err := ParseUserRepos(jsonResp)
+		assert.Nil(t, err)
+		assert.Equal(t, 0, len(repos))
+	})
+
+	t.Run("returns error for invalid JSON", func(t *testing.T) {
+		_, err := ParseUserRepos("not json")
+		assert.NotNil(t, err)
+	})
+}
+
+
+func Test_ParsePullRequestsList(t *testing.T) {
+	t.Run("parses valid JSON response", func(t *testing.T) {
+		jsonResp := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"closed","merged_at":"2024-01-01T00:00:00Z"},{"number":2,"head":{"ref":"open-pr"},"user":{"login":"other"},"state":"open","merged_at":null}]`
+		prs, err := ParsePullRequestsList(jsonResp)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(prs))
+		assert.Equal(t, 1, prs[0].Number)
+		assert.Equal(t, "feature", prs[0].HeadRefName)
+		assert.Equal(t, "closed", prs[0].State)
+		assert.Equal(t, "2024-01-01T00:00:00Z", prs[0].MergedAt)
+		assert.Equal(t, "me", prs[0].Author)
+		assert.Equal(t, "open", prs[1].State)
+		assert.Equal(t, "", prs[1].MergedAt)
+		assert.Equal(t, "other", prs[1].Author)
+	})
+
+	t.Run("returns error for invalid JSON", func(t *testing.T) {
+		_, err := ParsePullRequestsList("not json")
+		assert.NotNil(t, err)
+	})
+}
+
+func Test_IsRepoDeletableAPI(t *testing.T) {
+	t.Run("returns true for fork with no open viewer PRs", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"closed","merged_at":"2024-01-01T00:00:00Z"}]`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.True(t, result)
+	})
+
+	t.Run("returns false for non-fork even with merged PR", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"closed","merged_at":"2024-01-01T00:00:00Z"}]`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "", false, "", "", "me")
+		assert.Nil(t, err)
+		assert.False(t, result)
+	})
+
+	t.Run("returns false for fork with viewer open PRs", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"open","merged_at":null}]`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.False(t, result)
+	})
+
+	t.Run("returns true for fork with no PRs at all", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[]`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.True(t, result)
+	})
+
+	t.Run("returns true for fork when only other users have open PRs", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"closed","merged_at":"2024-01-01T00:00:00Z"},{"number":2,"head":{"ref":"other"},"user":{"login":"other"},"state":"open","merged_at":null}]`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.True(t, result)
+	})
+	t.Run("returns false for fork when viewer has open PR on parent repo", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		forkPRs := `[]`
+		parentPRs := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"open","merged_at":null}]`
+
+		s.GetRepoPullRequestsList("owner", "repo", forkPRs, nil, nil).
+			GetRepoPullRequestsList("jdx", "hk", parentPRs, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "master", true, "jdx", "hk", "me")
+		assert.Nil(t, err)
+		assert.False(t, result)
+	})
+
+	t.Run("returns true for fork when viewer PR on parent is merged", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		forkPRs := `[]`
+		parentPRs := `[{"number":1,"head":{"ref":"feature"},"user":{"login":"me"},"state":"closed","merged_at":"2024-01-01T00:00:00Z"}]`
+
+		s.GetRepoPullRequestsList("owner", "repo", forkPRs, nil, nil).
+			GetRepoPullRequestsList("jdx", "hk", parentPRs, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "", "master", true, "jdx", "hk", "me")
+		assert.Nil(t, err)
+		assert.True(t, result)
+	})
+	t.Run("returns false for fork with branch ahead of default", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[]`
+		branchesJSON := `[{"name":"main"},{"name":"patch-1"}]`
+		compareJSON := `{"ahead_by":1,"behind_by":0,"status":"ahead","commits":[{"author":{"login":"me"}}]}`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil).
+			GetRepoBranches("owner", "repo", branchesJSON, nil, nil).
+			CompareCommits("owner", "repo", "main", "patch-1", compareJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "main", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.False(t, result)
+	})
+
+	t.Run("returns true for fork with no branches ahead", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[]`
+		branchesJSON := `[{"name":"main"},{"name":"patch-1"}]`
+		compareJSON := `{"ahead_by":0,"behind_by":0,"status":"identical","commits":[]}`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil).
+			GetRepoBranches("owner", "repo", branchesJSON, nil, nil).
+			CompareCommits("owner", "repo", "main", "patch-1", compareJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "main", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.True(t, result)
+	})
+
+	t.Run("returns true for fork with branch ahead by other author", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[]`
+		branchesJSON := `[{"name":"main"},{"name":"patch-1"}]`
+		compareJSON := `{"ahead_by":1,"behind_by":0,"status":"ahead","commits":[{"author":{"login":"someone-else"}}]}`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil).
+			GetRepoBranches("owner", "repo", branchesJSON, nil, nil).
+			CompareCommits("owner", "repo", "main", "patch-1", compareJSON, nil, nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "main", "", true, "", "", "me")
+		assert.Nil(t, err)
+		assert.True(t, result)
+	})
+
+	t.Run("returns error when branch list fails", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[]`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil).
+			GetRepoBranches("owner", "repo", "", errors.New("api error"), nil)
+
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "main", "", true, "", "", "me")
+		assert.NotNil(t, err)
+		assert.False(t, result)
+	})
+
+	t.Run("compares against parent default branch when available", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+
+		prsJSON := `[]`
+		branchesJSON := `[{"name":"main"},{"name":"patch-1"}]`
+		compareJSON := `{"ahead_by":1,"behind_by":0,"status":"ahead","commits":[{"author":{"login":"me"}}]}`
+
+		s.GetRepoPullRequestsList("owner", "repo", prsJSON, nil, nil).
+			GetRepoPullRequestsList("parent", "repo", prsJSON, nil, nil).
+			GetRepoBranches("owner", "repo", branchesJSON, nil, nil).
+			CompareCommits("owner", "repo", "parent:master", "main", compareJSON, nil, nil).
+			CompareCommits("owner", "repo", "parent:master", "patch-1", compareJSON, nil, nil)
+
+		// Uses parentOwner:parentDefaultBranch as compare base
+		result, err := IsRepoDeletableAPI(context.Background(), s.Conn, "owner", "repo", "main", "master", true, "parent", "repo", "me")
+		assert.Nil(t, err)
+		assert.False(t, result)
+	})
+	}
+
+
+func Test_ParseRepoName(t *testing.T) {
+	t.Run("parses owner/repo from single repo name", func(t *testing.T) {
+	owner, repo, isFork, _, _ := ParseRepoName([]string{"owner/repo"})
+	assert.Equal(t, "owner", owner)
+	assert.Equal(t, "repo", repo)
+	assert.False(t, isFork)
+	})
+
+	t.Run("parses owner/repo and detects fork", func(t *testing.T) {
+	owner, repo, isFork, _, _ := ParseRepoName([]string{"owner/repo", "parent/parent-repo"})
+	assert.Equal(t, "owner", owner)
+	assert.Equal(t, "repo", repo)
+	assert.True(t, isFork)
+	})
+
+	t.Run("handles empty repo names", func(t *testing.T) {
+	owner, repo, isFork, _, _ := ParseRepoName([]string{})
+	assert.Equal(t, "", owner)
+	assert.Equal(t, "", repo)
+	assert.False(t, isFork)
+	})
+}
+
+func Test_ParseAuthScopes(t *testing.T) {
+	t.Run("parses scopes from auth status output", func(t *testing.T) {
+		output := "github.com\n  ✓ Logged in to github.com account jhult (keyring)\n  - Token scopes: 'gist', 'read:org', 'repo'\n"
+		scopes := ParseAuthScopes(output)
+		assert.Equal(t, []string{"gist", "read:org", "repo"}, scopes)
+	})
+
+	t.Run("returns nil when no scopes line found", func(t *testing.T) {
+		output := "github.com\n  ✓ Logged in to github.com account jhult\n"
+		scopes := ParseAuthScopes(output)
+		assert.Nil(t, scopes)
+	})
+
+	t.Run("returns nil for empty output", func(t *testing.T) {
+		scopes := ParseAuthScopes("")
+		assert.Nil(t, scopes)
+	})
+}
+
+func Test_HasDeleteRepoScope(t *testing.T) {
+	t.Run("returns true when delete_repo is present", func(t *testing.T) {
+		assert.True(t, HasDeleteRepoScope([]string{"gist", "read:org", "repo", "delete_repo"}))
+	})
+
+	t.Run("returns false when delete_repo is missing", func(t *testing.T) {
+		assert.False(t, HasDeleteRepoScope([]string{"gist", "read:org", "repo"}))
+	})
+
+	t.Run("returns false for empty scopes", func(t *testing.T) {
+		assert.False(t, HasDeleteRepoScope([]string{}))
+	})
+
+	t.Run("returns false for nil scopes", func(t *testing.T) {
+		assert.False(t, HasDeleteRepoScope(nil))
 	})
 }

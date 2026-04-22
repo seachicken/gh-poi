@@ -28,21 +28,6 @@ type (
 		Filename string
 	}
 
-	RemoteHeadStub struct {
-		BranchName string
-		Filename   string
-	}
-
-	UpstreamOidStub struct {
-		BranchName string
-		Filename   string
-	}
-
-	LsRemoteHeadStub struct {
-		BranchName string
-		Filename   string
-	}
-
 	AssociatedBranchNamesStub struct {
 		Oid      string
 		Filename string
@@ -274,6 +259,94 @@ func (s *Stub) RemoveWorktree(err error, conf *Conf) *Stub {
 			EXPECT().
 			RemoveWorktree(gomock.Any(), gomock.Any()).
 			Return("", err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetRepoRoot(output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetRepoRoot(gomock.Any()).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetUserRepos(output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetUserRepos(gomock.Any()).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetRepoPullRequestsList(owner string, repo string, output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetRepoPullRequestsList(gomock.Any(), owner, repo).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) DeleteGitHubRepo(owner string, repo string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			DeleteGitHubRepo(gomock.Any(), owner, repo).
+			Return("", err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetViewerLogin(output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetViewerLogin(gomock.Any()).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetAuthScopes(output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetAuthScopes(gomock.Any()).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) CompareCommits(owner string, repo string, base string, head string, output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			CompareCommits(gomock.Any(), owner, repo, base, head).
+			Return(output, err),
+		conf,
+	)
+	return s
+}
+
+func (s *Stub) GetRepoBranches(owner string, repo string, output string, err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.EXPECT().
+			GetRepoBranches(gomock.Any(), owner, repo).
+			Return(output, err),
 		conf,
 	)
 	return s

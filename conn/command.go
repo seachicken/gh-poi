@@ -18,6 +18,9 @@ import (
 
 type (
 	Connection struct {
+
+		// Connection is safe for concurrent use. It holds no mutable state;
+		// each method creates a fresh exec.Cmd and reads Debug only for logging.
 		Debug bool
 	}
 
@@ -341,6 +344,65 @@ func (conn *Connection) PruneWorktrees(ctx context.Context) (string, error) {
 		"worktree", "prune",
 	}
 	return conn.run(ctx, "git", args, None)
+}
+
+func (conn *Connection) GetRepoRoot(ctx context.Context) (string, error) {
+	args := []string{
+		"rev-parse", "--show-toplevel",
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
+// Lists up to 1000 repos; users with more will be silently truncated.
+func (conn *Connection) GetUserRepos(ctx context.Context) (string, error) {
+	args := []string{
+		"repo", "list", "--json", "isFork,nameWithOwner,defaultBranchRef,parent", "--limit", "1000",
+	}
+	return conn.run(ctx, "gh", args, None)
+}
+
+// Returns up to 100 PRs; repos with more will be silently truncated.
+func (conn *Connection) GetRepoPullRequestsList(ctx context.Context, owner string, repo string) (string, error) {
+	args := []string{
+		"api", fmt.Sprintf("repos/%s/%s/pulls?state=all&per_page=100", owner, repo),
+	}
+	return conn.run(ctx, "gh", args, None)
+}
+
+func (conn *Connection) DeleteGitHubRepo(ctx context.Context, owner string, repo string) (string, error) {
+	args := []string{
+		"repo", "delete", fmt.Sprintf("%s/%s", owner, repo), "--yes",
+	}
+	return conn.run(ctx, "gh", args, Output)
+}
+
+func (conn *Connection) GetViewerLogin(ctx context.Context) (string, error) {
+	args := []string{
+		"api", "user", "--jq", ".login",
+	}
+	return conn.run(ctx, "gh", args, None)
+}
+
+func (conn *Connection) GetAuthScopes(ctx context.Context) (string, error) {
+	args := []string{
+		"auth", "status",
+	}
+	return conn.run(ctx, "gh", args, None)
+}
+
+func (conn *Connection) CompareCommits(ctx context.Context, owner string, repo string, base string, head string) (string, error) {
+	args := []string{
+		"api", fmt.Sprintf("repos/%s/%s/compare/%s...%s", owner, repo, base, head),
+	}
+	return conn.run(ctx, "gh", args, None)
+}
+
+// Returns up to 100 branches; repos with more will be silently truncated.
+func (conn *Connection) GetRepoBranches(ctx context.Context, owner string, repo string) (string, error) {
+	args := []string{
+		"api", fmt.Sprintf("repos/%s/%s/branches?per_page=100", owner, repo),
+	}
+	return conn.run(ctx, "gh", args, None)
 }
 
 func (conn *Connection) run(ctx context.Context, name string, args []string, mask DebugMask) (string, error) {

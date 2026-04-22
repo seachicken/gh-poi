@@ -70,6 +70,21 @@ func (mr *MockConnectionMockRecorder) CheckoutBranch(ctx, branchName, detach any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockConnection)(nil).CheckoutBranch), ctx, branchName, detach)
 }
 
+// CompareCommits mocks base method.
+func (m *MockConnection) CompareCommits(ctx context.Context, owner, repo, base, head string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompareCommits", ctx, owner, repo, base, head)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CompareCommits indicates an expected call of CompareCommits.
+func (mr *MockConnectionMockRecorder) CompareCommits(ctx, owner, repo, base, head any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompareCommits", reflect.TypeOf((*MockConnection)(nil).CompareCommits), ctx, owner, repo, base, head)
+}
+
 // DeleteBranches mocks base method.
 func (m *MockConnection) DeleteBranches(ctx context.Context, branchNames []string) (string, error) {
 	m.ctrl.T.Helper()
@@ -83,6 +98,21 @@ func (m *MockConnection) DeleteBranches(ctx context.Context, branchNames []strin
 func (mr *MockConnectionMockRecorder) DeleteBranches(ctx, branchNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), ctx, branchNames)
+}
+
+// DeleteGitHubRepo mocks base method.
+func (m *MockConnection) DeleteGitHubRepo(ctx context.Context, owner, repo string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteGitHubRepo", ctx, owner, repo)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteGitHubRepo indicates an expected call of DeleteGitHubRepo.
+func (mr *MockConnectionMockRecorder) DeleteGitHubRepo(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGitHubRepo", reflect.TypeOf((*MockConnection)(nil).DeleteGitHubRepo), ctx, owner, repo)
 }
 
 // FetchBranch mocks base method.
@@ -113,6 +143,21 @@ func (m *MockConnection) GetAssociatedRefNames(ctx context.Context, oid string) 
 func (mr *MockConnectionMockRecorder) GetAssociatedRefNames(ctx, oid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssociatedRefNames", reflect.TypeOf((*MockConnection)(nil).GetAssociatedRefNames), ctx, oid)
+}
+
+// GetAuthScopes mocks base method.
+func (m *MockConnection) GetAuthScopes(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAuthScopes", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAuthScopes indicates an expected call of GetAuthScopes.
+func (mr *MockConnectionMockRecorder) GetAuthScopes(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthScopes", reflect.TypeOf((*MockConnection)(nil).GetAuthScopes), ctx)
 }
 
 // GetBranchNames mocks base method.
@@ -205,6 +250,21 @@ func (mr *MockConnectionMockRecorder) GetRemoteNames(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteNames", reflect.TypeOf((*MockConnection)(nil).GetRemoteNames), ctx)
 }
 
+// GetRepoBranches mocks base method.
+func (m *MockConnection) GetRepoBranches(ctx context.Context, owner, repo string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepoBranches", ctx, owner, repo)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRepoBranches indicates an expected call of GetRepoBranches.
+func (mr *MockConnectionMockRecorder) GetRepoBranches(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoBranches", reflect.TypeOf((*MockConnection)(nil).GetRepoBranches), ctx, owner, repo)
+}
+
 // GetRepoNames mocks base method.
 func (m *MockConnection) GetRepoNames(ctx context.Context, hostname, repoName string) (string, error) {
 	m.ctrl.T.Helper()
@@ -218,6 +278,36 @@ func (m *MockConnection) GetRepoNames(ctx context.Context, hostname, repoName st
 func (mr *MockConnectionMockRecorder) GetRepoNames(ctx, hostname, repoName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoNames", reflect.TypeOf((*MockConnection)(nil).GetRepoNames), ctx, hostname, repoName)
+}
+
+// GetRepoPullRequestsList mocks base method.
+func (m *MockConnection) GetRepoPullRequestsList(ctx context.Context, owner, repo string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepoPullRequestsList", ctx, owner, repo)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRepoPullRequestsList indicates an expected call of GetRepoPullRequestsList.
+func (mr *MockConnectionMockRecorder) GetRepoPullRequestsList(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoPullRequestsList", reflect.TypeOf((*MockConnection)(nil).GetRepoPullRequestsList), ctx, owner, repo)
+}
+
+// GetRepoRoot mocks base method.
+func (m *MockConnection) GetRepoRoot(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepoRoot", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRepoRoot indicates an expected call of GetRepoRoot.
+func (mr *MockConnectionMockRecorder) GetRepoRoot(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepoRoot", reflect.TypeOf((*MockConnection)(nil).GetRepoRoot), ctx)
 }
 
 // GetSshConfig mocks base method.
@@ -253,6 +343,36 @@ func (mr *MockConnectionMockRecorder) GetUncommittedChanges(ctx any, opts ...any
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUncommittedChanges", reflect.TypeOf((*MockConnection)(nil).GetUncommittedChanges), varargs...)
+}
+
+// GetUserRepos mocks base method.
+func (m *MockConnection) GetUserRepos(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserRepos", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserRepos indicates an expected call of GetUserRepos.
+func (mr *MockConnectionMockRecorder) GetUserRepos(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserRepos", reflect.TypeOf((*MockConnection)(nil).GetUserRepos), ctx)
+}
+
+// GetViewerLogin mocks base method.
+func (m *MockConnection) GetViewerLogin(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetViewerLogin", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetViewerLogin indicates an expected call of GetViewerLogin.
+func (mr *MockConnectionMockRecorder) GetViewerLogin(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetViewerLogin", reflect.TypeOf((*MockConnection)(nil).GetViewerLogin), ctx)
 }
 
 // GetWorktrees mocks base method.

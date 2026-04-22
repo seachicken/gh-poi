@@ -21,4 +21,12 @@ type Connection interface {
 	DeleteBranches(ctx context.Context, branchNames []string) (string, error)
 	GetWorktrees(ctx context.Context) (string, error)
 	RemoveWorktree(ctx context.Context, path string) (string, error)
+	GetRepoRoot(ctx context.Context) (string, error)
+	GetUserRepos(ctx context.Context) (string, error)
+	GetRepoPullRequestsList(ctx context.Context, owner string, repo string) (string, error)
+	DeleteGitHubRepo(ctx context.Context, owner string, repo string) (string, error)
+	GetViewerLogin(ctx context.Context) (string, error)
+	GetAuthScopes(ctx context.Context) (string, error)
+	CompareCommits(ctx context.Context, owner string, repo string, base string, head string) (string, error)
+	GetRepoBranches(ctx context.Context, owner string, repo string) (string, error)
 }

@@ -655,7 +655,7 @@ func Test_GetBranchesWhenSquashAndMergedPRWithChanges(t *testing.T) {
 			assert.Equal(t, shared.NotDeletable, actual[1].State)
 		})
 
-		t.Run("deletable with untracking uncommitted changes", func(t *testing.T) {
+		t.Run("deletable with untracked files", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			s := conn.Setup(ctrl).
@@ -974,6 +974,25 @@ func Test_GetBranchesWhenMergedPRIsLinkedWorktree(t *testing.T) {
 			s := conn.Setup(ctrl).
 				GetUncommittedChanges([]conn.UncommittedChangeStub{
 					{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Output: " M README.md"},
+				}, nil, nil)
+			setupDefault(s)
+			remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+
+			actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, scan, false)
+
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "linkedIssue1", actual[0].Name)
+			assert.Equal(t, shared.NotDeletable, actual[0].State)
+			assert.Equal(t, "main", actual[1].Name)
+			assert.Equal(t, shared.NotDeletable, actual[1].State)
+		})
+
+		t.Run("not deletable with untracked files", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetUncommittedChanges([]conn.UncommittedChangeStub{
+					{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Output: "?? new.txt"},
 				}, nil, nil)
 			setupDefault(s)
 			remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)

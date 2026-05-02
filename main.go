@@ -296,6 +296,8 @@ func printBranches(branches []shared.Branch) {
 				reason = "main worktree"
 			} else if branch.Worktree != nil && !branch.Worktree.IsMain && branch.Head {
 				reason = "worktree here"
+			} else if branch.Worktree != nil && branch.HasUntrackedFiles {
+				reason = "untracked files"
 			} else if !branch.IsDefault && len(branch.PullRequests) > 0 && branch.HasTrackedChanges {
 				reason = "uncommitted changes"
 			}

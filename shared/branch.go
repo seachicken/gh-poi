@@ -14,6 +14,7 @@ type (
 		IsMerged          bool
 		IsLocked          bool
 		HasTrackedChanges bool
+		HasUntrackedFiles bool
 		Commits           []string
 		PullRequests      []PullRequest
 		State             BranchState

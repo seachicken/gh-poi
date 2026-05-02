@@ -403,15 +403,12 @@ func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connecti
 			}
 		}
 
-		hasTrackedChanges := false
 		for _, change := range changes {
-			if !change.IsUntracked() {
+			if change.IsUntracked() {
+				branch.HasUntrackedFiles = true
+			} else {
 				branch.HasTrackedChanges = true
-				break
 			}
-		}
-		if hasTrackedChanges {
-			branch.HasTrackedChanges = true
 		}
 		results = append(results, branch)
 	}
@@ -582,7 +579,7 @@ func getDeleteStatus(branch shared.Branch, state shared.PullRequestState) shared
 	}
 
 	if branch.Worktree != nil {
-		if branch.Worktree.IsLocked || (branch.Worktree.IsMain && !branch.Head) || (!branch.Worktree.IsMain && branch.Head) {
+		if branch.Worktree.IsLocked || (branch.Worktree.IsMain && !branch.Head) || (!branch.Worktree.IsMain && branch.Head) || branch.HasUntrackedFiles {
 			return shared.NotDeletable
 		}
 	}

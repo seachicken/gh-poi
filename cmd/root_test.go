@@ -1108,6 +1108,27 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 			assert.Equal(t, "issue2", actual[1].Name)
 			assert.Equal(t, shared.NotDeletable, actual[1].State)
 		})
+
+		t.Run("deletable with untracked files", func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			s := conn.Setup(ctrl).
+				GetUncommittedChanges([]conn.UncommittedChangeStub{
+					{Path: "", Output: "?? new.txt"},
+				}, nil, nil)
+			setupDefault(s)
+			remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+
+			actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, scan, false)
+
+			assert.Equal(t, 3, len(actual))
+			assert.Equal(t, "(HEAD detached at origin/main)", actual[0].Name)
+			assert.Equal(t, shared.NotDeletable, actual[0].State)
+			assert.Equal(t, "issue1", actual[1].Name)
+			assert.Equal(t, shared.Deletable, actual[1].State)
+			assert.Equal(t, "issue2", actual[2].Name)
+			assert.Equal(t, shared.NotDeletable, actual[2].State)
+		})
 	})
 }
 

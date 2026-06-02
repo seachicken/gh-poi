@@ -1,8 +1,9 @@
 package shared
 
 type Worktree struct {
-	Path     string
-	Branch   string
-	IsMain   bool
-	IsLocked bool
+	Path       string
+	Branch     string
+	IsMain     bool
+	IsLocked   bool
+	IsPrunable bool
 }

@@ -298,9 +298,10 @@ func parseWorktrees(output string) []shared.Worktree {
 				results = append(results, *current)
 			}
 			current = &shared.Worktree{
-				Path:     path,
-				IsMain:   isFirst,
-				IsLocked: false,
+				Path:       path,
+				IsMain:     isFirst,
+				IsLocked:   false,
+				IsPrunable: false,
 			}
 			isFirst = false
 		} else if branch, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
@@ -309,6 +310,8 @@ func parseWorktrees(output string) []shared.Worktree {
 			}
 		} else if line == "locked" {
 			current.IsLocked = true
+		} else if strings.HasPrefix(line, "prunable ") {
+			current.IsPrunable = true
 		}
 	}
 

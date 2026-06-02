@@ -396,12 +396,10 @@ func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connecti
 			if err != nil {
 				return results, err
 			}
-		} else if branch.Worktree != nil {
-			if _, err = os.Stat(branch.Worktree.Path); err == nil {
-				changes, err = conn.GetUncommittedChanges(ctx, connection, "-C", branch.Worktree.Path)
-				if err != nil {
-					return results, err
-				}
+		} else if branch.Worktree != nil && !branch.Worktree.IsPrunable {
+			changes, err = conn.GetUncommittedChanges(ctx, connection, "-C", branch.Worktree.Path)
+			if err != nil {
+				return results, err
 			}
 		}
 

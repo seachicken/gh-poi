@@ -85,6 +85,21 @@ func (mr *MockConnectionMockRecorder) DeleteBranches(ctx, branchNames any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranches", reflect.TypeOf((*MockConnection)(nil).DeleteBranches), ctx, branchNames)
 }
 
+// FetchBranch mocks base method.
+func (m *MockConnection) FetchBranch(ctx context.Context, remoteName, branchName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchBranch", ctx, remoteName, branchName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchBranch indicates an expected call of FetchBranch.
+func (mr *MockConnectionMockRecorder) FetchBranch(ctx, remoteName, branchName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchBranch", reflect.TypeOf((*MockConnection)(nil).FetchBranch), ctx, remoteName, branchName)
+}
+
 // GetAssociatedRefNames mocks base method.
 func (m *MockConnection) GetAssociatedRefNames(ctx context.Context, oid string) (string, error) {
 	m.ctrl.T.Helper()

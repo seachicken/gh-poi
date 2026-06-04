@@ -209,6 +209,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 		var deletingErr error
 		branches, deletingErr = cmd.DeleteBranches(ctx, branches, connection)
 		connection.PruneRemoteBranches(ctx, remotes[0].Name)
+		connection.PruneWorktrees(ctx)
 
 		sp.Stop()
 

@@ -513,6 +513,7 @@ func Test_GetBranchesWhenSquashAndMergedToOriginAndMissingDefaultBranch(t *testi
 					{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 					{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 				}, nil, nil).
+				FetchBranch(nil, nil).
 				CheckoutBranch(nil, nil)
 		}
 
@@ -573,6 +574,7 @@ func Test_GetBranchesWhenSquashAndMergedToUpstreamAndMissingDefaultBranch(t *tes
 					{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
 					{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
 				}, nil, nil).
+				FetchBranch(nil, nil).
 				CheckoutBranch(nil, nil)
 		}
 
@@ -1071,6 +1073,7 @@ func Test_GetBranchesWhenMergedPRIsMainWorktree(t *testing.T) {
 					{Key: "branch.issue2.gh-poi-locked", Filename: "empty"},
 					{Key: "branch.issue2.gh-poi-protected", Filename: "empty"},
 				}, nil, nil).
+				FetchBranch(nil, nil).
 				CheckoutBranch(nil, nil)
 		}
 

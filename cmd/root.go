@@ -659,7 +659,11 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, remotes []shared.Remote
 	} else {
 		newBranchName = remoteName + "/" + defaultBranchName
 		if !dryRun {
-			_, err := connection.CheckoutBranch(ctx, newBranchName, true)
+			_, err := connection.FetchBranch(ctx, remoteName, defaultBranchName)
+			if err != nil {
+				return nil, err
+			}
+			_, err = connection.CheckoutBranch(ctx, newBranchName, true)
 			if err != nil {
 				return nil, err
 			}

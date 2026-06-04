@@ -219,6 +219,18 @@ func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
 	return s
 }
 
+func (s *Stub) FetchBranch(err error, conf *Conf) *Stub {
+	s.T.Helper()
+	configure(
+		s.Conn.
+			EXPECT().
+			FetchBranch(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return("", err),
+		conf,
+	)
+	return s
+}
+
 func (s *Stub) CheckoutBranch(err error, conf *Conf) *Stub {
 	s.T.Helper()
 	configure(

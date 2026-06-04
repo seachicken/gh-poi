@@ -247,6 +247,13 @@ func (conn *Connection) RemoveConfig(ctx context.Context, key string) (string, e
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) FetchBranch(ctx context.Context, remoteName string, branchName string) (string, error) {
+	args := []string{
+		"fetch", remoteName, branchName,
+	}
+	return conn.run(ctx, "git", args, None)
+}
+
 func (conn *Connection) CheckoutBranch(ctx context.Context, branchName string, detach bool) (string, error) {
 	args := []string{
 		"checkout", "--quiet", branchName,

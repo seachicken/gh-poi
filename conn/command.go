@@ -331,7 +331,7 @@ func parseWorktrees(output string) []shared.Worktree {
 
 func (conn *Connection) RemoveWorktree(ctx context.Context, path string) (string, error) {
 	args := []string{
-		"worktree", "remove", path,
+		"worktree", "remove", "--force", path,
 	}
 	return conn.run(ctx, "git", args, None)
 }

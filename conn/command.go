@@ -315,7 +315,7 @@ func parseWorktrees(output string) []shared.Worktree {
 			if current != nil {
 				current.Branch = branch
 			}
-		} else if line == "locked" {
+		} else if line == "locked" || strings.HasPrefix(line, "locked ") {
 			current.IsLocked = true
 		} else if strings.HasPrefix(line, "prunable ") {
 			current.IsPrunable = true

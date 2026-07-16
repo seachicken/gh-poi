@@ -194,6 +194,17 @@ func Test_ParseWorktreesWithLocked(t *testing.T) {
 	)
 }
 
+func Test_ParseWorktreesWithLockedReason(t *testing.T) {
+	stub := (&Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "lockedWithReason")
+	assert.Equal(t,
+		[]shared.Worktree{
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_main", Branch: "main", IsMain: true, IsLocked: false, IsPrunable: false},
+			{Path: "/home/runner/work/gh-poi/gh-poi/conn/fixtures/repo_worktree_linkedIssue1", Branch: "linkedIssue1", IsMain: false, IsLocked: true, IsPrunable: false},
+		},
+		parseWorktrees(stub),
+	)
+}
+
 func Test_ParseWorktreesWithPrunable(t *testing.T) {
 	stub := (&Stub{Conn: nil, T: t}).ReadFile("git", "worktree", "prunable")
 	assert.Equal(t,

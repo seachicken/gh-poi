@@ -147,7 +147,7 @@ func (conn *Connection) GetUpstreamOid(ctx context.Context, branchName string) (
 
 func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
 	args := []string{
-		"log", "--max-count=30", "--format=%H", branchName, "--",
+		"log", "--max-count=30", "--format=%H", "--no-show-signature", branchName, "--",
 	}
 	return conn.run(ctx, "git", args, None)
 }

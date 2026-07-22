@@ -67,7 +67,7 @@ func parseRemotes(output string) []shared.Remote {
 
 	for _, remoteConfig := range splitLines(output) {
 		splitConfig := strings.Fields(remoteConfig)
-		if len(splitConfig) != 3 {
+		if len(splitConfig) < 3 {
 			return []shared.Remote{}
 		}
 

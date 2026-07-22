@@ -72,6 +72,19 @@ func Test_CreateRemoteWithHttps(t *testing.T) {
 	)
 }
 
+func Test_CreateRemoteWithPartialCloneFilter(t *testing.T) {
+	assert.Equal(t,
+		[]shared.Remote{
+			{
+				Name:     "origin",
+				Hostname: "github.com",
+				RepoName: "org/repo",
+			},
+		},
+		parseRemotes("origin	git@github.com:org/repo.git (fetch) [blob:none]"),
+	)
+}
+
 // https://github.com/seachicken/gh-poi/issues/152
 func Test_CreateRemoteWithHttpsTrailingSlash(t *testing.T) {
 	assert.Equal(t,

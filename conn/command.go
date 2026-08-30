@@ -146,8 +146,9 @@ func (conn *Connection) GetUpstreamOid(ctx context.Context, branchName string) (
 }
 
 func (conn *Connection) GetLog(ctx context.Context, branchName string) (string, error) {
+	// Exclude merge commits and retrieve only the topic branch history.
 	args := []string{
-		"log", "--max-count=30", "--format=%H", "--no-show-signature", branchName, "--",
+		"log", "--no-merges", "--first-parent", "--max-count=30", "--format=%H", "--no-show-signature", branchName, "--",
 	}
 	return conn.run(ctx, "git", args, None)
 }

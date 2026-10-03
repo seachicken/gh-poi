@@ -28,7 +28,7 @@ gh extension install seachicken/gh-poi
   - `quick`: Fast; checks "origin" and "upstream" remotes. Identifies PRs using only the latest commit on each branch
   - `deep`: Comprehensive; scans all registered remotes. Performs a deeper history check to link branches to PRs, ensuring no potential matches are missed across multiple forks
   - Note: poi ensures safe deletion in both modes
-- `gh poi --dry-run` Show branches to delete without actually deleting it
+- `gh poi --dry-run` Show branches to delete without actually deleting them (fetches the remote default branch reference if missing)
 - `gh poi --debug` Enable debug logs
 - `gh poi lock <branchname>...` Lock branches to prevent them from being deleted
 - `gh poi unlock <branchname>...` Unlock branches to allow them to be deleted

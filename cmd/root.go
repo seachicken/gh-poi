@@ -194,6 +194,9 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 	if names, err := connection.GetBranchNames(ctx); err == nil {
 		branches = ToBranch(SplitLines(names))
 		branches = applyDefault(branches, defaultBranchName)
+		if err := ensureDefaultBranchRef(ctx, remote, defaultBranchName, connection); err != nil {
+			return nil, err
+		}
 		mergedNames, err := connection.GetMergedBranchNames(ctx, remote.Name, defaultBranchName)
 		if err != nil {
 			return nil, err
@@ -691,6 +694,20 @@ func switchToDefaultBranchIfDeleted(ctx context.Context, remotes []shared.Remote
 	}
 
 	return results, nil
+}
+
+func ensureDefaultBranchRef(ctx context.Context, remote shared.Remote, defaultBranchName string, connection shared.Connection) error {
+	if _, err := connection.GetRemoteHeadOid(ctx, remote.Name, defaultBranchName); err == nil {
+		return nil
+	}
+
+	if _, err := connection.FetchBranch(ctx, remote.Name, defaultBranchName); err != nil {
+		return fmt.Errorf("failed to fetch default branch reference %s/%s: %w\nrun 'git fetch %s +refs/heads/%s:refs/remotes/%s/%s' to fetch it manually",
+			remote.Name, defaultBranchName, err,
+			remote.Name, defaultBranchName, remote.Name, defaultBranchName)
+	}
+
+	return nil
 }
 
 func ToBranch(branchNames []string) []shared.Branch {

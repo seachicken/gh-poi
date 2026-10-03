@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/seachicken/gh-poi/conn"
@@ -1429,6 +1430,79 @@ func Test_ReturnsErrorWhenGetMergedBranchNamesFails(t *testing.T) {
 	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
 
 	assert.NotNil(t, err)
+}
+
+func Test_FetchesDefaultBranchWhenRemoteReferenceMissing(t *testing.T) {
+	for _, dryRun := range []bool{false, true} {
+		t.Run(fmt.Sprintf("dryRun=%v", dryRun), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			s := conn.Setup(ctrl).
+				GetRemoteNames("origin", nil, nil).
+				GetSshConfig("github.com", nil, nil).
+				GetRepoNames([]conn.RepoNamesStub{
+					{RepoName: "owner/repo", Filename: "origin"},
+				}, nil, nil).
+				GetBranchNames("@main_issue1", nil, nil).
+				GetRemoteHeadOid(ErrCommand, nil).
+				FetchBranch(nil, nil).
+				GetMergedBranchNames("@main_issue1", nil, nil).
+				GetLog([]conn.LogStub{
+					{BranchName: "main", Filename: "main_issue1Merged"},
+					{BranchName: "issue1", Filename: "issue1Merged"},
+				}, nil, nil).
+				GetPullRequests("issue1Merged", nil, nil).
+				GetUncommittedChanges([]conn.UncommittedChangeStub{
+					{Path: "", Output: ""},
+				}, nil, nil).
+				GetWorktrees("none", nil, nil).
+				GetConfig([]conn.ConfigStub{
+					{Key: "remote.origin.gh-resolved", Filename: "empty"},
+					{Key: "branch.main.merge", Filename: "mergeMain"},
+					{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+					{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+					{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+					{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+					{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
+				}, nil, nil)
+			remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
+
+			actual, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, dryRun)
+
+			assert.Nil(t, err)
+			assert.Equal(t, 2, len(actual))
+			assert.Equal(t, "issue1", actual[0].Name)
+			assert.Equal(t, shared.Deletable, actual[0].State)
+			assert.Equal(t, "main", actual[1].Name)
+			assert.Equal(t, shared.NotDeletable, actual[1].State)
+		})
+	}
+}
+
+func Test_ReturnsErrorWhenFetchingDefaultBranchReferenceFails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	s := conn.Setup(ctrl).
+		GetRemoteNames("origin", nil, nil).
+		GetSshConfig("github.com", nil, nil).
+		GetRepoNames([]conn.RepoNamesStub{
+			{RepoName: "owner/repo", Filename: "origin"},
+		}, nil, nil).
+		GetBranchNames("@main_issue1", nil, nil).
+		GetRemoteHeadOid(ErrCommand, nil).
+		FetchBranch(ErrCommand, nil).
+		GetConfig([]conn.ConfigStub{
+			{Key: "remote.origin.gh-resolved", Filename: "empty"},
+		}, nil, nil)
+	remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, shared.Deep)
+
+	_, err := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, shared.Deep, false)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "failed to fetch default branch reference origin/main")
+	assert.Contains(t, err.Error(), "run 'git fetch origin +refs/heads/main:refs/remotes/origin/main' to fetch it manually")
 }
 
 func Test_ReturnsErrorWhenGetLogFails(t *testing.T) {

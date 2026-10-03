@@ -37,6 +37,20 @@ gh extension install seachicken/gh-poi
 
 ## FAQ
 
+### How does `gh poi` compare with other branch cleanup tools?
+
+`gh poi` is built for GitHub pull-request workflows. Its GitHub integration considers each PR's state and the commits associated with a local branch, allowing it to clean up squash-merged PRs safely.
+
+| Scenario                                                         | `gh poi` | `git branch --delete-merged` |
+|------------------------------------------------------------------| :---: | :---: |
+| Merged into the upstream branch, with an associated GitHub PR    | ✅ | ✅ |
+| Merged into the upstream branch, without an associated GitHub PR | ❌ | ✅ |
+| Squash-merged with an associated GitHub PR                       | ✅ | ❌ |
+| Squash-merged locally, without an associated GitHub PR           | ❌ | ❌ |
+| PR closed without merging                                        | ✅<br>`--state closed` | ❌ |
+| Merged branch in a clean, inactive linked worktree                             | ✅ | ❌ |
+| Keep a merged branch                                             | ✅<br>`gh poi lock <name>` | ✅<br>`branch.<name>.deleteMerged=false` |
+
 ### Why the name "poi"?
 
 "poi" means "feel free to throw it away" in Japanese.  

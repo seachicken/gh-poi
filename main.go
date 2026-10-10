@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"slices"
 	"time"
@@ -86,15 +87,37 @@ func (s ScanFlag) toModel() shared.ScanMode {
 }
 
 func main() {
+	if err := runCLI(os.Args[1:]); err != nil {
+		os.Exit(exitCode(err))
+	}
+}
+
+func exitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		if code := exitErr.ExitCode(); code != 0 {
+			return code
+		}
+	}
+	return 1
+}
+
+func runCLI(args []string) error {
 	state := Merged
 	scan := Quick
 	var dryRun bool
 	var debug bool
-	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
-	flag.Var(&scan, "scan", "Specify the scan mode by {quick|deep}")
-	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
-	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
-	flag.Usage = func() {
+
+	flags := flag.NewFlagSet("gh-poi", flag.ContinueOnError)
+	flags.SetOutput(color.Output)
+	flags.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
+	flags.Var(&scan, "scan", "Specify the scan mode by {quick|deep}")
+	flags.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
+	flags.BoolVar(&debug, "debug", false, "Enable debug logs")
+	flags.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")
 		fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
 		fmt.Fprintf(color.Output, "  %s\n\n", "gh poi <command> [flags]")
@@ -107,67 +130,96 @@ func main() {
   `)
 		fmt.Fprintf(color.Output, "%s\n", bold("FLAGS"))
 		maxLen := 0
-		flag.VisitAll(func(f *flag.Flag) {
+		flags.VisitAll(func(f *flag.Flag) {
 			if len(f.Name) > maxLen {
 				maxLen = len(f.Name)
 			}
 		})
-		flag.VisitAll(func(f *flag.Flag) {
+		flags.VisitAll(func(f *flag.Flag) {
 			fmt.Fprintf(color.Output, "  --%-*s %s\n", maxLen+2, f.Name, f.Usage)
 		})
 		fmt.Println()
 	}
-	flag.Parse()
-	args := flag.Args()
 
-	if len(args) == 0 {
-		runMain(state, scan, dryRun, debug)
-	} else {
-		subcmd, args := args[0], args[1:]
-		switch subcmd {
-		case "lock", "protect":
-			lockCmd := flag.NewFlagSet("lock", flag.ExitOnError)
-			lockCmd.Usage = func() {
-				fmt.Fprintf(color.Output, "%s\n\n", "Lock branches to prevent them from being deleted")
-				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi lock <branchname>...")
-			}
-			lockCmd.Parse(args)
-
-			// TODO: Remove after deprecated commands are removed
-			if subcmd == "protect" {
-				fmt.Fprintln(os.Stderr, "warning: 'protect' is deprecated, please use 'lock' instead")
-			}
-			runLock(args, debug)
-		case "unlock", "unprotect":
-			unlockCmd := flag.NewFlagSet("unlock", flag.ExitOnError)
-			unlockCmd.Usage = func() {
-				fmt.Fprintf(color.Output, "%s\n\n", "Unlock branches to allow them to be deleted")
-				fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
-				fmt.Fprintf(color.Output, "  %s\n\n", "gh poi unlock <branchname>...")
-			}
-			unlockCmd.Parse(args)
-
-			// TODO: Remove after deprecated commands are removed
-			if subcmd == "unprotect" {
-				fmt.Fprintln(os.Stderr, "warning: 'unprotect' is deprecated, please use 'unlock' instead")
-			}
-			runUnlock(args, debug)
-		default:
-			fmt.Fprintf(os.Stderr, "unknown command %q for poi\n", subcmd)
+	if err := flags.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return nil
 		}
+		return err
+	}
+	remaining := flags.Args()
+
+	if len(remaining) == 0 {
+		return runMain(state, scan, dryRun, debug)
+	}
+
+	subcmd, subArgs := remaining[0], remaining[1:]
+	switch subcmd {
+	case "lock", "protect":
+		lockCmd := flag.NewFlagSet("lock", flag.ContinueOnError)
+		lockCmd.SetOutput(color.Output)
+		lockCmd.Usage = func() {
+			fmt.Fprintf(color.Output, "%s\n\n", "Lock branches to prevent them from being deleted")
+			fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
+			fmt.Fprintf(color.Output, "  %s\n\n", "gh poi lock <branchname>...")
+		}
+		if err := lockCmd.Parse(subArgs); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return nil
+			}
+			return err
+		}
+
+		// TODO: Remove after deprecated commands are removed
+		if subcmd == "protect" {
+			fmt.Fprintln(os.Stderr, "warning: 'protect' is deprecated, please use 'lock' instead")
+		}
+		return runLock(lockCmd.Args(), debug)
+	case "unlock", "unprotect":
+		unlockCmd := flag.NewFlagSet("unlock", flag.ContinueOnError)
+		unlockCmd.SetOutput(color.Output)
+		unlockCmd.Usage = func() {
+			fmt.Fprintf(color.Output, "%s\n\n", "Unlock branches to allow them to be deleted")
+			fmt.Fprintf(color.Output, "%s\n", bold("USAGE"))
+			fmt.Fprintf(color.Output, "  %s\n\n", "gh poi unlock <branchname>...")
+		}
+		if err := unlockCmd.Parse(subArgs); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return nil
+			}
+			return err
+		}
+
+		// TODO: Remove after deprecated commands are removed
+		if subcmd == "unprotect" {
+			fmt.Fprintln(os.Stderr, "warning: 'unprotect' is deprecated, please use 'unlock' instead")
+		}
+		return runUnlock(unlockCmd.Args(), debug)
+	default:
+		fmt.Fprintf(os.Stderr, "unknown command %q for poi\n", subcmd)
+		return fmt.Errorf("unknown command %q for poi", subcmd)
 	}
 }
 
-func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
+type mainConnection interface {
+	shared.Connection
+	PruneRemoteBranches(ctx context.Context, remoteName string) (string, error)
+	PruneWorktrees(ctx context.Context) (string, error)
+}
+
+func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
+	connection := &conn.Connection{Debug: debug}
+	return runMainWithConn(ctx, connection, state, scan, dryRun, debug)
+}
+
+func runMainWithConn(ctx context.Context, connection mainConnection, state StateFlag, scan ScanFlag, dryRun bool, debug bool) error {
 	if dryRun {
 		fmt.Fprintf(color.Output, "%s\n", bold("== DRY RUN =="))
 	}
 
-	connection := &conn.Connection{Debug: debug}
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 	defer sp.Stop()
 
@@ -180,8 +232,9 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 
 	remotes, err := cmd.GetPreferredRemotes(ctx, connection, scan.toModel())
 	if err != nil {
+		sp.Stop()
 		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
 
 	branches, fetchingErr := cmd.GetBranches(ctx, remotes, connection, state.toModel(), scan.toModel(), dryRun)
@@ -193,7 +246,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	} else {
 		fmt.Fprintf(color.Output, "%s%s\n", red("✕"), fetchingMsg)
 		fmt.Fprintln(os.Stderr, fetchingErr)
-		return
+		return fetchingErr
 	}
 
 	deletingMsg := " Deleting branches..."
@@ -227,7 +280,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
 			fmt.Fprintln(os.Stderr, deletingErr)
-			return
+			return deletingErr
 		}
 	}
 
@@ -250,32 +303,42 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	fmt.Fprintf(color.Output, "%s\n", bold("Branches not deleted"))
 	printBranches(getBranches(branches, notDeletedStates))
 	fmt.Println()
+
+	return nil
 }
 
-func runLock(branchNames []string, debug bool) {
+func runLock(branchNames []string, debug bool) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	connection := &conn.Connection{Debug: debug}
+	return runLockWithConn(ctx, connection, branchNames)
+}
 
+func runLockWithConn(ctx context.Context, connection shared.Connection, branchNames []string) error {
 	err := lock.LockBranches(ctx, branchNames, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
+	return nil
 }
 
-func runUnlock(branchNames []string, debug bool) {
+func runUnlock(branchNames []string, debug bool) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	connection := &conn.Connection{Debug: debug}
+	return runUnlockWithConn(ctx, connection, branchNames)
+}
 
+func runUnlockWithConn(ctx context.Context, connection shared.Connection, branchNames []string) error {
 	err := lock.UnlockBranches(ctx, branchNames, connection)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
+	return nil
 }
 
 func printBranches(branches []shared.Branch) {

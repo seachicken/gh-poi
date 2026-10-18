@@ -396,7 +396,8 @@ func applyTrackedChanges(ctx context.Context, branches []shared.Branch, connecti
 			if err != nil {
 				return results, err
 			}
-		} else if branch.Worktree != nil && !branch.Worktree.IsPrunable {
+			// Execute only if the worktree directory has not been deleted.
+		} else if branch.Worktree != nil && !branch.Worktree.IsPrunable && !branch.Worktree.IsLocked {
 			changes, err = conn.GetUncommittedChanges(ctx, connection, "-C", branch.Worktree.Path)
 			if err != nil {
 				return results, err

@@ -71,6 +71,13 @@ func parseRemotes(output string) []shared.Remote {
 			return []shared.Remote{}
 		}
 
+		// `git remote -v` lists a fetch and a push line per remote. Only the
+		// fetch URL is guaranteed to point at the real repository: the push URL
+		// can be set to a dummy value to guard against accidental pushes.
+		if splitConfig[2] != "(fetch)" {
+			continue
+		}
+
 		ref := splitConfig[1]
 		if !hasSchemePattern.MatchString(ref) {
 			if scpLikeURLPattern.MatchString(ref) {

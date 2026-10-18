@@ -250,7 +250,7 @@ func (conn *Connection) RemoveConfig(ctx context.Context, key string) (string, e
 
 func (conn *Connection) FetchBranch(ctx context.Context, remoteName string, branchName string) (string, error) {
 	args := []string{
-		"fetch", remoteName, branchName,
+		"fetch", remoteName, fmt.Sprintf("+refs/heads/%s:refs/remotes/%s/%s", branchName, remoteName, branchName),
 	}
 	return conn.run(ctx, "git", args, None)
 }

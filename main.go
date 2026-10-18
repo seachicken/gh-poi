@@ -23,6 +23,7 @@ var (
 	hiBlack = color.New(color.FgHiBlack).SprintFunc()
 	green   = color.New(color.FgGreen).SprintFunc()
 	red     = color.New(color.FgRed).SprintFunc()
+	osExit  = os.Exit
 )
 
 type StateFlag string
@@ -92,7 +93,7 @@ func main() {
 	var debug bool
 	flag.Var(&state, "state", "Specify the PR state to delete by {closed|merged}")
 	flag.Var(&scan, "scan", "Specify the scan mode by {quick|deep}")
-	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting it")
+	flag.BoolVar(&dryRun, "dry-run", false, "Show branches to delete without actually deleting them (fetches the remote default branch reference if missing)")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logs")
 	flag.Usage = func() {
 		fmt.Fprintf(color.Output, "%s\n\n", "Delete the merged local branches.")
@@ -181,6 +182,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	remotes, err := cmd.GetPreferredRemotes(ctx, connection, scan.toModel())
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
+		osExit(1)
 		return
 	}
 
@@ -193,6 +195,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	} else {
 		fmt.Fprintf(color.Output, "%s%s\n", red("✕"), fetchingMsg)
 		fmt.Fprintln(os.Stderr, fetchingErr)
+		osExit(1)
 		return
 	}
 
@@ -227,6 +230,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 		} else {
 			fmt.Fprintf(color.Output, "%s%s\n", red("✕"), deletingMsg)
 			fmt.Fprintln(os.Stderr, deletingErr)
+			osExit(1)
 			return
 		}
 	}

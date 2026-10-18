@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -11,8 +12,9 @@ import (
 
 type (
 	Stub struct {
-		Conn *mocks.MockConnection
-		T    gomock.TestHelper
+		Conn             *mocks.MockConnection
+		T                gomock.TestHelper
+		remoteHeadOidErr error
 	}
 
 	Times struct {
@@ -74,7 +76,14 @@ var (
 
 func Setup(ctrl *gomock.Controller) *Stub {
 	conn := mocks.NewMockConnection(ctrl)
-	return &Stub{conn, ctrl.T}
+	s := &Stub{Conn: conn, T: ctrl.T}
+	conn.EXPECT().
+		GetRemoteHeadOid(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, remoteName, branchName string) (string, error) {
+			return "", s.remoteHeadOidErr
+		}).
+		AnyTimes()
+	return s
 }
 
 func NewConf(times *Times) *Conf {
@@ -216,6 +225,12 @@ func (s *Stub) GetConfig(stubs []ConfigStub, err error, conf *Conf) *Stub {
 			conf,
 		)
 	}
+	return s
+}
+
+func (s *Stub) GetRemoteHeadOid(err error, conf *Conf) *Stub {
+	s.T.Helper()
+	s.remoteHeadOidErr = err
 	return s
 }
 

@@ -3,9 +3,7 @@ name: CI for Windows
 on:
   push:
     branches:
-      - '*'
-    tags-ignore:
-      - '*'
+      - '**'
 
 jobs:
 

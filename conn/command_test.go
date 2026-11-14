@@ -228,3 +228,17 @@ func Test_ParseWorktreesWithPrunable(t *testing.T) {
 		parseWorktrees(stub),
 	)
 }
+
+func Test_CreateRemoteIgnoresPushUrl(t *testing.T) {
+	assert.Equal(t,
+		[]shared.Remote{
+			{
+				Name:       "origin",
+				Hostname:   "github.com",
+				RepoName:   "org/repo",
+				GhResolved: "",
+			},
+		},
+		parseRemotes("origin\tgit@github.com:org/repo.git (fetch)\norigin\tyou_should_not_push_on_this_repository (push)"),
+	)
+}

@@ -1,0 +1,39 @@
+{
+  "data": {
+    "search": {
+      "issueCount": 1,
+      "edges": [
+        {
+          "node": {
+            "number": 1,
+            "url": "https://github.com/owner/repo/pull/1",
+            "state": "MERGED",
+            "isDraft": false,
+            "headRefName": "issue1",
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "oid": "cb197ba87e4ad323b1008c611212deb7da2a4a49"
+                  }
+                }
+              ]
+            },
+            "timelineItems": {
+              "nodes": [
+                {
+                  "beforeCommit": {
+                    "oid": "a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0"
+                  }
+                }
+              ]
+            },
+            "author": {
+              "login": "owner"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

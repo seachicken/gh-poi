@@ -168,6 +168,8 @@ func (conn *Connection) GetAssociatedRefNames(ctx context.Context, oid string) (
 func (conn *Connection) GetPullRequests(
 	ctx context.Context,
 	hostname string, orgs string, repos string, queryHashes string) (string, error) {
+	// head:"branch" queries are interpolated into a double-quoted GraphQL string.
+	searchQuery := strings.ReplaceAll(queryHashes, `"`, `\"`)
 	args := []string{
 		"api", "graphql",
 		"--hostname", hostname,
@@ -189,13 +191,22 @@ func (conn *Connection) GetPullRequests(
               }
             }
           }
+          timelineItems(last: 100, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT]) {
+            nodes {
+              ... on HeadRefForcePushedEvent {
+                beforeCommit {
+                  oid
+                }
+              }
+            }
+          }
           author { login }
         }
       }
     }
   }
 }`,
-			orgs, repos, queryHashes,
+			orgs, repos, searchQuery,
 		),
 	}
 	return conn.run(ctx, "gh", args, None)

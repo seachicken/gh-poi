@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -72,6 +73,68 @@ func Test_GetQueryHashesWithCommitOid(t *testing.T) {
 				},
 				PullRequests: []PullRequest{}, State: Unknown,
 			},
+		}),
+	)
+}
+
+func Test_GetQueryHeads(t *testing.T) {
+	// Emitted names only. The third one is the fragment that passes 256 characters.
+	second := strings.Repeat("b", 110)
+	third := strings.Repeat("c", 110)
+
+	assert.Equal(t,
+		[]string{
+			`head:"feature/stack-1" head:"` + second + `" `,
+			`head:"` + third + `"`,
+		},
+		GetQueryHeads([]Branch{
+			{Name: "main", Commits: []string{}},
+			{Name: "feature/stack-1", Commits: []string{"aaaaaaaa"}},
+			{Name: strings.Repeat("x", 239) + `"`, Commits: []string{"bbbbbbbb"}},
+			{Name: second, Commits: []string{"cccccccc"}},
+			{Name: third, Commits: []string{"dddddddd"}},
+		}),
+	)
+}
+
+func Test_GetQueryHeadsSkipsNameLongerThanSearchLimit(t *testing.T) {
+	// head:"<250 chars>" is 257 characters and cannot be searched on its own.
+	longName := strings.Repeat("n", 250)
+	assert.Equal(t,
+		[]string{},
+		GetQueryHeads([]Branch{
+			{Name: longName, Commits: []string{"aaaaaaaa"}},
+		}),
+	)
+
+	// A leading over-long name must not flush an empty, unqualified query.
+	assert.Equal(t,
+		[]string{`head:"feature/stack-1"`},
+		GetQueryHeads([]Branch{
+			{Name: longName, Commits: []string{"aaaaaaaa"}},
+			{Name: "feature/stack-1", Commits: []string{"bbbbbbbb"}},
+		}),
+	)
+
+	// 249 characters is exactly 256 with the head:"" wrapper, so it is sent.
+	name249 := strings.Repeat("m", 249)
+	exact := `head:"` + name249 + `"`
+	assert.Equal(t, 256, len(exact))
+	assert.Equal(t,
+		[]string{exact},
+		GetQueryHeads([]Branch{
+			{Name: name249, Commits: []string{"aaaaaaaa"}},
+		}),
+	)
+	// The trailing separator would make it 257, so it is its own query.
+	assert.Equal(t,
+		[]string{
+			exact,
+			`head:"feature/stack-1"`,
+		},
+		GetQueryHeads([]Branch{
+			{Name: name249, Commits: []string{"aaaaaaaa"}},
+			{Name: "feature/stack-1", Commits: []string{"bbbbbbbb"}},
 		}),
 	)
 }

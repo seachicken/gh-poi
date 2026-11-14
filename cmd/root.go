@@ -219,24 +219,56 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 		return nil, err
 	}
 
-	prs := []shared.PullRequest{}
 	orgs := shared.GetQueryOrgs(repoNames)
 	repos := shared.GetQueryRepos(repoNames)
+
+	queryHashes := shared.GetQueryHashes(branches)
+	prs, err := fetchPullRequests(ctx, remote.Hostname, orgs, repos, queryHashes, connection)
+	if err != nil {
+		return nil, err
+	}
+
+	branches = applyPullRequest(ctx, branches, prs, connection)
+
+	var unmatched []shared.Branch
+	for _, branch := range branches {
+		if len(branch.Commits) == 0 || len(branch.PullRequests) > 0 {
+			continue
+		}
+		unmatched = append(unmatched, branch)
+	}
+	headQueries := shared.GetQueryHeads(unmatched)
+	if len(headQueries) == 0 {
+		return branches, nil
+	}
+
+	headPRs, err := fetchPullRequests(ctx, remote.Hostname, orgs, repos, headQueries, connection)
+	if err != nil {
+		return nil, err
+	}
+	branches = applyPullRequest(ctx, branches, headPRs, connection)
+
+	return branches, nil
+}
+
+func fetchPullRequests(ctx context.Context, hostname string, orgs string, repos string, queries []string, connection shared.Connection) ([]shared.PullRequest, error) {
+	if len(queries) == 0 {
+		return nil, nil
+	}
 
 	type pullRequestResult struct {
 		prs []shared.PullRequest
 		err error
 	}
 
-	queryHashes := shared.GetQueryHashes(branches)
-	prChan := make(chan pullRequestResult, len(queryHashes))
+	prChan := make(chan pullRequestResult, len(queries))
 	var wg sync.WaitGroup
 
-	for _, queryHash := range queryHashes {
+	for _, query := range queries {
 		wg.Add(1)
-		go func(hash string) {
+		go func(q string) {
 			defer wg.Done()
-			pullRequests, err := connection.GetPullRequests(ctx, remote.Hostname, orgs, repos, hash)
+			pullRequests, err := connection.GetPullRequests(ctx, hostname, orgs, repos, q)
 			if err != nil {
 				prChan <- pullRequestResult{err: err}
 				return
@@ -249,7 +281,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 			}
 
 			prChan <- pullRequestResult{prs: pr}
-		}(queryHash)
+		}(query)
 	}
 
 	go func() {
@@ -257,6 +289,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 		close(prChan)
 	}()
 
+	prs := []shared.PullRequest{}
 	for result := range prChan {
 		if result.err != nil {
 			return nil, result.err
@@ -264,9 +297,7 @@ func loadBranches(ctx context.Context, remote shared.Remote, defaultBranchName s
 		prs = append(prs, result.prs...)
 	}
 
-	branches = applyPullRequest(ctx, branches, prs, connection)
-
-	return branches, nil
+	return prs, nil
 }
 
 func extractMergedBranchNames(mergedNames []string) []string {
@@ -505,6 +536,10 @@ func applyPullRequest(ctx context.Context, branches []shared.Branch, prs []share
 
 	results := []shared.Branch{}
 	for _, branch := range branches {
+		if len(branch.PullRequests) > 0 {
+			results = append(results, branch)
+			continue
+		}
 		prs := findMatchedPullRequest(branch.Name, prs, prNumbers)
 		sort.Slice(prs, func(i, j int) bool { return prs[i].Number < prs[j].Number })
 		branch.PullRequests = prs
@@ -621,7 +656,7 @@ func isFullyMerged(branch shared.Branch, pr shared.PullRequest, state shared.Pul
 	}
 
 	localHeadOid := branch.Commits[0]
-	if slices.Contains(pr.Commits, localHeadOid) {
+	if slices.Contains(pr.Commits, localHeadOid) || slices.Contains(pr.PreviousHeadOids, localHeadOid) {
 		return true
 	}
 
@@ -761,6 +796,13 @@ func toPullRequests(jsonResp string) ([]shared.PullRequest, error) {
 								}
 							}
 						}
+						TimelineItems struct {
+							Nodes []struct {
+								BeforeCommit *struct {
+									Oid string
+								}
+							}
+						}
 						Author struct {
 							Login string
 						}
@@ -787,14 +829,22 @@ func toPullRequests(jsonResp string) ([]shared.PullRequest, error) {
 			commits = append(commits, node.Commit.Oid)
 		}
 
+		var previousHeadOids []string
+		for _, node := range edge.Node.TimelineItems.Nodes {
+			if node.BeforeCommit != nil && node.BeforeCommit.Oid != "" {
+				previousHeadOids = append(previousHeadOids, node.BeforeCommit.Oid)
+			}
+		}
+
 		results = append(results, shared.PullRequest{
-			Name:    edge.Node.HeadRefName,
-			State:   state,
-			IsDraft: edge.Node.IsDraft,
-			Number:  edge.Node.Number,
-			Commits: commits,
-			Url:     edge.Node.Url,
-			Author:  edge.Node.Author.Login,
+			Name:             edge.Node.HeadRefName,
+			State:            state,
+			IsDraft:          edge.Node.IsDraft,
+			Number:           edge.Node.Number,
+			Commits:          commits,
+			PreviousHeadOids: previousHeadOids,
+			Url:              edge.Node.Url,
+			Author:           edge.Node.Author.Login,
 		})
 	}
 

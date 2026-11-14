@@ -1178,6 +1178,84 @@ func Test_BranchIsNotDeletableWhenFirstCommitOfTopicBranchIsAssociatedWithDefaul
 	assert.Equal(t, shared.NotDeletable, actual[1].State)
 }
 
+// Local tip is the head from before the merged PR was force-pushed.
+func Test_GetBranchesWhenMergedPRHeadWasForcePushed(t *testing.T) {
+	scan := shared.Quick
+	merged := []shared.PullRequest{{
+		Name:             "issue1",
+		State:            shared.Merged,
+		Number:           1,
+		Commits:          []string{"cb197ba87e4ad323b1008c611212deb7da2a4a49"},
+		PreviousHeadOids: []string{"a97e9630426df5d34ca9ee77ae1159bdfd5ff8f0"},
+		Url:              "https://github.com/owner/repo/pull/1",
+		Author:           "owner",
+	}}
+
+	setup := func(s *conn.Stub, logFilename string) *conn.Stub {
+		return s.
+			GetRemoteNames("origin", nil, nil).
+			GetSshConfig("github.com", nil, nil).
+			GetRepoNames([]conn.RepoNamesStub{
+				{RepoName: "owner/repo", Filename: "origin"},
+			}, nil, nil).
+			GetBranchNames("@main_issue1", nil, nil).
+			GetMergedBranchNames("@main", nil, nil).
+			GetLog([]conn.LogStub{
+				{BranchName: "main", Filename: "main"}, {BranchName: "issue1", Filename: logFilename},
+			}, nil, nil).
+			GetPullRequests("notFound", nil, conn.NewConf(&conn.Times{N: 1})).
+			GetPullRequests("issue1MergedForcePushed", nil, conn.NewConf(&conn.Times{N: 1})).
+			GetUncommittedChanges([]conn.UncommittedChangeStub{
+				{Path: "", Output: ""},
+			}, nil, nil).
+			GetWorktrees("none", nil, nil).
+			GetConfig([]conn.ConfigStub{
+				{Key: "remote.origin.gh-resolved", Filename: "empty"},
+				{Key: "branch.main.merge", Filename: "mergeMain"},
+				{Key: "branch.main.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.main.gh-poi-protected", Filename: "empty"},
+				{Key: "branch.issue1.merge", Filename: "mergeIssue1"},
+				{Key: "branch.issue1.remote", Filename: "remote"},
+				{Key: "branch.issue1.gh-poi-locked", Filename: "empty"},
+				{Key: "branch.issue1.gh-poi-protected", Filename: "empty"},
+			}, nil, nil)
+	}
+
+	t.Run("deletable when the local tip is a previous head", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+		setup(s, "issue1")
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, scan, false)
+
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "issue1", actual[0].Name)
+		assert.Equal(t, merged, actual[0].PullRequests)
+		assert.Equal(t, shared.Deletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
+
+	t.Run("not deletable when the local tip was never a head", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		s := conn.Setup(ctrl)
+		setup(s, "issue1CommitAfterMerge")
+		remotes, _ := GetPreferredRemotes(context.Background(), s.Conn, scan)
+
+		actual, _ := GetBranches(context.Background(), remotes, s.Conn, shared.Merged, scan, false)
+
+		assert.Equal(t, 2, len(actual))
+		assert.Equal(t, "issue1", actual[0].Name)
+		assert.Equal(t, merged, actual[0].PullRequests)
+		assert.Equal(t, shared.NotDeletable, actual[0].State)
+		assert.Equal(t, "main", actual[1].Name)
+		assert.Equal(t, shared.NotDeletable, actual[1].State)
+	})
+}
+
 func Test_BranchesAndPRsAreNotAssociatedWhenManyLocalCommitsAreAhead(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

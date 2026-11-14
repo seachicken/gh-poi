@@ -1,0 +1,8 @@
+[
+  {"name": "quick-small", "scan": "quick", "branches": 3},
+  {"name": "quick-medium", "scan": "quick", "branches": 30},
+  {"name": "quick-large", "scan": "quick", "branches": 100},
+  {"name": "deep-small", "scan": "deep", "branches": 3},
+  {"name": "deep-medium", "scan": "deep", "branches": 30},
+  {"name": "deep-large", "scan": "deep", "branches": 100}
+]

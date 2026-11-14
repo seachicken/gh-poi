@@ -168,6 +168,7 @@ func runMain(state StateFlag, scan ScanFlag, dryRun bool, debug bool) {
 	}
 
 	connection := &conn.Connection{Debug: debug}
+	_ = connection.CacheConfig(ctx)
 	sp := spinner.New(spinner.CharSets[14], 40*time.Millisecond)
 	defer sp.Stop()
 

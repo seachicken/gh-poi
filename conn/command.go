@@ -18,7 +18,8 @@ import (
 
 type (
 	Connection struct {
-		Debug bool
+		Debug       bool
+		configCache map[string]string
 	}
 
 	DebugMask int
@@ -228,13 +229,48 @@ func parseUncommittedChanges(output string) []shared.UncommittedChange {
 }
 
 func (conn *Connection) GetConfig(ctx context.Context, key string) (string, error) {
+	if conn.configCache != nil {
+		if value, ok := conn.configCache[configKey(key)]; ok {
+			return value + "\n", nil
+		}
+		return "", fmt.Errorf("git config key not found: %s", key)
+	}
 	args := []string{
 		"config", "--get", key,
 	}
 	return conn.run(ctx, "git", args, None)
 }
 
+func (conn *Connection) CacheConfig(ctx context.Context) error {
+	conn.configCache = nil
+	output, err := conn.run(ctx, "git", []string{"config", "--null", "--list"}, Output)
+	if err != nil {
+		return err
+	}
+	values := make(map[string]string)
+	for _, entry := range strings.Split(output, "\x00") {
+		if entry == "" {
+			continue
+		}
+		key, value, _ := strings.Cut(entry, "\n")
+		// Like git config --get, the last value wins for repeated keys.
+		values[configKey(key)] = value
+	}
+	conn.configCache = values
+	return nil
+}
+
+// Git section and variable names are case insensitive; subsection names are not.
+func configKey(key string) string {
+	first, last := strings.IndexByte(key, '.'), strings.LastIndexByte(key, '.')
+	if first < 0 {
+		return strings.ToLower(key)
+	}
+	return strings.ToLower(key[:first]) + key[first:last] + strings.ToLower(key[last:])
+}
+
 func (conn *Connection) AddConfig(ctx context.Context, key string, value string) (string, error) {
+	conn.configCache = nil
 	args := []string{
 		"config", "--add", key, value,
 	}
@@ -242,6 +278,7 @@ func (conn *Connection) AddConfig(ctx context.Context, key string, value string)
 }
 
 func (conn *Connection) RemoveConfig(ctx context.Context, key string) (string, error) {
+	conn.configCache = nil
 	args := []string{
 		"config", "--unset", key,
 	}

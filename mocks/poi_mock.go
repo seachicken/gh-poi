@@ -175,6 +175,21 @@ func (mr *MockConnectionMockRecorder) GetMergedBranchNames(ctx, remoteName, bran
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMergedBranchNames", reflect.TypeOf((*MockConnection)(nil).GetMergedBranchNames), ctx, remoteName, branchName)
 }
 
+// GetRemoteHeadOid mocks base method.
+func (m *MockConnection) GetRemoteHeadOid(ctx context.Context, remoteName, branchName string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRemoteHeadOid", ctx, remoteName, branchName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRemoteHeadOid indicates an expected call of GetRemoteHeadOid.
+func (mr *MockConnectionMockRecorder) GetRemoteHeadOid(ctx, remoteName, branchName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteHeadOid", reflect.TypeOf((*MockConnection)(nil).GetRemoteHeadOid), ctx, remoteName, branchName)
+}
+
 // GetPullRequests mocks base method.
 func (m *MockConnection) GetPullRequests(ctx context.Context, hostname, orgs, repos, queryHashes string) (string, error) {
 	m.ctrl.T.Helper()
